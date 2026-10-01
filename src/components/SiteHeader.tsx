@@ -66,13 +66,13 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
       className={`fixed inset-x-0 top-0 z-40 border-b transition-all duration-300 ease-out ${
         visible || menuOpen ? 'translate-y-0' : '-translate-y-full'
       } ${
-        scrolled
+        scrolled || menuOpen
           ? 'border-line bg-ivory/95 shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)] backdrop-blur-md'
           : 'border-transparent bg-transparent'
       }`}>
       
       {/* Subtle dark gradient overlay when at the top to ensure white text is ALWAYS readable regardless of hero image */}
-      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${scrolled ? 'opacity-0' : 'opacity-100 bg-gradient-to-b from-ink/60 to-transparent'}`} />
+      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${scrolled || menuOpen ? 'opacity-0' : 'opacity-100 bg-gradient-to-b from-ink/60 to-transparent'}`} />
 
       <div className="relative mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:h-[72px] md:px-10">
         <button
@@ -82,9 +82,9 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           <img
             src="/favicon.svg"
             alt="SR"
-            className={`h-8 w-auto object-contain transition-all duration-200 group-hover:scale-105 md:h-10 ${!scrolled ? 'brightness-0 invert drop-shadow-md' : ''}`}
+            className={`h-8 w-auto object-contain transition-all duration-200 group-hover:scale-105 md:h-10 ${!(scrolled || menuOpen) ? 'brightness-0 invert drop-shadow-md' : ''}`}
           />
-          <span className={`whitespace-nowrap font-display text-xl font-medium uppercase tracking-[0.18em] transition-colors md:text-[26px] translate-y-[2px] md:translate-y-[3px] ${scrolled ? 'text-ink group-hover:text-oxblood' : 'text-ivory drop-shadow-md group-hover:text-[#F9DE84]'}`}>
+          <span className={`whitespace-nowrap font-display text-xl font-medium uppercase tracking-[0.18em] transition-colors md:text-[26px] translate-y-[2px] md:translate-y-[3px] ${scrolled || menuOpen ? 'text-ink group-hover:text-oxblood' : 'text-ivory drop-shadow-md group-hover:text-[#F9DE84]'}`}>
             Swathy Reddy
           </span>
         </button>
@@ -117,12 +117,12 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           </button>
           <button
             type="button"
-            className={`md:hidden ${scrolled ? 'text-ink' : 'text-ivory drop-shadow-md'}`}
-            aria-label="Open menu"
+            className={`md:hidden transition-colors ${scrolled || menuOpen ? 'text-ink' : 'text-ivory drop-shadow-md'}`}
+            aria-label="Toggle menu"
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}>
+            onClick={() => setMenuOpen(!menuOpen)}>
             
-            <MenuIcon className="h-5 w-5" strokeWidth={1.5} />
+            {menuOpen ? <XIcon className="h-6 w-6" strokeWidth={1.5} /> : <MenuIcon className="h-6 w-6" strokeWidth={1.5} />}
           </button>
         </div>
       </div>
@@ -130,42 +130,27 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
       <AnimatePresence>
         {menuOpen &&
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed inset-0 z-50 flex flex-col bg-ivory px-5 md:hidden"
+          className="absolute inset-x-0 top-full z-30 flex flex-col border-t border-line bg-ivory/95 px-5 py-6 shadow-xl backdrop-blur-md md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Menu">
           
-            <div className="flex h-16 items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <img
-                  src="/sr-logo.png"
-                  alt="SR"
-                  className="h-8 w-auto object-contain"
-                />
-                <span className="font-display text-lg uppercase tracking-[0.2em] text-ink">
-                  Swathy Reddy
-                </span>
-              </div>
-              <button type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
-                <XIcon className="h-5 w-5" strokeWidth={1.25} />
-              </button>
-            </div>
-            <nav aria-label="Mobile" className="mt-16 flex flex-col gap-6">
+            <nav aria-label="Mobile" className="flex flex-col gap-6">
               {navigation.map((link) =>
             <button
               key={link.target}
               type="button"
               onClick={() => go(link.target)}
-              className="text-left font-display text-5xl">
+              className="text-left font-display text-2xl uppercase tracking-wider text-ink transition-colors hover:text-oxblood">
               
                   {link.label}
                 </button>
             )}
-              <a href={shopHome()} className="text-left font-display text-5xl text-oxblood">Shop online</a>
+              <a href={shopHome()} className="mt-1 text-left font-display text-2xl uppercase tracking-wider text-oxblood">Shop online</a>
               <button
                 type="button"
                 onClick={() => {
@@ -173,12 +158,11 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
                   if (onBook) onBook();
                   else scrollToId('styling');
                 }}
-                className="text-left font-display text-4xl text-ink transition-colors hover:text-oxblood"
+                className="mt-1 text-left font-display text-2xl uppercase tracking-wider text-ink transition-colors hover:text-oxblood"
               >
                 Book an appointment
               </button>
             </nav>
-            <p className="mt-auto pb-10 text-sm text-stone">Road No. 36, Jubilee Hills, Hyderabad</p>
           </motion.div>
         }
       </AnimatePresence>
