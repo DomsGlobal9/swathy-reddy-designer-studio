@@ -47,7 +47,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
         <div className="relative mx-auto flex h-full max-w-[1440px] flex-col px-5 pb-8 pt-20 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:pb-0 lg:pt-16">
           <div className="lg:col-span-5">
             <ChapterMark numeral="iv" label="The collection" />
-            <div className="relative mt-4 h-[4.2rem] overflow-hidden md:h-[6rem] lg:mt-8 xl:h-[7rem]">
+            <div className="relative mt-4 h-[4.2rem] w-full overflow-hidden px-4 -mx-4 md:h-[6rem] lg:mt-8 xl:h-[7rem]">
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.h2
                   key={current.id}
@@ -55,7 +55,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
                   animate={{ y: '0%', opacity: 1 }}
                   exit={{ y: '-100%', opacity: 0 }}
                   transition={{ duration: 0.3, ease: easeOut }}
-                  className="absolute inset-0 whitespace-nowrap font-display text-[3.6rem] leading-none tracking-[-0.03em] md:text-[5rem] xl:text-[6rem]">
+                  className="absolute inset-0 w-full whitespace-nowrap px-4 font-display text-[3.6rem] leading-none tracking-[-0.03em] md:text-[5rem] xl:text-[6rem]">
                   
                   {current.name}
                 </motion.h2>

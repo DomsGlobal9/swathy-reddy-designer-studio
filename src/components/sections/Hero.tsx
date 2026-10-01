@@ -50,7 +50,7 @@ export function Hero() {
         <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }}>
           <h1 className="font-display text-[16.5vw] leading-[0.94] tracking-[-0.03em] text-ivory md:text-[8.4vw]">
             {lines.map((line, i) => (
-              <span key={line.text} className="block overflow-hidden pt-[0.2em] -mt-[0.2em] pb-[0.32em] -mb-[0.24em] px-[0.1em] -mx-[0.1em]">
+              <span key={line.text} className="block overflow-hidden pt-[0.2em] -mt-[0.2em] pb-[0.6em] -mb-[0.6em] px-[0.4em] -mx-[0.4em]">
                 <motion.span
                   className={`block ${line.italic ? 'italic' : ''}`}
                   initial={reduce ? false : { y: '120%' }}
