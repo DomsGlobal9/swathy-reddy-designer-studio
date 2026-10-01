@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MenuIcon, XIcon } from 'lucide-react';
 import { navigation } from '../data/story';
-import { scrollToId, setScrollLocked } from '../hooks/useSmoothScroll';
+import { scrollToId } from '../hooks/useSmoothScroll';
 import { shopHome } from '../lib/shop';
 
 type SiteHeaderProps = {
@@ -45,20 +45,22 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
 
   useEffect(() => {
     if (!menuOpen) return;
-    setScrollLocked(true);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMenuOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => {
-      setScrollLocked(false);
       window.removeEventListener('keydown', onKey);
     };
   }, [menuOpen]);
 
   const go = (target: string) => {
     setMenuOpen(false);
-    scrollToId(target);
+    // Add a tiny delay to ensure React has processed the menu closing
+    // before we tell Lenis to scroll, avoiding any race conditions.
+    setTimeout(() => {
+      scrollToId(target);
+    }, 10);
   };
 
   return (
