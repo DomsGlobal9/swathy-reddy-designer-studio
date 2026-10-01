@@ -134,23 +134,27 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="absolute inset-x-0 top-full z-30 flex flex-col border-t border-line bg-ivory/95 px-5 py-6 shadow-xl backdrop-blur-md md:hidden"
+          className="absolute inset-x-0 top-full z-30 flex flex-col border-t border-line bg-ivory/95 shadow-xl backdrop-blur-md md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Menu">
           
-            <nav aria-label="Mobile" className="flex flex-col gap-6">
+            <nav aria-label="Mobile" className="flex flex-col">
               {navigation.map((link) =>
-            <button
-              key={link.target}
-              type="button"
-              onClick={() => go(link.target)}
-              className="text-left font-display text-2xl uppercase tracking-wider text-ink transition-colors hover:text-oxblood">
-              
+                <button
+                  key={link.target}
+                  type="button"
+                  onClick={() => go(link.target)}
+                  className="w-full border-b border-line/50 px-8 py-5 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-ink transition-colors hover:bg-stone/5 hover:text-oxblood">
+                  
                   {link.label}
                 </button>
-            )}
-              <a href={shopHome()} className="mt-1 text-left font-display text-2xl uppercase tracking-wider text-oxblood">Shop online</a>
+              )}
+              <a 
+                href={shopHome()} 
+                className="w-full border-b border-line/50 px-8 py-5 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-oxblood transition-colors hover:bg-stone/5">
+                Shop online
+              </a>
               <button
                 type="button"
                 onClick={() => {
@@ -158,8 +162,7 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
                   if (onBook) onBook();
                   else scrollToId('styling');
                 }}
-                className="mt-1 text-left font-display text-2xl uppercase tracking-wider text-ink transition-colors hover:text-oxblood"
-              >
+                className="w-full px-8 py-5 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-ink transition-colors hover:bg-stone/5 hover:text-oxblood">
                 Book an appointment
               </button>
             </nav>
