@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MenuIcon, XIcon } from 'lucide-react';
 import { navigation } from '../data/story';
@@ -11,10 +11,33 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    lastScrollY.current = Math.max(0, window.scrollY);
+
+    const onScroll = () => {
+      const currentScrollY = Math.max(0, window.scrollY);
+      const delta = currentScrollY - lastScrollY.current;
+
+      setScrolled(currentScrollY > 40);
+
+      // Always keep header visible when near the top of the page
+      if (currentScrollY <= 80) {
+        setVisible(true);
+      } else if (delta > 8) {
+        // Scrolling down -> hide navbar
+        setVisible(false);
+      } else if (delta < -8) {
+        // Scrolling up -> show navbar
+        setVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -41,10 +64,12 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-40 border-b backdrop-blur-md transition-all duration-300 ease-out ${
-      scrolled
-        ? 'border-line bg-ivory/95 shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)]'
-        : 'border-line/70 bg-ivory/92 shadow-xs'}`
-      }>
+        visible || menuOpen ? 'translate-y-0' : '-translate-y-full'
+      } ${
+        scrolled
+          ? 'border-line bg-ivory/95 shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)]'
+          : 'border-line/70 bg-ivory/92 shadow-xs'
+      }`}>
       
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:h-[72px] md:px-10">
         <button
