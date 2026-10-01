@@ -30,7 +30,7 @@ export function Hero() {
           src={images.hero}
           alt="An elegant Indian family dressed in premium traditional attire, standing in a sunlit heritage courtyard"
           fetchPriority="high"
-          className="h-full w-full object-cover object-[70%_top] md:object-[center_top]" />
+          className="h-full w-full object-cover object-[center_top]" />
         
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
       </motion.div>
