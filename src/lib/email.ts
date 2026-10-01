@@ -116,17 +116,13 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
 
     return {
       success: false,
-      message: `EmailJS responded with status ${res.status}: ${res.text}`
+      message: "Can't send email right now. Please try again in a moment, or contact us directly via phone or WhatsApp."
     };
   } catch (error: unknown) {
     console.error('[EmailJS] Booking request failed:', error);
-    const err = error as { text?: string; message?: string } | undefined;
     return {
       success: false,
-      message:
-        err?.text ||
-        err?.message ||
-        'We were unable to deliver your appointment request. Please contact us directly by phone or WhatsApp.'
+      message: "Can't send email right now. Please try again in a moment, or contact us directly via phone or WhatsApp."
     };
   }
 }

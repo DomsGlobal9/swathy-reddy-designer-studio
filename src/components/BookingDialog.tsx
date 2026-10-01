@@ -362,7 +362,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
       setStatus('success');
     } else {
       setStatus('error');
-      setSubmitError(result.message || 'Unable to deliver request. Please try again or call us.');
+      setSubmitError(result.message || "Please try again in a moment, or reach out to us directly via phone or WhatsApp.");
     }
   };
 
@@ -462,12 +462,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                   Tell us a little about the occasion. We'll prepare a rail of pieces before you arrive.
                 </p>
 
-                {status === 'error' && submitError && (
+                {status === 'error' && (
                   <div className="mt-6 flex items-start gap-3 border border-oxblood/30 bg-oxblood/5 p-3.5 text-[13px] text-oxblood">
                     <AlertCircleIcon className="mt-0.5 h-4 w-4 shrink-0" />
                     <div>
-                      <p className="font-medium">Could not send request</p>
-                      <p className="mt-0.5 text-stone">{submitError}</p>
+                      <p className="font-medium">Can't send email right now</p>
+                      <p className="mt-0.5 text-stone">
+                        {submitError || "Please try again in a moment, or reach out to us directly via phone or WhatsApp."}
+                      </p>
                     </div>
                   </div>
                 )}
