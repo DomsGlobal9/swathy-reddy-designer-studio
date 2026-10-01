@@ -47,7 +47,7 @@ export function Hero() {
       
 
       <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-center px-5 pt-20 pb-12 md:px-10 md:pt-24 md:pb-16">
-        <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }}>
+        <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }} className="flex flex-col items-center text-center md:items-start md:text-left">
           <h1 className="font-display text-[16.5vw] leading-[0.94] tracking-[-0.03em] text-ivory md:text-[8.4vw]">
             {lines.map((line, i) => (
               <span key={line.text} className="block overflow-hidden pt-[0.2em] -mt-[0.2em] pb-[0.6em] -mb-[0.6em] px-[0.4em] -mx-[0.4em]">
@@ -63,7 +63,7 @@ export function Hero() {
             ))}
           </h1>
           <motion.div
-            className="mt-8 flex flex-col items-start gap-6"
+            className="mt-8 flex flex-col items-center gap-6 md:items-start"
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3, ease: 'easeOut', delay: 0.45 }}>

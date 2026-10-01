@@ -47,7 +47,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
         <div className="relative mx-auto flex h-full max-w-[1440px] flex-col px-5 pb-8 pt-20 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:pb-0 lg:pt-16">
           <div className="lg:col-span-5">
             <ChapterMark numeral="iv" label="The collection" />
-            <div className="relative mt-4 h-[4.2rem] w-full overflow-hidden px-4 -mx-4 md:h-[6rem] lg:mt-8 xl:h-[7rem]">
+            <div className="relative mt-4 h-[16vw] w-full overflow-hidden px-4 -mx-4 sm:h-[4.2rem] md:h-[6rem] lg:mt-8 xl:h-[7rem]">
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.h2
                   key={current.id}
@@ -55,7 +55,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
                   animate={{ y: '0%', opacity: 1 }}
                   exit={{ y: '-100%', opacity: 0 }}
                   transition={{ duration: 0.3, ease: easeOut }}
-                  className="absolute inset-0 w-full whitespace-nowrap px-4 font-display text-[3.6rem] leading-none tracking-[-0.03em] md:text-[5rem] xl:text-[6rem]">
+                  className="absolute inset-0 w-full whitespace-nowrap px-4 font-display text-[16vw] leading-none tracking-[-0.03em] sm:text-[3.6rem] md:text-[5rem] xl:text-[6rem]">
                   
                   {current.name}
                 </motion.h2>
@@ -81,7 +81,8 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
           </div>
 
           <div className="relative mt-6 min-h-0 flex-1 lg:col-span-4 lg:col-start-6 lg:mt-0 lg:h-[76vh] lg:flex-none">
-            <div className="relative mx-auto h-full max-h-[76vh] aspect-[3/4] overflow-hidden bg-paper">
+            {/* On mobile, span full width. On desktop, respect aspect ratio and max height. */}
+            <div className="relative mx-auto h-[60vh] w-[100vw] -mx-5 overflow-hidden bg-paper lg:mx-auto lg:h-full lg:w-auto lg:max-h-[76vh] lg:aspect-[3/4]">
               {collections.map((collection, i) =>
               <CollectionLayer
                 key={collection.id}
