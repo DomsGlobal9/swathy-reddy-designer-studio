@@ -14,7 +14,7 @@ const env = ((import.meta as unknown as { env?: Record<string, string> }).env) |
 export const EMAILJS_SERVICE_ID: string = env.VITE_EMAILJS_SERVICE_ID || '';
 export const EMAILJS_TEMPLATE_ID: string = env.VITE_EMAILJS_TEMPLATE_ID || '';
 export const EMAILJS_PUBLIC_KEY: string = env.VITE_EMAILJS_PUBLIC_KEY || '';
-export const BOUTIQUE_EMAIL: string = 'label.swathyreddy12@gmail.com';
+export const BOUTIQUE_EMAIL = 'label.swathyreddy12@gmail.com';
 
 export type BookingData = {
   name: string;

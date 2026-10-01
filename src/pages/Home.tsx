@@ -5,6 +5,8 @@ import { SiteHeader } from '../components/SiteHeader';
 import { ThreadOverlay } from '../components/ThreadOverlay';
 import { Hero } from '../components/sections/Hero';
 import { WomanSection } from '../components/sections/WomanSection';
+import { MenSection } from '../components/sections/MenSection';
+import { KidsSection } from '../components/sections/KidsSection';
 import { StorySection } from '../components/sections/StorySection';
 import { CraftSection } from '../components/sections/CraftSection';
 import { WeaveBand } from '../components/sections/WeaveBand';
@@ -39,6 +41,8 @@ export function Home() {
         <ThreadOverlay containerRef={mainRef} />
         <Hero />
         <WomanSection />
+        <MenSection />
+        <KidsSection />
         <StorySection />
         <WeaveBand />
         <CraftSection />

@@ -17,7 +17,7 @@ export function Hero() {
 
   const lines = [
   { text: 'The art of', italic: false },
-  { text: 'being her.', italic: true }];
+  { text: 'family.', italic: true }];
 
 
   return (
@@ -28,11 +28,11 @@ export function Hero() {
         
         <img
           src={images.hero}
-          alt="Woman in an oxblood Kanjivaram saree with a gold zari border, standing in a sunlit Hyderabad courtyard"
+          alt="An elegant Indian family dressed in premium traditional attire, standing in a sunlit heritage courtyard"
           fetchPriority="high"
-          className="h-full w-full object-cover object-[70%_center] md:object-center" />
+          className="h-full w-full object-cover object-[70%_top] md:object-[center_top]" />
         
-        <div className="absolute inset-0 bg-gradient-to-b from-ivory/30 via-transparent to-ivory/45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
       </motion.div>
 
       <DriftingMotif
@@ -48,9 +48,9 @@ export function Hero() {
 
       <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-center px-5 pt-20 pb-12 md:px-10 md:pt-24 md:pb-16">
         <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }}>
-          <h1 className="font-display text-[16.5vw] leading-[0.94] tracking-[-0.03em] text-ink md:text-[8.4vw]">
+          <h1 className="font-display text-[16.5vw] leading-[0.94] tracking-[-0.03em] text-ivory md:text-[8.4vw]">
             {lines.map((line, i) => (
-              <span key={line.text} className="block overflow-hidden pb-[0.32em] -mb-[0.24em] pr-2">
+              <span key={line.text} className="block overflow-hidden pt-[0.2em] -mt-[0.2em] pb-[0.32em] -mb-[0.24em] px-[0.1em] -mx-[0.1em]">
                 <motion.span
                   className={`block ${line.italic ? 'italic' : ''}`}
                   initial={reduce ? false : { y: '120%' }}
@@ -63,15 +63,15 @@ export function Hero() {
             ))}
           </h1>
           <motion.div
-            className="mt-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-14"
+            className="mt-8 flex flex-col items-start gap-6"
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3, ease: 'easeOut', delay: 0.45 }}>
             
-            <p className="max-w-[17rem] text-[15px] leading-relaxed text-ink/80">
+            <p className="max-w-[17rem] text-[15px] leading-relaxed text-ivory/80">
               Contemporary Indian fashion, chosen by hand in Hyderabad.
             </p>
-            <ArrowLink href={shopHome()}>Explore collection</ArrowLink>
+            <ArrowLink href={shopHome()} className="text-ivory">Explore collection</ArrowLink>
           </motion.div>
         </motion.div>
       </div>

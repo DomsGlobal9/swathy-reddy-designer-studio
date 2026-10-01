@@ -63,25 +63,28 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 border-b backdrop-blur-md transition-all duration-300 ease-out ${
+      className={`fixed inset-x-0 top-0 z-40 border-b transition-all duration-300 ease-out ${
         visible || menuOpen ? 'translate-y-0' : '-translate-y-full'
       } ${
         scrolled
-          ? 'border-line bg-ivory/95 shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)]'
-          : 'border-line/70 bg-ivory/92 shadow-xs'
+          ? 'border-line bg-ivory/95 shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)] backdrop-blur-md'
+          : 'border-transparent bg-transparent'
       }`}>
       
-      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:h-[72px] md:px-10">
+      {/* Subtle dark gradient overlay when at the top to ensure white text is ALWAYS readable regardless of hero image */}
+      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${scrolled ? 'opacity-0' : 'opacity-100 bg-gradient-to-b from-ink/60 to-transparent'}`} />
+
+      <div className="relative mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:h-[72px] md:px-10">
         <button
           type="button"
           onClick={() => go('top')}
           className="group flex items-center gap-3 transition-opacity hover:opacity-90">
           <img
-            src="/sr-logo.png"
+            src="/favicon.svg"
             alt="SR"
-            className="h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105 md:h-11"
+            className={`h-8 w-auto object-contain transition-all duration-200 group-hover:scale-105 md:h-10 ${!scrolled ? 'brightness-0 invert drop-shadow-md' : ''}`}
           />
-          <span className="whitespace-nowrap font-display text-lg font-medium uppercase tracking-[0.24em] text-ink transition-colors group-hover:text-oxblood md:text-xl">
+          <span className={`whitespace-nowrap font-display text-xl font-medium uppercase tracking-[0.18em] transition-colors md:text-[26px] translate-y-[2px] md:translate-y-[3px] ${scrolled ? 'text-ink group-hover:text-oxblood' : 'text-ivory drop-shadow-md group-hover:text-[#F9DE84]'}`}>
             Swathy Reddy
           </span>
         </button>
@@ -92,30 +95,29 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
             key={link.target}
             type="button"
             onClick={() => go(link.target)}
-            className="group relative whitespace-nowrap text-[12px] font-medium uppercase tracking-[0.22em] text-ink transition-colors hover:text-oxblood">
+            className={`group relative whitespace-nowrap text-[12px] font-medium uppercase tracking-[0.22em] transition-colors ${scrolled ? 'text-ink hover:text-oxblood' : 'text-ivory drop-shadow-md hover:text-[#F9DE84]'}`}>
             
               {link.label}
-              <span className="absolute -bottom-1 left-0 h-[1.5px] w-full origin-left scale-x-0 bg-oxblood transition-transform duration-200 ease-out group-hover:scale-x-100" />
+              <span className={`absolute -bottom-1 left-0 h-[1.5px] w-full origin-left scale-x-0 transition-transform duration-200 ease-out group-hover:scale-x-100 ${scrolled ? 'bg-oxblood' : 'bg-[#F9DE84]'}`} />
             </button>
           )}
         </nav>
 
         <div className="flex items-center gap-4">
-          {/* Into the real shop: every piece, the bag, checkout. */}
           <a
             href={shopHome()}
-            className="hidden rounded-full bg-oxblood px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] text-ivory transition-colors duration-200 hover:bg-ink md:inline-flex">
+            className={`hidden rounded-full px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] transition-colors duration-200 md:inline-flex ${scrolled ? 'bg-oxblood text-ivory hover:bg-ink' : 'bg-ivory text-ink hover:bg-oxblood hover:text-ivory shadow-lg'}`}>
             Shop online
           </a>
           <button
             type="button"
             onClick={onBook ?? (() => scrollToId('styling'))}
-            className="hidden rounded-full border border-ink/25 px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] text-ink transition-colors duration-200 hover:border-oxblood hover:bg-oxblood hover:text-ivory md:inline-flex">
+            className={`hidden rounded-full border px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] transition-colors duration-200 md:inline-flex ${scrolled ? 'border-ink/25 text-ink hover:border-oxblood hover:bg-oxblood hover:text-ivory' : 'border-ivory/50 text-ivory hover:border-ivory hover:bg-ivory hover:text-ink shadow-sm drop-shadow-md'}`}>
             Book an appointment
           </button>
           <button
             type="button"
-            className="text-ink md:hidden"
+            className={`md:hidden ${scrolled ? 'text-ink' : 'text-ivory drop-shadow-md'}`}
             aria-label="Open menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(true)}>

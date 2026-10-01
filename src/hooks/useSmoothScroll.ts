@@ -30,8 +30,10 @@ export function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
   if (instance) {
-    instance.scrollTo(el, { offset: id === 'top' ? 0 : -64 });
+    // 0 offset ensures the section aligns perfectly with the top of the screen, utilizing its own built-in padding
+    instance.scrollTo(el, { offset: 0 });
   } else {
+    // Fallback for browsers/states without Lenis
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }

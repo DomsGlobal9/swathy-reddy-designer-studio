@@ -57,7 +57,7 @@ export function DriftingMotif({
   const draw = useTransform(p, drawRange, [0, 1]);
 
   return (
-    <div ref={progress ? undefined : ref} aria-hidden="true" className={`pointer-events-none absolute aspect-square ${className}`} style={{ opacity }}>
+    <div ref={progress ? undefined : ref} aria-hidden="true" className={`pointer-events-none absolute aspect-square mix-blend-multiply ${className}`} style={{ opacity: opacity * 1.5 }}>
       <motion.div className="h-full w-full" style={reduce ? undefined : { y, x, rotate }}>
         <MotifArt motif={motif} draw={reduce ? undefined : draw} color={tones[tone]} strokeWidth={strokeWidth} />
       </motion.div>

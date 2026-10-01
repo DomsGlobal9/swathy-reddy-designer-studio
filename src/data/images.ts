@@ -1,5 +1,5 @@
 export const images = {
-  hero: "/hero.png",
+  hero: "/family_hero_new.png",
   portrait: "/857637fe-8e84-4eaf-9b74-d00ca460e262.jpg",
   boutiqueInterior: "/163a88aa-aad8-4664-9fcb-60951c405235.jpg",
   founder: "/3a5e5bf7-1ffb-44a4-98fd-15f06dff4a7a.jpg",
@@ -20,6 +20,8 @@ export const images = {
   productBanarasi: "/f1d5d0f4-2479-4d9f-b184-54ee19432a77.jpg",
   productChanderi: "/be8701c3-b362-484b-b2dc-825cfcbe70c4.jpg",
   productTussar: "/9d10c672-eda9-451f-89b0-6358968f70b3.jpg",
+  menPortrait: "/man_portrait.jpg",
+  kidsPortrait: "/kids_portrait.jpg",
   lookbook1: "/b855d98d-2d68-4b72-acc9-8bd90680c0ba.jpg",
   lookbook2: "/f018e7e4-38c3-4f94-8c14-5e1d951ab581.jpg",
   lookbook3: "/03fd2a11-eeef-4683-9784-2138beca8960.jpg",

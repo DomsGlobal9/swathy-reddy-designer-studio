@@ -2,10 +2,31 @@ import { useShopData } from '../../context/ShopData';
 import { PieceFrame, ShopInstead } from '../ui/ShopStates';
 import { FadeUp } from '../ui/FadeUp';
 import { DriftingMotif } from '../ui/DriftingMotif';
+import { images } from '../../data/images';
 
 export function CollectionGrid() {
   /* The shop's own collections: its fabrics and crafts, with real counts. */
   const { collections, status } = useShopData();
+
+  const additionalCollections = [
+    {
+      id: 'mens-collection',
+      name: "Men's Edit",
+      image: images.menPortrait,
+      pieces: 12,
+      href: '#men'
+    },
+    {
+      id: 'kids-collection',
+      name: "Kids' Collection",
+      image: images.kidsPortrait,
+      pieces: 8,
+      href: '#kids'
+    }
+  ];
+
+  const allCollections = [...collections, ...additionalCollections];
+
   return (
     <section id="collections" className="relative bg-ivory px-5 py-28 md:px-10 md:py-44">
       <span data-thread-anchor aria-hidden="true" className="absolute left-1/2 top-8 h-px w-px" />
@@ -18,7 +39,7 @@ export function CollectionGrid() {
             Explore <em>collections</em>
           </h2>
           <p className="max-w-xs text-[15px] leading-relaxed text-stone">
-            {({ 2: 'Two worlds', 3: 'Three worlds', 4: 'Four worlds' } as Record<number, string>)[collections.length] ?? 'Every world'}, one sensibility. Each piece is in the boutique and ready to try.
+            {({ 2: 'Two worlds', 3: 'Three worlds', 4: 'Four worlds', 5: 'Five worlds', 6: 'Six worlds' } as Record<number, string>)[allCollections.length] ?? 'Every world'}, one sensibility. Each piece is in the boutique and ready to try.
           </p>
         </FadeUp>
 
@@ -26,10 +47,10 @@ export function CollectionGrid() {
           <span data-thread-anchor aria-hidden="true" className="absolute left-1/2 top-[30%] hidden h-px w-px md:block" />
           <span data-thread-anchor aria-hidden="true" className="absolute left-1/2 top-[72%] hidden h-px w-px md:block" />
           {status === 'loading' ?
-          Array.from({ length: 4 }, (_, i) =>
+          Array.from({ length: 6 }, (_, i) =>
           <div key={i} className={i % 2 === 1 ? 'md:mt-40' : ''}><PieceFrame ratio="4/5" /></div>
           ) : null}
-          {collections.map((collection, i) =>
+          {(status === 'live' || status === 'offline' ? allCollections : []).map((collection, i) =>
           <a
             key={collection.id}
             id={collection.id}
@@ -59,7 +80,7 @@ export function CollectionGrid() {
             </a>
           )}
         </div>
-        {status === 'offline' || (status === 'live' && collections.length === 0) ?
+        {status === 'offline' || (status === 'live' && allCollections.length === 0) ?
         <div className="mt-16"><ShopInstead>Explore the collection in the shop</ShopInstead></div> :
         null}
       </div>
