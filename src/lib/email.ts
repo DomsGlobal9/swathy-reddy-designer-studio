@@ -1,4 +1,6 @@
 import emailjs from '@emailjs/browser';
+import type { BoutiqueMeasurements, DressDetails } from '../types/booking';
+import { formatDressSummary, formatMeasurementsSummary } from './boutiqueLead';
 
 /**
  * Configuration for EmailJS appointment booking.
@@ -24,6 +26,8 @@ export type BookingData = {
   date: string;
   mode: 'boutique' | 'video';
   notes?: string;
+  dress?: DressDetails;
+  measurements?: BoutiqueMeasurements;
 };
 
 export type BookingResult = {
@@ -39,7 +43,7 @@ export const isEmailConfigured = (): boolean => {
 
 /**
  * Sends the booking details through EmailJS.
- * If credentials are not configured (e.g. initial dev/staging setup), it logs a warning
+ * If credentials are not configured, it logs a warning
  * and resolves simulated success so the interface doesn't fail.
  */
 export async function sendAppointmentEmail(data: BookingData): Promise<BookingResult> {
@@ -61,15 +65,17 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
     : data.date;
 
   const modeLabel = data.mode === 'boutique' ? 'In the boutique' : 'Video call';
+  const dressSummary = formatDressSummary(data.dress);
+  const measurementsSummary = formatMeasurementsSummary(data.measurements);
 
   const templateParams: Record<string, string> = {
-    // Boutique / recipient email for testing & delivery
+    // Boutique / recipient email for delivery
     to_email: BOUTIQUE_EMAIL,
     recipient_email: BOUTIQUE_EMAIL,
     boutique_email: BOUTIQUE_EMAIL,
     to_name: 'Swathy Reddy Designer Studio',
 
-    // Client details with multiple common aliases for template flexibility
+    // Client details with common aliases
     name: data.name,
     from_name: data.name,
     client_name: data.name,
@@ -87,16 +93,23 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
     appointment_type: modeLabel,
     notes: data.notes || '',
 
-    // Formatted multi-line summary message
+    // Dress & measurement specifics
+    dress_type: data.dress?.dressType || 'Not specified',
+    dress_summary: dressSummary,
+    measurements_summary: measurementsSummary,
+
+    // Formatted multi-line summary message containing full details
     message: [
-      `A new styling appointment has been requested:`,
+      `A new styling appointment and measurement request has been received:`,
       `Client: ${data.name}`,
       `Phone: ${data.phone}`,
       `Email: ${data.email || 'Not provided'}`,
       `Occasion: ${data.occasion}`,
       `Date: ${formattedDate} (${data.date})`,
       `Consultation Mode: ${modeLabel}`,
-      data.notes ? `Notes: ${data.notes}` : null
+      data.notes ? `Styling Notes: ${data.notes}` : null,
+      data.dress?.dressType ? `\n--- DRESS & OUTFIT REQUEST ---\n${dressSummary}` : null,
+      data.measurements ? `\n--- BOUTIQUE MEASUREMENTS ---\n${measurementsSummary}` : null
     ]
       .filter(Boolean)
       .join('\n')
@@ -116,13 +129,13 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
 
     return {
       success: false,
-      message: "Can't send email right now. Please try again in a moment, or contact us directly via phone or WhatsApp."
+      message: 'We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (+91 99888 77665) and we will immediately reserve your slot.'
     };
   } catch (error: unknown) {
     console.error('[EmailJS] Booking request failed:', error);
     return {
       success: false,
-      message: "Can't send email right now. Please try again in a moment, or contact us directly via phone or WhatsApp."
+      message: 'We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (+91 99888 77665) and we will immediately reserve your slot.'
     };
   }
 }
