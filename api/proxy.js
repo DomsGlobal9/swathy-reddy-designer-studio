@@ -1,30 +1,30 @@
 /**
  * Vercel Serverless Function Proxy for Scaleezy CRM Customer Portal API
  *
- * Runs server-side on Vercel's Edge/Serverless runtime to:
- * 1. Eliminate all browser CORS preflight errors.
- * 2. Prevent 405 Method Not Allowed errors on static single-page apps.
- * 3. Securely forward WhatsApp OTP requests, verification, and lead intakes to Render.
+ * Runs server-side on Vercel's runtime to:
+ * 1. Eliminate all browser CORS preflight blocking.
+ * 2. Prevent 405 Method Not Allowed on client-side SPAs.
+ * 3. Securely forward WhatsApp OTP requests, verification, and CRM intakes.
  */
 
 export default async function handler(req, res) {
-  // Set permissive CORS headers for client browser
+  // Set permissive CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Portal-Key, Authorization, Accept, X-Requested-With');
 
-  // Handle browser preflight OPTIONS immediately
+  // Handle preflight OPTIONS immediately
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   try {
-    // 1. Resolve path segment
+    // 1. Resolve path segment (stripping redundant leading intake/ or slashes)
     const rawPath = req.query.path;
     const pathStr = Array.isArray(rawPath) ? rawPath.join('/') : (rawPath || '');
-    const cleanPath = String(pathStr).replace(/^\/+/, '');
+    const cleanPath = String(pathStr).replace(/^\/+/, '').replace(/^intake\/?/, '');
 
-    // 2. Preserve any additional query parameters
+    // 2. Preserve any query parameters
     const queryParams = new URLSearchParams();
     for (const [key, value] of Object.entries(req.query)) {
       if (key !== 'path') {
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     }
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
 
-    // 3. Construct target URL with trailing slash (required by Django/Render)
+    // 3. Construct target URL with trailing slash (Django requirement)
     const baseTarget = `https://crm-b-ry43.onrender.com/intake/${cleanPath}`;
     const targetWithSlash = (baseTarget.endsWith('/') || cleanPath === '') ? baseTarget : `${baseTarget}/`;
     const finalUrl = `${targetWithSlash}${queryString}`;
@@ -44,7 +44,6 @@ export default async function handler(req, res) {
       'Accept': 'application/json'
     };
 
-    // Forward or inject Portal Key
     const portalKey =
       req.headers['x-portal-key'] ||
       process.env.VITE_SCALEEZY_PORTAL_KEY ||
