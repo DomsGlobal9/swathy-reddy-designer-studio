@@ -44,6 +44,7 @@ import type {
   PortalPartsResponse
 } from '../types/booking';
 import { COUNTRY_CODES } from '../data/countryCodes';
+import { shrinkPhotos } from '../lib/shrinkPhotos';
 
 type BookingDialogProps = {
   open: boolean;
@@ -795,7 +796,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
         fd.append('measurements', JSON.stringify(measurementsPayload));
       }
 
-      Object.entries(form.photos).forEach(([partKey, files]) => {
+      Object.entries(await shrinkPhotos(form.photos)).forEach(([partKey, files]) => {
         files.forEach(file => {
           fd.append(`images[${partKey}]`, file);
         });
