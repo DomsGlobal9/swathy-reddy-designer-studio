@@ -30,7 +30,7 @@ export function Hero() {
           src={images.hero}
           alt="An elegant Indian family celebrating at the temple in festive attire"
           fetchPriority="high"
-          className="h-full w-full object-cover object-[28%_center] md:object-[22%_center]" />
+          className="h-full w-full object-cover object-[28%_top] md:object-[22%_top]" />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 md:bg-gradient-to-r md:from-transparent md:via-black/30 md:to-black/85" />
       </motion.div>
@@ -46,8 +46,8 @@ export function Hero() {
         strokeWidth={1.3} />
       
 
-      <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-center px-5 pt-20 pb-12 md:px-10 md:pt-24 md:pb-16">
-        <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }} className="flex flex-col items-center text-center md:ml-auto md:items-end md:text-right">
+      <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end pb-14 px-5 pt-24 md:justify-center md:px-10 md:pt-28 md:pb-16">
+        <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }} className="flex flex-col items-center text-center md:ml-auto md:items-end md:text-right md:translate-y-4">
           <h1 className="font-display text-[16.5vw] leading-[0.94] tracking-[-0.03em] text-ivory md:text-[8.4vw]">
             {lines.map((line, i) => (
               <span key={line.text} className="block overflow-hidden pt-[0.2em] -mt-[0.2em] pb-[0.6em] -mb-[0.6em] px-[0.4em] -mx-[0.4em]">
