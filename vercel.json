@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/intake/:path*",
-      "destination": "/api/proxy?path=:path*"
+      "source": "/intake/(.*)",
+      "destination": "https://crm-b-ry43.onrender.com/intake/$1"
     },
     {
-      "source": "/((?!api).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
