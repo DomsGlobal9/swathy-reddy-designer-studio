@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   XIcon,
@@ -487,23 +487,37 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     } catch (e) {}
   }, []);
 
-  // Check for autocomplete suggestions when phone changes
+  const [, startTransition] = useTransition();
+  const [localPhone, setLocalPhone] = useState(form.phone);
+
   useEffect(() => {
-    const digits = form.phone.replace(/\D/g, '');
-    if (digits.length >= 4 && !dismissedSuggestion) {
-      const match = savedProfiles.find(p => p.phone.replace(/\D/g, '').includes(digits));
-      if (match && match.phone !== form.phone) {
-        setSuggestedProfile(match);
-      } else {
-        setSuggestedProfile(null);
+    setLocalPhone(form.phone);
+  }, [form.phone]);
+
+  // Check for autocomplete suggestions when phone changes (debounced to avoid blocking main thread)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const digits = form.phone.replace(/\D/g, '');
+      if (digits.length >= 4 && !dismissedSuggestion) {
+        const match = savedProfiles.find(p => p.phone.replace(/\D/g, '').includes(digits));
+        if (match && match.phone !== form.phone) {
+          startTransition(() => {
+            setSuggestedProfile(match);
+          });
+          return;
+        }
       }
-    } else {
-      setSuggestedProfile(null);
-    }
+      startTransition(() => {
+        setSuggestedProfile(null);
+      });
+    }, 250);
+
+    return () => clearTimeout(timer);
   }, [form.phone, savedProfiles, dismissedSuggestion]);
 
   const handleApplySuggestion = () => {
     if (suggestedProfile) {
+      setLocalPhone(suggestedProfile.phone);
       setForm(prev => ({
         ...suggestedProfile,
         date: prev.date,
@@ -1112,8 +1126,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                             <div className="relative flex-1">
                               <input
                                 type="tel"
-                                value={form.phone}
-                                onChange={(e) => update('phone', e.target.value)}
+                                value={localPhone}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setLocalPhone(val);
+                                  startTransition(() => {
+                                    update('phone', val);
+                                  });
+                                }}
                                 className="w-full h-[46px] rounded-r-xs border border-ink/20 bg-paper/50 px-3.5 py-0 text-[13.5px] text-ink placeholder:text-stone/40 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition-colors pr-[110px]"
                                 placeholder="98765 43210"
                                 aria-invalid={!!errors.phone}
