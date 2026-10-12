@@ -30,7 +30,10 @@ export const SCALEEZY_PORTAL_KEY: string = (
 ).trim();
 
 export const getPortalBaseUrl = (): string => {
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+  // Always use relative path '' in browser so requests route through
+  // Vite proxy (on localhost) or Vercel rewrites (in production).
+  // This guarantees zero CORS blocking since requests are same-origin to the browser.
+  if (typeof window !== 'undefined') {
     return '';
   }
   return SCALEEZY_BASE_URL || 'https://crm-b-ry43.onrender.com';
