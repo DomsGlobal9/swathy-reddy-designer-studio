@@ -1,5 +1,5 @@
 export const images = {
-  hero: "/family_hero_new.png",
+  hero: "/festive_family_hero.png",
   portrait: "/857637fe-8e84-4eaf-9b74-d00ca460e262.jpg",
   boutiqueInterior: "/163a88aa-aad8-4664-9fcb-60951c405235.jpg",
   founder: "/3a5e5bf7-1ffb-44a4-98fd-15f06dff4a7a.jpg",

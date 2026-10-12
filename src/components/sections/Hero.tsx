@@ -28,26 +28,26 @@ export function Hero() {
         
         <img
           src={images.hero}
-          alt="An elegant Indian family dressed in premium traditional attire, standing in a sunlit heritage courtyard"
+          alt="An elegant Indian family celebrating at the temple in festive attire"
           fetchPriority="high"
-          className="h-full w-full object-cover object-[62%_top] md:object-[center_top]" />
+          className="h-full w-full object-cover object-[28%_center] md:object-[22%_center]" />
         
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 md:bg-gradient-to-r md:from-transparent md:via-black/30 md:to-black/85" />
       </motion.div>
 
       <DriftingMotif
         motif="jasmine"
         progress={scrollYProgress}
         drawRange={[0.02, 0.35]}
-        className="left-[3%] top-[12%] w-[180px] md:left-[6%] md:w-[300px]"
-        opacity={0.55}
+        className="right-[3%] top-[10%] w-[180px] md:right-[6%] md:w-[280px]"
+        opacity={0.4}
         drift={-60}
         spin={8}
         strokeWidth={1.3} />
       
 
       <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-center px-5 pt-20 pb-12 md:px-10 md:pt-24 md:pb-16">
-        <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }} className="flex flex-col items-center text-center md:items-start md:text-left">
+        <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }} className="flex flex-col items-center text-center md:ml-auto md:items-end md:text-right">
           <h1 className="font-display text-[16.5vw] leading-[0.94] tracking-[-0.03em] text-ivory md:text-[8.4vw]">
             {lines.map((line, i) => (
               <span key={line.text} className="block overflow-hidden pt-[0.2em] -mt-[0.2em] pb-[0.6em] -mb-[0.6em] px-[0.4em] -mx-[0.4em]">
@@ -63,15 +63,15 @@ export function Hero() {
             ))}
           </h1>
           <motion.div
-            className="mt-8 flex flex-col items-center gap-6 md:items-start"
+            className="mt-8 flex flex-col items-center gap-6 md:items-end"
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3, ease: 'easeOut', delay: 0.45 }}>
             
-            <p className="max-w-[17rem] text-[15px] leading-relaxed text-ivory/80">
+            <p className="max-w-[17rem] text-[15px] leading-relaxed text-ivory/80 md:text-right">
               Contemporary Indian fashion, chosen by hand in Hyderabad.
             </p>
-            <ArrowLink href={shopHome()} className="text-ivory">Explore collection</ArrowLink>
+            <ArrowLink href={shopHome()} tone="ivory" className="text-ivory">Explore collection</ArrowLink>
           </motion.div>
         </motion.div>
       </div>
