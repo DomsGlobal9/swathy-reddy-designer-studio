@@ -41,7 +41,8 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
 
   return (
     <section ref={ref} aria-label="The collection" className="relative z-20 h-[420vh] bg-ivory">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      {/* svh = the height left once the phone's address bar shows, so the caption row is never hidden behind it */}
+      <div className="sticky top-0 h-svh overflow-hidden">
         <DriftingMotif motif="lotus" tone="zari" progress={scrollYProgress} drawRange={[0, 0.35]} className="-left-10 bottom-[4%] w-[220px] md:w-[340px]" opacity={0.3} drift={140} spin={10} />
         <DriftingMotif motif="paisley" progress={scrollYProgress} drawRange={[0.4, 0.8]} className="right-[14%] top-[6%] hidden w-[240px] lg:block" opacity={0.14} drift={120} sway={-50} spin={16} />
         <div className="relative mx-auto flex h-full max-w-[1440px] flex-col px-5 pb-8 pt-20 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:pb-0 lg:pt-16">
@@ -81,8 +82,8 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
           </div>
 
           <div className="relative mt-6 min-h-0 flex-1 lg:col-span-4 lg:col-start-6 lg:mt-0 lg:h-[76vh] lg:flex-none">
-            {/* On mobile, span full width. On desktop, respect aspect ratio and max height. */}
-            <div className="relative mx-auto h-[60vh] w-[100vw] -mx-5 overflow-hidden bg-paper lg:mx-auto lg:h-full lg:w-auto lg:max-h-[76vh] lg:aspect-[3/4]">
+            {/* On mobile, fill whatever height is left between title and caption, so short screens never overlap. On desktop, respect aspect ratio and max height. */}
+            <div className="relative h-full w-full overflow-hidden bg-paper lg:mx-auto lg:w-auto lg:max-h-[76vh] lg:aspect-[3/4]">
               {collections.map((collection, i) =>
               <CollectionLayer
                 key={collection.id}
@@ -139,7 +140,7 @@ function CollectionLayer({
   const scale = useTransform(progress, index === 0 ? [0, 0.25] : [at - 0.09, at + 0.12], [1.12, 1]);
   return (
     <motion.div className="absolute inset-0 overflow-hidden" style={{ clipPath }}>
-      <motion.img src={src} alt={alt} loading="lazy" style={{ scale }} className="h-full w-full object-cover" />
+      <motion.img src={src} alt={alt} loading="lazy" style={{ scale }} className="h-full w-full object-cover object-top" />
     </motion.div>);
 
 }
