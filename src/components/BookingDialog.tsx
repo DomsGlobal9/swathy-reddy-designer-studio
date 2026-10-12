@@ -45,6 +45,7 @@ import type {
 } from '../types/booking';
 import { COUNTRY_CODES } from '../data/countryCodes';
 import { shrinkPhotos } from '../lib/shrinkPhotos';
+import { DesignPhotos } from './DesignPhotos';
 
 type BookingDialogProps = {
   open: boolean;
@@ -1447,46 +1448,12 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
                       {/* Photo Uploads for Parts */}
                       {portalParts && portalParts.parts.length > 0 && (
-                        <div className="pt-5 border-t border-ink/10">
-                          <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium block mb-4">
-                            Design Inspiration Photos (Max {portalParts.max_photos})
-                          </span>
-                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            {portalParts.parts.map(part => (
-                              <div key={part.key} className="border border-ink/10 p-4 rounded-sm bg-ivory/40 hover:bg-paper/40 transition-colors shadow-2xs">
-                                <span className="text-[11px] uppercase tracking-[0.16em] text-stone font-medium mb-3 flex items-center justify-between">
-                                  {part.label}
-                                  {form.photos[part.key]?.length > 0 && (
-                                    <span className="bg-oxblood text-ivory rounded-xs px-1.5 py-0.5 text-[9px] shadow-xs">
-                                      {form.photos[part.key].length} selected
-                                    </span>
-                                  )}
-                                </span>
-                                <label className="flex flex-col items-center justify-center w-full h-24 border border-dashed border-ink/20 rounded-xs cursor-pointer bg-white/50 hover:bg-white hover:border-ink/40 transition-all group">
-                                  <div className="flex flex-col items-center justify-center">
-                                    <svg className="w-5 h-5 mb-1.5 text-stone/40 group-hover:text-ink/60 transition-colors" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                                    </svg>
-                                    <p className="text-[10px] text-stone"><span className="font-medium text-ink uppercase tracking-wider">Click to browse</span></p>
-                                  </div>
-                                  <input
-                                    type="file"
-                                    accept="image/png, image/jpeg, image/webp"
-                                    multiple
-                                    className="hidden"
-                                    onChange={(e) => {
-                                      if (e.target.files) {
-                                        const newPhotos = { ...form.photos };
-                                        newPhotos[part.key] = Array.from(e.target.files).slice(0, portalParts.max_photos);
-                                        update('photos', newPhotos);
-                                      }
-                                    }}
-                                  />
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                        <DesignPhotos
+                          parts={portalParts.parts}
+                          maxPhotos={portalParts.max_photos}
+                          photos={form.photos}
+                          onChange={(photos) => update('photos', photos)}
+                        />
                       )}
 
                       {/* Margins */}
