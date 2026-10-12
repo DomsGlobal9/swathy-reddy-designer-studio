@@ -23,12 +23,6 @@ export const SCALEEZY_BASE_URL: string = (
   ''
 ).replace(/\/+$/, '').replace(/\/api$/, '');
 
-export const SCALEEZY_PORTAL_KEY: string = (
-  env.VITE_SCALEEZY_PORTAL_KEY ||
-  env.VITE_BOUTIQUE_API_KEY ||
-  ''
-).trim();
-
 export const getPortalBaseUrl = (): string => {
   // Always use relative path '' in browser so requests route through
   // Vite proxy (on localhost) or Vercel rewrites (in production).
@@ -39,8 +33,10 @@ export const getPortalBaseUrl = (): string => {
   return SCALEEZY_BASE_URL || 'https://crm-b-ry43.onrender.com';
 };
 
+// The portal key lives on the server (api/proxy.js, vite.config.ts), so the browser can't
+// see whether it is set; VITE_SCALEEZY_DEMO=true switches to the offline demo instead.
 export const isPortalConfigured = (): boolean => {
-  return Boolean(SCALEEZY_PORTAL_KEY);
+  return env.VITE_SCALEEZY_DEMO !== 'true';
 };
 
 export const normalizeIndianMobile = (phone: string): string => {
@@ -169,7 +165,6 @@ export async function fetchPortalProducts(): Promise<PortalProduct[]> {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        'X-Portal-Key': SCALEEZY_PORTAL_KEY
       }
     });
 
@@ -197,7 +192,6 @@ export async function fetchProductMeasurements(productKey: string) {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        'X-Portal-Key': SCALEEZY_PORTAL_KEY
       }
     });
     if (!res.ok) return [];
@@ -217,7 +211,6 @@ export async function fetchProductParts(productKey: string) {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        'X-Portal-Key': SCALEEZY_PORTAL_KEY
       }
     });
     if (!res.ok) return null;
@@ -248,7 +241,7 @@ export async function requestWhatsAppOtp(mobileNumber: string): Promise<OtpReque
 
   if (!isPortalConfigured()) {
     console.info(
-      `[ScaleezyPortal Simulation] WhatsApp OTP code requested for mobile: ${normalized}. (Configure VITE_SCALEEZY_BASE_URL and VITE_SCALEEZY_PORTAL_KEY for live delivery).`
+      `[ScaleezyPortal Simulation] WhatsApp OTP code requested for mobile: ${normalized}. (VITE_SCALEEZY_DEMO=true is set; remove it for live delivery).`
     );
     await new Promise((r) => setTimeout(r, 600));
     return {
@@ -265,7 +258,6 @@ export async function requestWhatsAppOtp(mobileNumber: string): Promise<OtpReque
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'X-Portal-Key': SCALEEZY_PORTAL_KEY
       },
       body: JSON.stringify({
         mobile_number: normalized,
@@ -333,7 +325,6 @@ export async function verifyWhatsAppOtp(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'X-Portal-Key': SCALEEZY_PORTAL_KEY
       },
       body: JSON.stringify({
         mobile_number: normalized,
@@ -384,7 +375,6 @@ export async function fetchCustomerProfile(
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        'X-Portal-Key': SCALEEZY_PORTAL_KEY,
         Authorization: `Bearer ${token}`
       }
     });
@@ -419,7 +409,6 @@ export async function submitPortalCustomer(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'X-Portal-Key': SCALEEZY_PORTAL_KEY,
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
@@ -465,7 +454,6 @@ export async function submitPortalRequirement(
     const isFormData = requirement instanceof FormData;
     const headers: Record<string, string> = {
       Accept: 'application/json',
-      'X-Portal-Key': SCALEEZY_PORTAL_KEY,
       Authorization: `Bearer ${token}`
     };
     
