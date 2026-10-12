@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion, MotionValue, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { fabrics } from '../../data/catalog';
 import { ChapterMark } from '../ui/ChapterMark';
@@ -21,7 +21,7 @@ export function CraftSection() {
             <FabricLayer key={fabric.name} src={fabric.image} alt={fabric.name} index={i} progress={scrollYProgress} />
           ))}
         </motion.div>
-        <div className="absolute inset-0 bg-ink/55" />
+        <div className="absolute inset-0 bg-ink/50" />
 
         <div className="relative mx-auto grid h-full max-w-[1440px] grid-cols-1 items-center px-5 md:grid-cols-12 md:px-10">
           {/* Left Editorial Info & Fabric Story */}
@@ -33,18 +33,15 @@ export function CraftSection() {
               <em>the fabric.</em>
             </h2>
 
-            {/* Live Atelier Construction Stage Indicator */}
-            <AtelierStageIndicator progress={scrollYProgress} />
-
-            <div className="relative mt-10 h-16">
+            <div className="relative mt-12 h-16">
               {fabrics.map((fabric, i) => (
                 <FabricCaption key={fabric.name} name={fabric.name} origin={fabric.origin} index={i} progress={scrollYProgress} />
               ))}
             </div>
           </div>
 
-          {/* Right Haute Couture Lehanga Construction */}
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex w-full items-center justify-end opacity-50 sm:opacity-75 md:static md:col-span-6 md:h-full md:w-auto md:justify-center md:opacity-100">
+          {/* Right Haute Couture Lehanga Line Art */}
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex w-full items-center justify-end opacity-40 md:static md:col-span-5 md:col-start-8 md:h-full md:w-auto md:justify-center md:opacity-100">
             <LehengaConstruction progress={scrollYProgress} reduce={!!reduce} />
           </div>
         </div>
@@ -52,38 +49,12 @@ export function CraftSection() {
         {/* Closing Couture Quote */}
         <motion.p
           style={{ opacity: closing }}
-          className="absolute bottom-10 right-5 font-display text-lg italic text-ivory/90 md:right-10 tracking-wide"
+          className="absolute bottom-10 right-5 font-display text-lg italic text-ivory/90 md:right-10"
         >
-          — and the thread becomes a couture lehenga.
+          — and the thread becomes a lehenga.
         </motion.p>
       </div>
     </section>
-  );
-}
-
-function AtelierStageIndicator({ progress }: { progress: MotionValue<number> }) {
-  const [stage, setStage] = useState('I · Atelier Silhouette & Form');
-
-  useEffect(() => {
-    return progress.on('change', (v) => {
-      if (v < 0.24) setStage('I · Atelier Silhouette & Form');
-      else if (v < 0.44) setStage('II · Tailored Zardozi Choli');
-      else if (v < 0.64) setStage('III · Kalidar Umbrella Flare');
-      else if (v < 0.82) setStage('IV · Royal Gota & Latkan Tassels');
-      else setStage('V · Ethereal Dupatta & Zari Motifs');
-    });
-  }, [progress]);
-
-  const opacity = useTransform(progress, [0.04, 0.10], [0, 1]);
-
-  return (
-    <motion.div
-      style={{ opacity }}
-      className="mt-6 inline-flex items-center gap-2.5 rounded-full border border-ivory/15 bg-ink/40 backdrop-blur-xs px-3.5 py-1 text-[11px] uppercase tracking-[0.22em] text-ivory/80 shadow-xs"
-    >
-      <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#E5C158] animate-pulse" />
-      <span className="font-sans font-medium">{stage}</span>
-    </motion.div>
   );
 }
 
