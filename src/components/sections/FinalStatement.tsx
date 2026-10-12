@@ -6,7 +6,7 @@ import { DriftingMotif } from '../ui/DriftingMotif';
 
 export function FinalStatement() {
   return (
-    <section className="relative bg-ivory px-5 pb-32 pt-24 text-center md:px-10 md:pb-44 md:pt-32">
+    <section className="relative bg-ivory px-5 pb-20 pt-16 text-center md:px-10 md:pb-28 md:pt-24">
       <DriftingMotif motif="paisley" className="left-[-6%] top-[14%] w-[220px] md:left-[6%] md:w-[340px]" opacity={0.16} drift={100} spin={-12} />
       <DriftingMotif motif="peacock" tone="zari" className="right-[-6%] top-[26%] w-[200px] md:right-[8%] md:w-[320px]" opacity={0.32} drift={140} spin={10} />
       <DriftingMotif motif="kolam" className="bottom-[6%] left-[30%] hidden w-[160px] md:block" opacity={0.18} drift={50} spin={30} />

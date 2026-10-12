@@ -11,7 +11,7 @@ type StylingSectionProps = {
 
 export function StylingSection({ onBook }: StylingSectionProps) {
   return (
-    <section id="styling" className="relative bg-ivory px-5 py-28 md:px-10 md:py-44">
+    <section id="styling" className="relative bg-ivory px-5 py-16 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[52%] top-12 h-px w-px" />
       <DriftingMotif motif="needle" className="right-[4%] top-[8%] w-[200px] md:w-[300px]" opacity={0.2} drift={110} spin={10} />
       <DriftingMotif motif="lotus" tone="zari" className="bottom-[6%] right-[26%] hidden w-[220px] md:block" opacity={0.3} drift={70} sway={40} />

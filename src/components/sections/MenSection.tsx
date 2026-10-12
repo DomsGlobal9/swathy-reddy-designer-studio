@@ -6,7 +6,7 @@ import { RevealImage } from '../ui/RevealImage';
 
 export function MenSection() {
   return (
-    <section id="men" className="relative bg-ivory px-5 pb-24 pt-28 md:px-10 md:pb-40 md:pt-44">
+    <section id="men" className="relative bg-ivory px-5 py-16 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[40%] top-10 h-px w-px" />
       <DriftingMotif motif="paisley" className="-right-10 top-[6%] w-[220px] md:right-[2%] md:w-[340px]" opacity={0.14} drift={-120} spin={-10} />
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-16 md:grid-cols-12">

@@ -12,7 +12,7 @@ export function OccasionSection() {
   return (
     <section id="occasions" className="relative z-20 bg-ivory">
       <DriftingMotif motif="kolam" tone="zari" className="right-[8%] top-16 w-[160px] md:w-[240px]" opacity={0.35} drift={60} spin={30} />
-      <div className="relative mx-auto max-w-[1440px] px-5 pb-16 pt-28 md:px-10 md:pb-24 md:pt-40">
+      <div className="relative mx-auto max-w-[1440px] px-5 pb-12 pt-16 md:px-10 md:pb-16 md:pt-24">
         <FadeUp>
           <ChapterMark numeral="vi" label="Shop by occasion" />
           <h2 className="mt-6 font-display text-[2.8rem] leading-[1] tracking-[-0.02em] md:text-7xl">

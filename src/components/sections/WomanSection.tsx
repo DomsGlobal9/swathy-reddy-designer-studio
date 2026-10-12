@@ -6,7 +6,7 @@ import { RevealImage } from '../ui/RevealImage';
 
 export function WomanSection() {
   return (
-    <section id="about" className="relative bg-ivory px-5 pb-24 pt-28 md:px-10 md:pb-40 md:pt-44">
+    <section id="about" className="relative bg-ivory px-5 pb-16 pt-20 md:px-10 md:pb-24 md:pt-28">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[60%] top-10 h-px w-px" />
       <DriftingMotif motif="paisley" className="-left-10 top-[6%] w-[220px] md:left-[2%] md:w-[340px]" opacity={0.14} drift={120} spin={10} />
       <DriftingMotif motif="lotus" tone="zari" className="bottom-[4%] right-[38%] hidden w-[220px] md:block" opacity={0.28} drift={60} sway={30} />

@@ -28,7 +28,7 @@ export function CollectionGrid() {
   const allCollections = [...collections, ...additionalCollections];
 
   return (
-    <section id="collections" className="relative bg-ivory px-5 py-28 md:px-10 md:py-44">
+    <section id="collections" className="relative bg-ivory px-5 py-16 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-1/2 top-8 h-px w-px" />
       <DriftingMotif motif="kolam" className="right-[4%] top-[10%] w-[180px] md:w-[260px]" opacity={0.22} drift={100} spin={20} />
       <DriftingMotif motif="paisley" tone="zari" className="-left-16 top-[48%] hidden w-[320px] md:block" opacity={0.26} drift={160} spin={14} />
