@@ -21,7 +21,7 @@ export function Hero() {
 
 
   return (
-    <section id="top" ref={ref} className="relative h-[100svh] min-h-[620px] w-full overflow-hidden bg-paper">
+    <section id="top" ref={ref} className="relative h-[100svh] min-h-[580px] w-full overflow-hidden bg-paper">
       <motion.div
         style={reduce ? undefined : { y: imageY, scale: imageScale }}
         className="absolute inset-0 origin-top">
@@ -30,25 +30,28 @@ export function Hero() {
           src={images.hero}
           alt="An elegant Indian family celebrating at the temple in festive attire"
           fetchPriority="high"
-          className="h-full w-full object-cover object-[28%_top] md:object-[22%_top]" />
+          className="h-full w-full object-cover object-[32%_top] sm:object-[28%_top] md:object-[26%_top] lg:object-[22%_top]" />
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 md:bg-gradient-to-r md:from-transparent md:via-black/30 md:to-black/85" />
+        {/* Responsive gradient: bottom-to-top on mobile/tablet portrait, left-to-right on desktop */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/20 lg:bg-gradient-to-r lg:from-transparent lg:via-black/30 lg:to-black/85" />
       </motion.div>
 
       <DriftingMotif
         motif="jasmine"
         progress={scrollYProgress}
         drawRange={[0.02, 0.35]}
-        className="right-[3%] top-[10%] w-[180px] md:right-[6%] md:w-[280px]"
+        className="right-[3%] top-[12%] hidden sm:block w-[160px] md:w-[220px] lg:right-[6%] lg:w-[280px]"
         opacity={0.4}
         drift={-60}
         spin={8}
         strokeWidth={1.3} />
       
 
-      <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end pb-14 px-5 pt-24 md:justify-center md:px-10 md:pt-28 md:pb-16">
-        <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }} className="flex flex-col items-center text-center md:ml-auto md:items-end md:text-right md:translate-y-4">
-          <h1 className="font-display text-[16.5vw] leading-[0.94] tracking-[-0.03em] text-ivory md:text-[8.4vw]">
+      <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end pb-12 sm:pb-16 px-5 pt-20 lg:justify-center lg:px-10 lg:pt-28 lg:pb-16">
+        <motion.div
+          style={reduce ? undefined : { y: copyY, opacity: copyOpacity }}
+          className="flex flex-col items-center text-center lg:ml-auto lg:items-end lg:text-right lg:translate-y-4">
+          <h1 className="font-display text-[13vw] sm:text-[10vw] md:text-[8vw] lg:text-[6.5vw] xl:text-[7vw] leading-[0.94] tracking-[-0.03em] text-ivory">
             {lines.map((line, i) => (
               <span key={line.text} className="block overflow-hidden pt-[0.2em] -mt-[0.2em] pb-[0.6em] -mb-[0.6em] px-[0.4em] -mx-[0.4em]">
                 <motion.span
@@ -63,12 +66,12 @@ export function Hero() {
             ))}
           </h1>
           <motion.div
-            className="mt-8 flex flex-col items-center gap-6 md:items-end"
+            className="mt-6 sm:mt-8 flex flex-col items-center gap-5 sm:gap-6 lg:items-end"
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3, ease: 'easeOut', delay: 0.45 }}>
             
-            <p className="max-w-[17rem] text-[15px] leading-relaxed text-ivory/80 md:text-right">
+            <p className="max-w-[18rem] text-[14px] sm:text-[15px] leading-relaxed text-ivory/85 lg:text-right">
               Contemporary Indian fashion, chosen by hand in Hyderabad.
             </p>
             <ArrowLink href={shopHome()} tone="ivory" className="text-ivory">Explore collection</ArrowLink>

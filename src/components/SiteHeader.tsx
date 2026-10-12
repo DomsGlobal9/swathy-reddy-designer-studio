@@ -91,7 +91,7 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           </span>
         </button>
 
-        <nav aria-label="Primary" className="hidden items-center gap-10 md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-6 lg:flex xl:gap-10">
           {navigation.map((link) =>
           <button
             key={link.target}
@@ -105,21 +105,21 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           )}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <a
             href={shopHome()}
-            className={`hidden rounded-full px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] transition-colors duration-200 md:inline-flex ${scrolled ? 'bg-oxblood text-ivory hover:bg-ink' : 'bg-ivory text-ink hover:bg-oxblood hover:text-ivory shadow-lg'}`}>
+            className={`hidden sm:inline-flex rounded-full px-3.5 py-1.5 text-[10.5px] lg:text-[11px] font-medium uppercase tracking-[0.2em] transition-colors duration-200 ${scrolled ? 'bg-oxblood text-ivory hover:bg-ink' : 'bg-ivory text-ink hover:bg-oxblood hover:text-ivory shadow-lg'}`}>
             Shop online
           </a>
           <button
             type="button"
             onClick={onBook ?? (() => scrollToId('styling'))}
-            className={`hidden rounded-full border px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] transition-colors duration-200 md:inline-flex ${scrolled ? 'border-ink/25 text-ink hover:border-oxblood hover:bg-oxblood hover:text-ivory' : 'border-ivory/50 text-ivory hover:border-ivory hover:bg-ivory hover:text-ink shadow-sm drop-shadow-md'}`}>
+            className={`hidden md:inline-flex rounded-full border px-3.5 py-1.5 text-[10.5px] lg:text-[11px] font-medium uppercase tracking-[0.2em] transition-colors duration-200 ${scrolled ? 'border-ink/25 text-ink hover:border-oxblood hover:bg-oxblood hover:text-ivory' : 'border-ivory/50 text-ivory hover:border-ivory hover:bg-ivory hover:text-ink shadow-sm drop-shadow-md'}`}>
             Book an appointment
           </button>
           <button
             type="button"
-            className={`md:hidden transition-colors ${scrolled || menuOpen ? 'text-ink' : 'text-ivory drop-shadow-md'}`}
+            className={`lg:hidden transition-colors p-1 ${scrolled || menuOpen ? 'text-ink' : 'text-ivory drop-shadow-md'}`}
             aria-label="Toggle menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(!menuOpen)}>
@@ -136,7 +136,7 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="absolute inset-x-0 top-full z-30 flex flex-col border-t border-line bg-ivory/95 shadow-xl backdrop-blur-md md:hidden"
+          className="absolute inset-x-0 top-full z-30 flex flex-col border-t border-line bg-ivory/95 shadow-xl backdrop-blur-md lg:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Menu">
