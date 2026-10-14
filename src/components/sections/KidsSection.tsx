@@ -3,6 +3,7 @@ import { ChapterMark } from '../ui/ChapterMark';
 import { DriftingMotif } from '../ui/DriftingMotif';
 import { FadeUp } from '../ui/FadeUp';
 import { RevealImage } from '../ui/RevealImage';
+import { ArrowLink } from '../ui/ArrowLink';
 
 export function KidsSection() {
   return (
@@ -27,6 +28,9 @@ export function KidsSection() {
             <p className="mt-10 max-w-sm text-[15px] leading-relaxed text-stone">
               Joyful, vibrant, and perfectly tailored for the most active moments. Outfits designed for their first celebrations and biggest smiles.
             </p>
+          </FadeUp>
+          <FadeUp delay={0.15}>
+            <ArrowLink className="mt-10" href="/kids">Explore the collection</ArrowLink>
           </FadeUp>
         </div>
 

@@ -3,6 +3,7 @@ import { ChapterMark } from '../ui/ChapterMark';
 import { DriftingMotif } from '../ui/DriftingMotif';
 import { FadeUp } from '../ui/FadeUp';
 import { RevealImage } from '../ui/RevealImage';
+import { ArrowLink } from '../ui/ArrowLink';
 
 export function MenSection() {
   return (
@@ -41,6 +42,9 @@ export function MenSection() {
             <p className="mt-10 max-w-sm text-[15px] leading-relaxed text-stone">
               He appreciates the fine details. He dresses for the moments that matter, bringing understated elegance to every occasion.
             </p>
+          </FadeUp>
+          <FadeUp delay={0.15}>
+            <ArrowLink className="mt-10" href="/men">Explore the collection</ArrowLink>
           </FadeUp>
         </div>
       </div>
