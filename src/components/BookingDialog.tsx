@@ -1070,7 +1070,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           <p key={g.key}>
                             • <span className="text-ink font-medium">{garmentName(g.key)}</span>
                             {' · '}{g.fabric}
-                            {sizes > 0 && <> · {sizes} measurements</>}
+                            {sizes > 0 && <> · {sizes} {sizes === 1 ? 'measurement' : 'measurements'}</>}
                             {photos > 0 && <> · {photos} {photos === 1 ? 'photo' : 'photos'}</>}
                           </p>
                         );
