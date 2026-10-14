@@ -1,10 +1,8 @@
-import { shopHome } from '../../lib/shop';
 import { useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { occasions } from '../../data/story';
 import type { Occasion } from '../../types/catalog';
 import { ChapterMark } from '../ui/ChapterMark';
-import { ArrowLink } from '../ui/ArrowLink';
 import { FadeUp } from '../ui/FadeUp';
 import { DriftingMotif } from '../ui/DriftingMotif';
 
@@ -49,12 +47,7 @@ function OccasionPanel({ occasion }: {occasion: Occasion;}) {
         <h3 className="font-display text-[4.2rem] leading-[0.9] tracking-[-0.03em] text-ivory md:text-[9rem]">
           {occasion.name}
         </h3>
-        <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-sm text-[15px] leading-relaxed text-ivory/85">{occasion.description}</p>
-          <ArrowLink tone="ivory" href={shopHome()}>
-            Explore {occasion.name}
-          </ArrowLink>
-        </div>
+        <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-ivory/85">{occasion.description}</p>
       </div>
     </div>);
 
