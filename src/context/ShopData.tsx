@@ -17,9 +17,8 @@ import {
  *    one, which is what the designed placeholders would have been.
  *
  * 2. NOTHING TWICE. A saree, and a photograph, appears once on the whole page. The signature edit
- *    takes its pieces first; each collection then takes covers from pieces nobody has used yet --
- *    one for the grid and a DIFFERENT one for the scrolling showcase, which otherwise showed the
- *    same four photographs one screen apart. A piece that belongs to two collections (a silk saree
+ *    takes its pieces first; each collection then takes its cover (shown in the scrolling showcase)
+ *    from pieces nobody has used yet. A piece that belongs to two collections (a silk saree
  *    with zari work is both) is spent by whichever claims it first.
  */
 
@@ -138,18 +137,14 @@ export function ShopDataProvider({ children }: { children: React.ReactNode }) {
             .catch(() => [] as ShopProduct[])
         ));
 
-        /* Grid covers for every collection first, then the showcase's, so a small collection is
-           not left without a cover because a big one took two before it had one. */
-        const grid = pools.map(pool => takeCover(pool, ledger));
-        const showcase = pools.map(pool => takeCover(pool, ledger));
+        const covers = pools.map(pool => takeCover(pool, ledger));
 
         const collections: Collection[] = picks
           .map(({ kind, f }, i) => ({
             id: `${kind}-${f.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
             name: f.value,
             ...wordsFor(f.value, f.count),
-            image: grid[i] ?? '',
-            showcaseImage: showcase[i] ?? null,
+            image: covers[i] ?? '',
             pieces: f.count,
             href: listUrl({ [kind]: f.value })
           }))

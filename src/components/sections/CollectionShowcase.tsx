@@ -17,12 +17,10 @@ import { DriftingMotif } from '../ui/DriftingMotif';
 
 export function CollectionShowcase() {
   /*
-   * Only collections that have a photograph of their OWN here -- a different piece from the one the
-   * grid below uses. Fewer than two and the section steps aside rather than repeat a picture.
-   * Decided out here, because the body's scroll tracking needs its section to exist.
+   * Every collection with a cover (ShopData leaves out the ones without). Fewer than two and the
+   * section steps aside. Decided out here, because the body's scroll tracking needs its section to exist.
    */
-  const { collections: all, status } = useShopData();
-  const collections = all.filter(c => c.showcaseImage);
+  const { collections, status } = useShopData();
   if (status !== 'live' || collections.length < 2) return null;
   return <ShowcaseBody collections={collections} />;
 }
@@ -87,7 +85,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
               {collections.map((collection, i) =>
               <CollectionLayer
                 key={collection.id}
-                src={collection.showcaseImage as string}
+                src={collection.image}
                 alt={`${collection.name} collection`}
                 index={i}
                 count={collections.length}

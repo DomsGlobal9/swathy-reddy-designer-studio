@@ -11,7 +11,6 @@ import { StorySection } from '../components/sections/StorySection';
 import { CraftSection } from '../components/sections/CraftSection';
 import { WeaveBand } from '../components/sections/WeaveBand';
 import { CollectionShowcase } from '../components/sections/CollectionShowcase';
-import { CollectionGrid } from '../components/sections/CollectionGrid';
 import { SignatureEdit } from '../components/sections/SignatureEdit';
 import { ThreadJourney } from '../components/sections/ThreadJourney';
 import { OccasionSection } from '../components/sections/OccasionSection';
@@ -47,7 +46,6 @@ export function Home() {
         <WeaveBand />
         <CraftSection />
         <CollectionShowcase />
-        <CollectionGrid />
         <SignatureEdit wishlist={wishlist} onToggleSave={toggleWishlist} />
         <ThreadJourney />
         <OccasionSection />

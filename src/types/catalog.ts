@@ -5,8 +5,6 @@ export type Collection = {
   description: string;
   image: string;
   pieces: number;
-  /** A different photograph for the scrolling showcase, so the two sections never repeat one. */
-  showcaseImage?: string | null;
   /** Where Explore goes: this collection, filtered, on the real shop. */
   href: string;
 };
