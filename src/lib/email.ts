@@ -1,6 +1,7 @@
 import emailjs from '@emailjs/browser';
 import type { BoutiqueMeasurements, DressDetails } from '../types/booking';
 import { formatDressSummary, formatMeasurementsSummary } from './boutiqueLead';
+import { contact } from '../data/contact';
 
 /**
  * Configuration for EmailJS appointment booking.
@@ -129,13 +130,13 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
 
     return {
       success: false,
-      message: 'We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (+91 99888 77665) and we will immediately reserve your slot.'
+      message: `We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (${contact.phone}) and we will immediately reserve your slot.`
     };
   } catch (error: unknown) {
     console.error('[EmailJS] Booking request failed:', error);
     return {
       success: false,
-      message: 'We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (+91 99888 77665) and we will immediately reserve your slot.'
+      message: `We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (${contact.phone}) and we will immediately reserve your slot.`
     };
   }
 }

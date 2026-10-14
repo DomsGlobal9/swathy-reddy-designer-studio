@@ -54,7 +54,7 @@ export function Contact() {
             </motion.h1>
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
               <OpenNow />
-              <p className="text-[14px] text-ivory/80">{contact.street}, Hyderabad</p>
+              <p className="text-[14px] text-ivory/80">{contact.area}, Hyderabad</p>
             </div>
           </div>
         </section>
@@ -183,7 +183,7 @@ export function Contact() {
           </FadeUp>
         </section>
       </main>
-      <SiteFooter finale={false} />
+      <SiteFooter />
       <BookingDialog open={bookingOpen} onClose={closeBooking} />
     </div>
   );

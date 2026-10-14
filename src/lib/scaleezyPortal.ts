@@ -4,6 +4,7 @@ import type {
   PortalProduct,
   PortalRequirementPayload
 } from '../types/booking';
+import { contact } from '../data/contact';
 
 /**
  * Scaleezy Boutique CRM Customer Portal API Client
@@ -147,7 +148,7 @@ export function formatBoutiqueErrorMessage(
   }
 
   if (context === 'email') {
-    return 'We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (+91 99888 77665) and we will immediately reserve your slot.';
+    return `We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (${contact.phone}) and we will immediately reserve your slot.`;
   }
 
   return 'Our atelier concierge is momentarily taking a breath. Please try again in a moment or contact our studio directly.';

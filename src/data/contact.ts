@@ -4,22 +4,26 @@
  */
 export const contact = {
   name: 'Swathy Reddy Designer Studio',
-  street: 'Road No. 36, Jubilee Hills',
-  city: 'Hyderabad, Telangana 500033',
+  street: '4th Cross Road, Naveen Nagar',
+  area: 'Banjara Hills',
+  city: 'Banjara Hills, Hyderabad, Telangana 500034',
   email: 'label.swathyreddy12@gmail.com',
-  /** Digits with country code, e.g. '+91 98765 43210'. Call and WhatsApp buttons appear only once it is set. */
-  phone: '',
-  /** The street address only: searching the studio's name makes Google show nearby boutiques too. */
-  mapsQuery: 'Road No. 36, Jubilee Hills, Hyderabad, Telangana 500033'
+  /** With country code. Call and WhatsApp buttons appear only when it is set. */
+  phone: '+91 75690 60926',
+  /** The boutique's own Google listing ("Label Swathy Reddy"). */
+  mapsLink: 'https://maps.app.goo.gl/S86WdNa27eyp7WbG9',
+  /** The listing's exact pin, so the map shows the shop itself and not a search with other boutiques. */
+  lat: 17.4146531,
+  lng: 78.4512897
 };
 
-export const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.mapsQuery)}`;
-export const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(contact.mapsQuery)}&z=16&output=embed`;
+export const mapsUrl = contact.mapsLink;
+export const mapEmbedUrl = `https://www.google.com/maps?q=${contact.lat},${contact.lng}&z=17&output=embed`;
 export const phoneDigits = contact.phone.replace(/\D/g, '');
 
 /** Opening hours by JavaScript weekday (0 = Sunday), as [open, close] in 24-hour time; null = closed. */
 export const hours: (readonly [number, number] | null)[] = [
-  [11, 20], null, [11, 20], [11, 20], [11, 20], [11, 20], [11, 20]
+  null, [11, 20], [11, 20], [11, 20], [11, 20], [11, 20], [11, 20]
 ];
 export const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 

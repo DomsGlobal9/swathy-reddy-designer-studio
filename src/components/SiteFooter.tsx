@@ -1,11 +1,7 @@
 import { navigation } from '../data/story';
 import { scrollToId } from '../hooks/useSmoothScroll';
-import { contact } from '../data/contact';
-import { Instagram, Facebook, ArrowUpRightIcon } from 'lucide-react';
-import { images } from '../data/images';
-import { shopHome } from '../lib/shop';
-import { FadeUp } from './ui/FadeUp';
-import { DriftingMotif } from './ui/DriftingMotif';
+import { contact, phoneDigits } from '../data/contact';
+import { Instagram, Facebook } from 'lucide-react';
 
 function WhatsAppIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
@@ -24,46 +20,12 @@ function WhatsAppIcon({ className = 'h-4 w-4' }: { className?: string }) {
   );
 }
 
-/** `finale` opens the footer with the closing "Dress like yourself." band; off where a page ends with its own. */
-export function SiteFooter({ finale = true }: { finale?: boolean }) {
+export function SiteFooter() {
   const links = navigation;
 
   return (
-    <footer className="relative z-20 overflow-hidden bg-ink px-5 pb-10 pt-20 text-ivory md:px-10 md:pt-28">
-      {finale && (
-        <DriftingMotif motif="peacock" tone="zari" className="right-[-8%] top-[2%] w-[220px] md:right-[3%] md:w-[340px]" opacity={0.22} drift={90} spin={10} />
-      )}
-      <div className="relative mx-auto max-w-[1440px]">
-        {finale && (
-          <FadeUp className="mb-20 grid items-end gap-10 md:mb-28 md:grid-cols-12">
-            <div className="flex items-end gap-5 md:col-span-8 md:gap-8">
-              {/* Arched like the atelier's windows. */}
-              <div className="w-24 shrink-0 overflow-hidden rounded-t-full bg-ivory p-2 pb-0 sm:w-28 md:w-40">
-                <img
-                  src={images.sketchHer}
-                  alt="Ink sketch of a woman walking in a saree"
-                  loading="lazy"
-                  className="aspect-[3/4] w-full rounded-t-full object-cover mix-blend-multiply" />
-              </div>
-              <h2 className="font-display text-[2.7rem] leading-[0.92] tracking-[-0.03em] sm:text-[3.6rem] md:text-[6.2rem]">
-                Dress like
-                <br />
-                <em className="text-[#F9DE84]">yourself.</em>
-              </h2>
-            </div>
-            <div className="md:col-span-4 md:pb-3">
-              <p className="max-w-xs text-[15px] leading-relaxed text-ivory/70">
-                Discover pieces that become part of your story.
-              </p>
-              <a
-                href={shopHome()}
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-ivory px-6 py-3 text-[14px] font-medium text-ink transition-colors duration-200 hover:bg-[#F9DE84] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ivory">
-                Explore the collection
-                <ArrowUpRightIcon className="h-4 w-4" aria-hidden="true" />
-              </a>
-            </div>
-          </FadeUp>
-        )}
+    <footer className="relative z-20 bg-ink px-5 pb-10 pt-20 text-ivory md:px-10 md:pt-28">
+      <div className="mx-auto max-w-[1440px]">
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <img
@@ -114,7 +76,7 @@ export function SiteFooter({ finale = true }: { finale?: boolean }) {
                 <Facebook className="h-4 w-4" strokeWidth={1.5} />
               </a>
               <a
-                href="https://wa.me/?text=Hello%20Swathy%20Reddy%20Designer%20Studio"
+                href={`https://wa.me/${phoneDigits}?text=Hello%20Swathy%20Reddy%20Designer%20Studio`}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="WhatsApp"
@@ -130,7 +92,7 @@ export function SiteFooter({ finale = true }: { finale?: boolean }) {
             <p className="text-[14px] leading-relaxed text-ivory/80">
               {contact.street}
               <br />
-              Hyderabad, India
+              {contact.area}, Hyderabad
             </p>
             <a
               href={`mailto:${contact.email}`}
