@@ -130,20 +130,24 @@ export function Contact() {
               <p className="mt-5 text-[13px] text-stone">All times are Hyderabad time (IST).</p>
             </FadeUp>
 
-            <div className="relative min-h-[380px] overflow-hidden rounded-3xl bg-paper lg:col-span-7 lg:min-h-0">
+            <div className="relative min-h-[480px] overflow-hidden rounded-3xl bg-paper sm:min-h-[420px] lg:col-span-7 lg:min-h-0">
               <iframe
                 src={mapEmbedUrl}
                 title={`Map showing ${contact.name}, ${contact.street}`}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0 h-full w-full border-0 [filter:grayscale(1)_sepia(0.3)_contrast(0.92)]"
+                // Taller than its frame and shifted up, so Google's own place box (top left) is out of
+                // view; our card below offers the same link. The credits at the bottom stay visible.
+                className="absolute inset-x-0 -top-[140px] h-[calc(100%+140px)] w-full border-0 [filter:sepia(0.35)_saturate(1.25)_hue-rotate(-28deg)_contrast(0.95)_brightness(1.04)]"
               />
-              <div className="absolute bottom-4 left-4 right-4 max-w-sm rounded-2xl bg-ivory/95 p-5 shadow-[0_16px_40px_-12px_rgba(29,24,21,0.35)] backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-auto">
-                <p className="font-display text-xl">{contact.name}</p>
+              {/* Blush and gold wash in the brand colours. */}
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(107,28,34,0.10),rgba(160,124,59,0.10))] mix-blend-multiply" />
+              <div className="absolute bottom-4 left-4 right-4 max-w-sm rounded-2xl bg-ivory/95 p-4 shadow-[0_16px_40px_-12px_rgba(29,24,21,0.35)] backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-auto sm:p-5">
+                <p className="font-display text-lg sm:text-xl">{contact.name}</p>
                 <p className="mt-1 text-[13px] leading-relaxed text-stone">
                   {contact.street}, {contact.city}
                 </p>
-                <Pill className="mt-4" href={mapsUrl} external>Open in Google Maps</Pill>
+                <Pill className="mt-3 sm:mt-4" href={mapsUrl} external>Open in Google Maps</Pill>
               </div>
             </div>
           </div>
