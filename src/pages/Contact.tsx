@@ -11,7 +11,6 @@ import { DriftingMotif } from '../components/ui/DriftingMotif';
 import { images } from '../data/images';
 import { contact, dayNames, formatHour, hours, hyderabadNow, mapEmbedUrl, mapsUrl, phoneDigits } from '../data/contact';
 import { OpenNow } from '../components/ui/OpenNow';
-import { shopHome } from '../lib/shop';
 import { easeOut } from '../utils/format';
 
 const WEEK = [1, 2, 3, 4, 5, 6, 0]; // Monday first, as Indian calendars print it
@@ -33,7 +32,7 @@ export function Contact() {
   return (
     <div className="min-h-screen w-full bg-ivory font-sans text-ink">
       <SiteHeader onBook={openBooking} />
-      <main className="relative z-10 overflow-x-clip bg-ivory md:shadow-[0_40px_80px_-30px_rgba(0,0,0,0.55)]">
+      <main className="relative overflow-x-clip">
         {/* Hero */}
         <section className="relative flex min-h-[80svh] items-end overflow-hidden bg-ink">
           <img
@@ -154,35 +153,6 @@ export function Contact() {
           </div>
         </section>
 
-        {/* Closing invitation */}
-        <section className="relative overflow-hidden bg-ink px-5 py-24 text-ivory md:px-10 md:py-32">
-          <DriftingMotif motif="lotus" tone="zari" className="right-[4%] top-[10%] w-[200px] md:w-[320px]" opacity={0.28} drift={110} spin={14} />
-          <FadeUp className="relative mx-auto max-w-[1320px]">
-            <p className="font-display text-[2.8rem] leading-[0.98] tracking-[-0.02em] md:text-7xl">
-              Something special
-              <br />
-              <em>in mind?</em>
-            </p>
-            <p className="mt-6 max-w-md text-[15px] leading-relaxed text-ivory/75">
-              Tell us about the occasion and we will set aside time to design it with you, in the atelier or on a video call.
-            </p>
-            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-5">
-              <button
-                type="button"
-                onClick={openBooking}
-                className="inline-flex items-center gap-2 rounded-full bg-ivory px-7 py-3.5 text-[14px] font-medium text-ink transition-colors duration-200 hover:bg-[#F9DE84] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ivory">
-                Book a consultation
-                <ArrowUpRightIcon className="h-4 w-4" aria-hidden="true" />
-              </button>
-              <a
-                href={shopHome()}
-                className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-[14px] font-medium text-ivory shadow-[inset_0_0_0_1px_rgba(244,238,228,0.35)] transition-colors duration-200 hover:bg-ivory/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ivory">
-                Shop online
-                <ArrowUpRightIcon className="h-4 w-4" aria-hidden="true" />
-              </a>
-            </div>
-          </FadeUp>
-        </section>
       </main>
       <SiteFooter />
       <BookingDialog open={bookingOpen} onClose={closeBooking} />

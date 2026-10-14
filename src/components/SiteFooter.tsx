@@ -6,13 +6,9 @@ import { contact, mapsUrl, phoneDigits } from '../data/contact';
 import { shopHome } from '../lib/shop';
 import { OpenNow } from './ui/OpenNow';
 
-/**
- * The footer sits under the page (sticky, z-0) while <main> (z-10) scrolls off it like a curtain,
- * on desktop where the footer fits the screen.
- */
 export function SiteFooter() {
   return (
-    <footer className="relative z-0 overflow-hidden bg-ink text-ivory md:sticky md:bottom-0">
+    <footer className="relative overflow-hidden bg-ink text-ivory">
       {/* Warm glow from below, like lamplight on silk. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-[radial-gradient(60%_80%_at_50%_100%,rgba(201,164,92,0.22),transparent_70%)]" />
 
