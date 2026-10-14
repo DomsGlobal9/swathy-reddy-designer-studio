@@ -6,24 +6,25 @@ import { SiteHeader } from '../components/SiteHeader';
 import { SiteFooter } from '../components/SiteFooter';
 import { BookingDialog } from '../components/BookingDialog';
 import { ChapterMark } from '../components/ui/ChapterMark';
-import { images } from '../data/images';
 import { phoneDigits } from '../data/contact';
 import { shopHome } from '../lib/shop';
 import { easeOut } from '../utils/format';
 
 const COLLECTIONS = {
   men: {
-    label: "The men's edit",
-    image: images.menPortrait,
-    alt: 'Man in a tailored sherwani',
-    line: "We are cutting, draping and finishing the first pieces of our men's collection: sherwanis, kurtas and festive jackets made with the same care as everything in the atelier.",
+    label: 'The Heritage Collection',
+    image: '/men_coming_soon.jpg',
+    alt: 'Swathy Reddy Heritage Collection: a man in a black kurta set in a carved heritage interior',
+    position: 'object-center',
+    line: 'Ethnic wear for every story. Our first menswear, handcrafted kurta sets cut and finished in the atelier, arrives soon.',
     whatsapp: "Hello! Please let me know when the men's collection launches."
   },
   kids: {
-    label: "The kids' edit",
-    image: images.kidsPortrait,
-    alt: 'Child in festive wear',
-    line: "Little lehengas, kurtas and festive sets are on the cutting table now, in soft fabrics made for twirling, running and every first celebration.",
+    label: 'The Heritage Collection · Kids',
+    image: '/kids_coming_soon.jpg',
+    alt: 'Swathy Reddy Heritage Collection: a boy in a green kurta with a printed jacket and a girl in a floral lehenga',
+    position: 'object-center',
+    line: 'Little kurta sets and floral lehengas for every first celebration, handcrafted in the atelier, arrive soon.',
     whatsapp: "Hello! Please let me know when the kids' collection launches."
   }
 } as const;
@@ -50,14 +51,15 @@ export function ComingSoon({ collection }: { collection: ComingSoonCollection })
     <div className="min-h-screen w-full bg-ivory font-sans text-ink">
       <SiteHeader onBook={() => setBookingOpen(true)} />
       <main className="relative overflow-x-clip">
-        <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink">
-          <img src={c.image} alt={c.alt} className="absolute inset-0 h-full w-full object-cover object-top motion-safe:animate-kenburns" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/20" />
-          <div className="relative mx-auto w-full max-w-[1440px] px-5 pb-16 pt-32 md:px-10 md:pb-24">
+        <section className="relative overflow-hidden bg-ink">
+          {/* Warm lamplight behind the framed photo. */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_60%_at_75%_55%,rgba(201,164,92,0.20),transparent_70%)]" />
+          <div className="relative mx-auto grid min-h-[100svh] w-full max-w-[1440px] items-center gap-12 px-5 pb-16 pt-28 md:grid-cols-12 md:gap-10 md:px-10 md:pb-20 md:pt-32">
+            <div className="md:col-span-6">
             <motion.div {...rise(0)}>
               <ChapterMark label={c.label} tone="ivory" />
             </motion.div>
-            <motion.h1 {...rise(0.08)} className="mt-5 font-display text-[4rem] leading-[0.9] tracking-[-0.03em] text-ivory sm:text-[6rem] md:text-[9rem]">
+            <motion.h1 {...rise(0.08)} className="mt-5 font-display text-[4rem] leading-[0.9] tracking-[-0.03em] text-ivory sm:text-[6rem] md:text-[7rem] xl:text-[8.5rem]">
               Coming
               <br />
               <em className="text-[#F9DE84]">soon.</em>
@@ -85,6 +87,17 @@ export function ComingSoon({ collection }: { collection: ComingSoonCollection })
               <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
               Back to the home page
             </motion.a>
+            </div>
+            {/* The photo framed whole, never cropped: the men's poster carries its own lettering. */}
+            <motion.figure
+              initial={reduce ? false : { opacity: 0, scale: 0.96, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: easeOut, delay: 0.15 }}
+              className="md:col-span-6 md:col-start-7">
+              <div className="mx-auto aspect-[4/5] w-full max-w-[34rem] overflow-hidden rounded-sm shadow-[0_40px_80px_-30px_rgba(0,0,0,0.8)] md:max-h-[78svh] md:w-auto">
+                <img src={c.image} alt={c.alt} className={`h-full w-full object-cover ${c.position}`} />
+              </div>
+            </motion.figure>
           </div>
         </section>
       </main>
