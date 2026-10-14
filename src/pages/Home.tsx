@@ -42,7 +42,7 @@ export function Home() {
   return (
     <div className="min-h-screen w-full bg-ivory font-sans text-ink">
       <SiteHeader onBook={() => setBookingOpen(true)} />
-      <main ref={mainRef} className="relative overflow-x-clip">
+      <main ref={mainRef} className="relative z-10 overflow-x-clip bg-ivory md:shadow-[0_40px_80px_-30px_rgba(0,0,0,0.55)]">
         <ThreadOverlay containerRef={mainRef} />
         <Hero />
         <WomanSection />

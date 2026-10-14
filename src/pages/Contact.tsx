@@ -9,7 +9,8 @@ import { ChapterMark } from '../components/ui/ChapterMark';
 import { FadeUp } from '../components/ui/FadeUp';
 import { DriftingMotif } from '../components/ui/DriftingMotif';
 import { images } from '../data/images';
-import { contact, dayNames, formatHour, hours, hyderabadNow, mapEmbedUrl, mapsUrl, openStatus, phoneDigits } from '../data/contact';
+import { contact, dayNames, formatHour, hours, hyderabadNow, mapEmbedUrl, mapsUrl, phoneDigits } from '../data/contact';
+import { OpenNow } from '../components/ui/OpenNow';
 import { shopHome } from '../lib/shop';
 import { easeOut } from '../utils/format';
 
@@ -32,7 +33,7 @@ export function Contact() {
   return (
     <div className="min-h-screen w-full bg-ivory font-sans text-ink">
       <SiteHeader onBook={openBooking} />
-      <main className="relative overflow-x-clip">
+      <main className="relative z-10 overflow-x-clip bg-ivory md:shadow-[0_40px_80px_-30px_rgba(0,0,0,0.55)]">
         {/* Hero */}
         <section className="relative flex min-h-[80svh] items-end overflow-hidden bg-ink">
           <img
@@ -239,24 +240,6 @@ function CopyButton({ text }: { text: string }) {
       {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
       <span aria-live="polite">{copied ? 'Copied' : 'Copy'}</span>
     </button>
-  );
-}
-
-/** The live open/closed line, refreshed every minute. */
-function OpenNow() {
-  const [status, setStatus] = useState(() => openStatus());
-  useEffect(() => {
-    const t = setInterval(() => setStatus(openStatus()), 60_000);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <p className="inline-flex items-center gap-3 rounded-full border border-ivory/30 bg-ink/30 px-4 py-2 text-[12px] font-medium uppercase tracking-[0.18em] text-ivory backdrop-blur-sm">
-      <span className="relative flex h-2 w-2">
-        {status.open && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#9FD3A8] opacity-70 motion-reduce:animate-none" />}
-        <span className={`relative inline-flex h-2 w-2 rounded-full ${status.open ? 'bg-[#9FD3A8]' : 'bg-[#F9DE84]'}`} />
-      </span>
-      {status.text}
-    </p>
   );
 }
 
