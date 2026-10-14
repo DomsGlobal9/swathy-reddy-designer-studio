@@ -15,9 +15,7 @@ import { SignatureEdit } from '../components/sections/SignatureEdit';
 import { ThreadJourney } from '../components/sections/ThreadJourney';
 import { OccasionSection } from '../components/sections/OccasionSection';
 import { Lookbook } from '../components/sections/Lookbook';
-import { BoutiqueSection } from '../components/sections/BoutiqueSection';
 import { StylingSection } from '../components/sections/StylingSection';
-import { FinalStatement } from '../components/sections/FinalStatement';
 import { SiteFooter } from '../components/SiteFooter';
 import { BookingDialog } from '../components/BookingDialog';
 
@@ -58,9 +56,7 @@ export function Home() {
         <ThreadJourney />
         <OccasionSection />
         <Lookbook />
-        <BoutiqueSection />
         <StylingSection onBook={() => setBookingOpen(true)} />
-        <FinalStatement />
       </main>
       <SiteFooter />
       <BookingDialog open={bookingOpen} onClose={closeBooking} />

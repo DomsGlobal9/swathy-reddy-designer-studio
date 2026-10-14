@@ -6,7 +6,6 @@ export const navigation: NavLink[] = [
 { label: 'Men', target: 'men' },
 { label: 'Kids', target: 'kids' },
 { label: 'Lookbook', target: 'lookbook' },
-{ label: 'Boutique', target: 'boutique' },
 { label: 'Contact', target: '/contact' }];
 
 

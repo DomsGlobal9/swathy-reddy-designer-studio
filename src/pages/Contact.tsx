@@ -183,7 +183,7 @@ export function Contact() {
           </FadeUp>
         </section>
       </main>
-      <SiteFooter />
+      <SiteFooter finale={false} />
       <BookingDialog open={bookingOpen} onClose={closeBooking} />
     </div>
   );
