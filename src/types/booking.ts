@@ -143,5 +143,6 @@ export type PortalRequirementPayload = {
   notes?: string;
   reference_links?: string[];
   company_website?: string; // Honeypot (must be empty)
-  measurements?: Record<string, string>;
+  /** Inches, as numbers (the CRM checks each against its min and max). */
+  measurements?: Record<string, number>;
 };

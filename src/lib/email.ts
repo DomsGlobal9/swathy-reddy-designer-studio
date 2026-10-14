@@ -1,6 +1,6 @@
 import emailjs from '@emailjs/browser';
-import type { BoutiqueMeasurements, DressDetails } from '../types/booking';
-import { formatDressSummary, formatMeasurementsSummary } from './boutiqueLead';
+import type { DressDetails } from '../types/booking';
+import { formatDressSummary } from './boutiqueLead';
 import { contact } from '../data/contact';
 
 /**
@@ -27,8 +27,8 @@ export type BookingData = {
   date: string;
   mode: 'boutique' | 'video';
   notes?: string;
-  dress?: DressDetails;
-  measurements?: BoutiqueMeasurements;
+  /** One entry per garment; `measurements` is already written out, one size per line. */
+  outfits?: { dress: DressDetails; measurements: string }[];
 };
 
 export type BookingResult = {
@@ -66,8 +66,15 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
     : data.date;
 
   const modeLabel = data.mode === 'boutique' ? 'In the boutique' : 'Video call';
-  const dressSummary = formatDressSummary(data.dress);
-  const measurementsSummary = formatMeasurementsSummary(data.measurements);
+  const outfits = data.outfits ?? [];
+  const many = outfits.length > 1;
+  const heading = (i: number, name: string) => (many ? `Outfit ${i + 1}: ${name}\n` : '');
+  const dressSummary = outfits.length
+    ? outfits.map((o, i) => heading(i, o.dress.dressType) + formatDressSummary(o.dress)).join('\n\n')
+    : formatDressSummary(undefined);
+  const measurementsSummary = outfits.length
+    ? outfits.map((o, i) => heading(i, o.dress.dressType) + o.measurements).join('\n\n')
+    : 'To be taken at the boutique';
 
   const templateParams: Record<string, string> = {
     // Boutique / recipient email for delivery
@@ -95,7 +102,7 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
     notes: data.notes || '',
 
     // Dress & measurement specifics
-    dress_type: data.dress?.dressType || 'Not specified',
+    dress_type: outfits.map((o) => o.dress.dressType).join(', ') || 'Not specified',
     dress_summary: dressSummary,
     measurements_summary: measurementsSummary,
 
@@ -109,8 +116,8 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
       `Date: ${formattedDate} (${data.date})`,
       `Consultation Mode: ${modeLabel}`,
       data.notes ? `Styling Notes: ${data.notes}` : null,
-      data.dress?.dressType ? `\n--- DRESS & OUTFIT REQUEST ---\n${dressSummary}` : null,
-      data.measurements ? `\n--- BOUTIQUE MEASUREMENTS ---\n${measurementsSummary}` : null
+      outfits.length ? `\n--- DRESS & OUTFIT REQUEST (${outfits.length}) ---\n${dressSummary}` : null,
+      outfits.length ? `\n--- BOUTIQUE MEASUREMENTS ---\n${measurementsSummary}` : null
     ]
       .filter(Boolean)
       .join('\n')

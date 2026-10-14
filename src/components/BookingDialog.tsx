@@ -34,7 +34,6 @@ import {
 } from '../lib/scaleezyPortal';
 
 import type {
-  BoutiqueMeasurements,
   DressDetails,
   MeasurementUnit,
   PortalCustomerPayload,
@@ -65,19 +64,12 @@ type FormState = {
   preferredCommunication: 'WhatsApp' | 'Call' | 'Email';
   notes: string;
 
-  // Step 2: Dress & Outfit
-  dressType: string;
+  // Step 2: Dress & Outfit (one or more garments, each with its own details)
+  garments: Garment[];
   customDressName: string;
-  fabricPreference: string;
-  embroideryWork: string;
-  specialRequests: string;
 
-  // Step 3: Boutique Measurements (Dynamic)
+  // Step 3: Boutique Measurements (Dynamic, per garment)
   unit: MeasurementUnit;
-  dynamicMeasurements: Record<string, string>;
-  
-  // Photos (Dynamic)
-  photos: Record<string, File[]>;
   
   // General Notes
   additionalNotes: string;
@@ -85,6 +77,35 @@ type FormState = {
   // Honeypot
   companyWebsite: string;
 };
+
+/** One garment in the request. Each goes to the CRM as its own requirement, with its own sizes and photos. */
+type Garment = {
+  key: string;
+  fabric: string;
+  craft: string;
+  requests: string;
+  measurements: Record<string, string>;
+  photos: Record<string, File[]>;
+};
+
+const newGarment = (key: string): Garment => ({
+  key,
+  fabric: 'Pure Kanchipuram Silk',
+  craft: 'Maggam / Aari Hand Embroidery',
+  requests: '',
+  measurements: {},
+  photos: {}
+});
+
+/** The CRM takes inches; a value typed in cm is converted. Empty or non-numeric values are skipped. */
+function measurementsInInches(values: Record<string, string>, unit: MeasurementUnit): Record<string, number> | undefined {
+  const out: Record<string, number> = {};
+  for (const [key, raw] of Object.entries(values)) {
+    const n = parseFloat(raw);
+    if (Number.isFinite(n)) out[key] = Math.round((unit === 'cm' ? n / 2.54 : n) * 100) / 100;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
 
 type Errors = Partial<Record<'name' | 'phone' | 'email' | 'date', string>>;
 
@@ -102,16 +123,11 @@ const initialForm: FormState = {
   notes: '',
 
   // Dress & Outfit
-  dressType: '',
+  garments: [],
   customDressName: '',
-  fabricPreference: 'Pure Kanchipuram Silk',
-  embroideryWork: 'Maggam / Aari Hand Embroidery',
-  specialRequests: '',
 
   // Boutique Measurements
   unit: 'in',
-  dynamicMeasurements: {},
-  photos: {},
   additionalNotes: '',
 
   // Honeypot
@@ -440,6 +456,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [otpCode, setOtpCode] = useState('');
   const [otpCooldown, setOtpCooldown] = useState(0);
   const [otpStatus, setOtpStatus] = useState<'idle' | 'requesting' | 'verifying' | 'error'>('idle');
+  const [preparingPhotos, setPreparingPhotos] = useState(false);
   const [otpPurpose, setOtpPurpose] = useState<'autofill' | 'submit'>('submit');
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpNote, setOtpNote] = useState<string | null>(null);
@@ -450,8 +467,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // New Dynamic States
-  const [portalMeasurements, setPortalMeasurements] = useState<PortalMeasurementDef[]>([]);
-  const [portalParts, setPortalParts] = useState<PortalPartsResponse | null>(null);
+  // What the CRM asks for each garment, loaded once per garment key.
+  const [measureDefs, setMeasureDefs] = useState<Record<string, PortalMeasurementDef[]>>({});
+  const [partsByKey, setPartsByKey] = useState<Record<string, PortalPartsResponse | null>>({});
+  const requestedKeys = useRef(new Set<string>());
+  const [activeGarment, setActiveGarment] = useState<string | null>(null);
+  // A retry after a partial failure must not resend what the CRM already has.
+  const customerSaved = useRef(false);
+  const sentGarments = useRef(new Set<string>());
 
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const otpInputRef = useRef<HTMLInputElement>(null);
@@ -473,10 +496,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     fetchPortalProducts().then((res) => {
       if (res && res.length > 0) {
         setPortalProducts(res);
-        // Auto-select the first product if none selected
-        if (!form.dressType) {
-          setForm(prev => ({ ...prev, dressType: res[0].key }));
-        }
+        // Start with the first product picked, as before; more can be added.
+        setForm(prev => (prev.garments.length ? prev : { ...prev, garments: [newGarment(res[0].key)] }));
       }
     });
     
@@ -524,7 +545,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
         ...suggestedProfile,
         date: prev.date,
         occasion: prev.occasion,
-        dressType: prev.dressType,
+        garments: prev.garments,
         customDressName: prev.customDressName,
         mode: prev.mode
       }));
@@ -537,23 +558,34 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
       const existing = [...savedProfiles];
       const idx = existing.findIndex(p => p.phone === form.phone);
       if (idx >= 0) existing.splice(idx, 1);
-      existing.unshift({ ...form, dynamicMeasurements: {}, photos: {} }); // Add to front, clearing new ones
+      existing.unshift({ ...form, garments: [] }); // Add to front; garments, sizes and photos are per request
       const limited = existing.slice(0, 50); // keep last 50
       localStorage.setItem('atelier_saved_profiles', JSON.stringify(limited));
       setSavedProfiles(limited);
     } catch (e) {}
   };
 
-  // Fetch measurements and parts when dressType changes
+  // Load each picked garment's measurements and photo parts once.
   useEffect(() => {
-    if (form.dressType) {
-      fetchProductMeasurements(form.dressType).then(setPortalMeasurements);
-      fetchProductParts(form.dressType).then(setPortalParts);
-    } else {
-      setPortalMeasurements([]);
-      setPortalParts(null);
+    for (const g of form.garments) {
+      if (requestedKeys.current.has(g.key)) continue;
+      requestedKeys.current.add(g.key);
+      fetchProductMeasurements(g.key).then((list) => setMeasureDefs((d) => ({ ...d, [g.key]: list })));
+      fetchProductParts(g.key).then((parts) => setPartsByKey((d) => ({ ...d, [g.key]: parts })));
     }
-  }, [form.dressType]);
+  }, [form.garments]);
+
+  const garmentName = (key: string) => availableGarments.find((p) => p.key === key)?.name ?? key;
+  const toggleGarment = (key: string) =>
+    setForm((prev) => ({
+      ...prev,
+      garments: prev.garments.some((g) => g.key === key)
+        ? prev.garments.filter((g) => g.key !== key)
+        : [...prev.garments, newGarment(key)]
+    }));
+  const updateGarment = (key: string, patch: Partial<Garment>) =>
+    setForm((prev) => ({ ...prev, garments: prev.garments.map((g) => (g.key === key ? { ...g, ...patch } : g)) }));
+  const currentGarment = form.garments.find((g) => g.key === activeGarment) ?? form.garments[0];
 
   // Cooldown countdown timer for OTP resends
   useEffect(() => {
@@ -612,36 +644,22 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     return true;
   };
 
-  const buildDressDetails = (): DressDetails => ({
-    dressType: form.dressType,
-    customDressName: form.customDressName.trim() || undefined,
-    selectedProductCode: undefined, // removed feature
-    selectedProductTitle: undefined, // removed feature
-    fabricPreference: form.fabricPreference || undefined,
-    embroideryWork: form.embroideryWork || undefined,
-    specialRequests: form.specialRequests.trim() || undefined
-  });
-
-  const buildBoutiqueMeasurements = (): BoutiqueMeasurements => ({
-    unit: form.unit,
-    bust: form.dynamicMeasurements['bust'] || form.dynamicMeasurements['chest'] || undefined,
-    underBust: form.dynamicMeasurements['under_bust'] || undefined,
-    waist: form.dynamicMeasurements['waist'] || undefined,
-    hip: form.dynamicMeasurements['hip'] || undefined,
-    shoulder: form.dynamicMeasurements['shoulder'] || undefined,
-    blouseLength: form.dynamicMeasurements['blouse_length'] || undefined,
-    armhole: form.dynamicMeasurements['armhole'] || undefined,
-    sleeveLength: form.dynamicMeasurements['sleeve_length'] || undefined,
-    sleeveRound: form.dynamicMeasurements['sleeve_round'] || undefined,
-    frontNeckDepth: form.dynamicMeasurements['front_neck_depth'] || undefined,
-    backNeckDepth: form.dynamicMeasurements['back_neck_depth'] || undefined,
-    bottomLength: form.dynamicMeasurements['bottom_length'] || undefined,
-    waistToFloor: form.dynamicMeasurements['waist_to_floor'] || undefined,
-    fitPreference: 'standard', // not collected explicitly anymore unless added to dynamic
-    hasPadding: 'stylist-choice',
-    liningPreference: undefined,
-    additionalNotes: form.additionalNotes.trim() || undefined
-  });
+  /** Each garment as the email fallback lists it: details plus the sizes filled for it. */
+  const buildEmailOutfits = () =>
+    form.garments.map((g) => {
+      const defs = measureDefs[g.key] ?? [];
+      const sizes = defs
+        .filter((d) => (g.measurements[d.key] ?? '').trim())
+        .map((d) => `• ${d.label}: ${g.measurements[d.key].trim()} ${form.unit}`);
+      const dress: DressDetails = {
+        dressType: garmentName(g.key),
+        customDressName: form.customDressName.trim() || undefined,
+        fabricPreference: g.fabric || undefined,
+        embroideryWork: g.craft || undefined,
+        specialRequests: g.requests.trim() || undefined
+      };
+      return { dress, measurements: sizes.length ? sizes.join('\n') : 'To be taken at the boutique' };
+    });
 
   /* ── Trigger WhatsApp OTP Verification for Autofill ────────────────────────────── */
   const handleInitiateAutofill = async () => {
@@ -705,6 +723,15 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
   /* ── Confirm OTP ───────────────────────────────────────────────────────────────── */
   const handleConfirmOtpAndSubmit = async () => {
+    // A retry after a partial failure: the code is already used up, so reuse the token it gave.
+    // If that token has expired too, drop it so the next try verifies a fresh code.
+    if (otpPurpose === 'submit' && portalToken) {
+      setOtpStatus('verifying');
+      setOtpError(null);
+      if (!(await executeLeadSubmission(portalToken))) setPortalToken(null);
+      return;
+    }
+
     if (!otpCode.trim() || otpCode.trim().length !== 6) {
       setOtpError('Kindly enter the complete 6-digit code received on your WhatsApp.');
       return;
@@ -748,84 +775,91 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     await executeLeadSubmission(token);
   };
 
-  /* ── Execute the Final Lead Submissions (Customer + Requirement) ──────────────── */
-  const executeLeadSubmission = async (token: string) => {
-    // Split name
-    const nameParts = form.name.trim().split(/\s+/);
-    const firstName = nameParts[0] || 'Client';
-    const lastName = nameParts.slice(1).join(' ') || '';
-
-    // 3. Customer Submission (POST /intake/customer/)
-    const customerPayload: PortalCustomerPayload = {
-      first_name: firstName,
-      last_name: lastName || undefined,
-      email_address: form.email.trim() || undefined,
-      city_region: form.city.trim() || 'Hyderabad',
-      preferred_communication: form.preferredCommunication,
-      company_website: '' // Honeypot
-    };
-
-    const customerRes = await submitPortalCustomer(token, customerPayload);
-    if (!customerRes.success) {
-      setOtpStatus('error');
-      setOtpError(formatBoutiqueErrorMessage(customerRes.message, 'customer'));
-      return;
+  /* ── Execute the Final Lead Submissions (Customer + one Requirement per garment) ── */
+  /** Returns whether everything reached the CRM. */
+  const executeLeadSubmission = async (token: string): Promise<boolean> => {
+    // 3. Customer Submission (POST /intake/customer/) -- once: it uses up the token for details.
+    if (!customerSaved.current) {
+      const nameParts = form.name.trim().split(/\s+/);
+      const customerPayload: PortalCustomerPayload = {
+        first_name: nameParts[0] || 'Client',
+        last_name: nameParts.slice(1).join(' ') || undefined,
+        email_address: form.email.trim() || undefined,
+        city_region: form.city.trim() || 'Hyderabad',
+        preferred_communication: form.preferredCommunication,
+        company_website: '' // Honeypot
+      };
+      const customerRes = await submitPortalCustomer(token, customerPayload);
+      if (!customerRes.success) {
+        setOtpStatus('error');
+        setOtpError(formatBoutiqueErrorMessage(customerRes.message, 'customer'));
+        return false;
+      }
+      customerSaved.current = true;
     }
 
-    // 4. Product Requirement Submission (POST /intake/customer/product/)
-    const hasPhotos = Object.values(form.photos).some(files => files.length > 0);
-    const measurementsPayload = Object.keys(form.dynamicMeasurements).length > 0 ? form.dynamicMeasurements : undefined;
-    
-    let payload: PortalRequirementPayload | FormData;
-    const customReqNotes = [
-      form.customDressName ? `Design: ${form.customDressName}` : null,
-      form.additionalNotes ? `Notes: ${form.additionalNotes}` : null
-    ].filter(Boolean).join(' | ');
+    // 4. Requirement Submissions (POST /intake/customer/product/), one per garment; the same token
+    // is accepted for all of them within its 15 minutes. No garment picked = one general enquiry.
+    const pieces: (Garment | null)[] = form.garments.length ? form.garments : [null];
+    const appointment = `Appointment: ${form.date} (${form.mode === 'boutique' ? 'In Boutique' : 'Video'}).`;
+    for (const [i, g] of pieces.entries()) {
+      const id = g?.key ?? '_general';
+      if (sentGarments.current.has(id)) continue;
 
-    if (hasPhotos) {
-      const fd = new FormData();
-      if (form.dressType) fd.append('garment_type', form.dressType);
-      fd.append('occasion', form.occasion);
-      if (form.embroideryWork) fd.append('embellishments', form.embroideryWork);
-      if (form.fabricPreference) fd.append('pattern_style', form.fabricPreference);
-      fd.append('notes', `Appointment: ${form.date} (${form.mode === 'boutique' ? 'In Boutique' : 'Video'}). ${form.notes || ''}`.trim().slice(0, 500));
-      
-      if (customReqNotes) fd.append('custom_requirements', customReqNotes.slice(0, 500));
-      
-      if (measurementsPayload) {
-        // Must send as JSON string when multipart
-        fd.append('measurements', JSON.stringify(measurementsPayload));
+      const notes = [appointment, pieces.length > 1 ? `Outfit ${i + 1} of ${pieces.length}.` : '', form.notes.trim()]
+        .filter(Boolean).join(' ').slice(0, 500);
+      const custom = [
+        g?.requests.trim() ? `Design: ${g.requests.trim()}` : null,
+        form.customDressName ? `Style: ${form.customDressName}` : null,
+        form.additionalNotes ? `Notes: ${form.additionalNotes}` : null
+      ].filter(Boolean).join(' | ').slice(0, 500);
+      const measurements = g ? measurementsInInches(g.measurements, form.unit) : undefined;
+      const hasPhotos = !!g && Object.values(g.photos).some((files) => files.length > 0);
+
+      let payload: PortalRequirementPayload | FormData;
+      if (g && hasPhotos) {
+        const fd = new FormData();
+        fd.append('garment_type', g.key);
+        fd.append('occasion', form.occasion);
+        if (g.craft) fd.append('embellishments', g.craft);
+        if (g.fabric) fd.append('pattern_style', g.fabric);
+        fd.append('notes', notes);
+        if (custom) fd.append('custom_requirements', custom);
+        if (measurements) fd.append('measurements', JSON.stringify(measurements)); // JSON text in multipart
+        setPreparingPhotos(true);
+        const photos = await shrinkPhotos(g.photos).finally(() => setPreparingPhotos(false));
+        Object.entries(photos).forEach(([partKey, files]) => files.forEach((file) => fd.append(`images[${partKey}]`, file)));
+        payload = fd;
+      } else {
+        payload = {
+          garment_type: g?.key,
+          occasion: form.occasion,
+          embellishments: g?.craft || undefined,
+          pattern_style: g?.fabric || undefined,
+          custom_requirements: custom || undefined,
+          notes,
+          measurements
+        };
       }
 
-      Object.entries(await shrinkPhotos(form.photos)).forEach(([partKey, files]) => {
-        files.forEach(file => {
-          fd.append(`images[${partKey}]`, file);
-        });
-      });
-      payload = fd;
-    } else {
-      payload = {
-        garment_type: form.dressType || undefined,
-        occasion: form.occasion,
-        embellishments: form.embroideryWork || undefined,
-        pattern_style: form.fabricPreference || undefined,
-        custom_requirements: customReqNotes.slice(0, 500) || undefined,
-        notes: `Appointment: ${form.date} (${form.mode === 'boutique' ? 'In Boutique' : 'Video'}). ${form.notes || ''}`.trim().slice(0, 500),
-        measurements: measurementsPayload
-      };
-    }
-
-    const reqRes = await submitPortalRequirement(token, payload);
-    if (!reqRes.success) {
-      setOtpStatus('error');
-      setOtpError(formatBoutiqueErrorMessage(reqRes.message, 'requirement'));
-      return;
+      const reqRes = await submitPortalRequirement(token, payload);
+      if (!reqRes.success) {
+        const received = pieces.filter((x) => x && sentGarments.current.has(x.key)).map((x) => garmentName(x!.key));
+        setOtpStatus('error');
+        setOtpError(
+          formatBoutiqueErrorMessage(reqRes.message, 'requirement') +
+          (received.length ? ` Your ${received.join(', ')} ${received.length === 1 ? 'request has' : 'requests have'} already reached us.` : '')
+        );
+        return false;
+      }
+      sentGarments.current.add(id);
     }
 
     // Success!
     saveProfileToLocal();
     setOtpModalOpen(false);
     setSubmissionSuccessType('lead');
+    return true;
   };
 
   /* ── ACTION 2: Send as Email (Existing flow via EmailJS) ─────────────────────────── */
@@ -835,9 +869,6 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     setSubmittingAction('email');
     setSubmitError(null);
 
-    const dress = buildDressDetails();
-    const measurements = buildBoutiqueMeasurements();
-
     const result = await sendAppointmentEmail({
       name: form.name.trim(),
       phone: form.phone.trim(),
@@ -845,9 +876,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
       occasion: form.occasion,
       date: form.date,
       mode: form.mode,
-      notes: form.notes.trim() || undefined,
-      dress,
-      measurements
+      notes: [form.notes.trim(), form.additionalNotes.trim() && `Tailoring notes: ${form.additionalNotes.trim()}`].filter(Boolean).join('\n') || undefined,
+      outfits: buildEmailOutfits()
     });
 
     if (result.success) {
@@ -882,6 +912,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     setSubmittingAction(null);
     setSubmissionSuccessType(null);
     setSubmitError(null);
+    setActiveGarment(null);
+    customerSaved.current = false;
+    sentGarments.current.clear();
   };
 
   const fieldCls =
@@ -949,16 +982,16 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         key={tab.id}
                         type="button"
                         onClick={() => switchTab(tab.id as any)}
-                        className={`group relative flex items-center gap-2 py-1 px-2.5 text-left transition-all rounded-xs ${
+                        className={`group relative flex items-center gap-1.5 py-1 px-1 text-left transition-all rounded-xs sm:gap-2 sm:px-2.5 ${
                           isActive
                             ? 'text-ink font-semibold'
                             : 'text-stone/60 hover:text-ink'
                         }`}
                       >
-                        <span className={`text-[10px] font-mono tracking-wider ${isActive ? 'text-oxblood font-bold' : 'text-stone/60'}`}>
+                        <span className={`hidden text-[10px] font-mono tracking-wider sm:inline ${isActive ? 'text-oxblood font-bold' : 'text-stone/60'}`}>
                           {tab.step}
                         </span>
-                        <span className="text-[11px] uppercase tracking-[0.16em]">
+                        <span className="whitespace-nowrap text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.16em]">
                           {tab.title}
                         </span>
                         {isActive && (
@@ -1010,7 +1043,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
                     <p className="mt-4 text-[14px] leading-relaxed text-ink">
                       Dear <strong className="font-semibold text-oxblood">{form.name.split(' ')[0]}</strong>, your custom requirement for{' '}
-                      <strong className="font-semibold">{form.dressType}</strong> ({form.occasion.toLowerCase()}) has been recorded for a{' '}
+                      <strong className="font-semibold">
+                        {form.garments.length ? form.garments.map((g) => garmentName(g.key)).join(', ') : 'your outfit'}
+                      </strong>{' '}
+                      ({form.occasion.toLowerCase()}) has been recorded for a{' '}
                       <strong>{form.mode === 'boutique' ? 'boutique consultation' : 'video session'}</strong> on{' '}
                       <strong>
                         {form.date
@@ -1027,11 +1063,18 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                     <div className="mt-4 pt-3.5 border-t border-ink/10 text-[12.5px] text-stone space-y-1.5">
                       <p>• Verified WhatsApp: <span className="text-ink font-medium">+91 {normalizeIndianMobile(form.phone)}</span></p>
                       {form.email && <p>• Client Email: <span className="text-ink font-medium">{form.email}</span></p>}
-                      <p>• Garment Type: <span className="text-ink font-medium">{form.dressType}</span></p>
-                      {form.fabricPreference && <p>• Preferred Fabric: <span className="text-ink font-medium">{form.fabricPreference}</span></p>}
-                      {Object.keys(form.dynamicMeasurements).length > 0 && (
-                        <p>• Measurements: <span className="text-ink font-medium">{Object.keys(form.dynamicMeasurements).length} recorded ({form.unit})</span></p>
-                      )}
+                      {form.garments.map((g) => {
+                        const sizes = Object.values(g.measurements).filter((v) => v.trim()).length;
+                        const photos = Object.values(g.photos).reduce((n, f) => n + f.length, 0);
+                        return (
+                          <p key={g.key}>
+                            • <span className="text-ink font-medium">{garmentName(g.key)}</span>
+                            {' · '}{g.fabric}
+                            {sizes > 0 && <> · {sizes} measurements</>}
+                            {photos > 0 && <> · {photos} {photos === 1 ? 'photo' : 'photos'}</>}
+                          </p>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1309,70 +1352,90 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       <div>
                         <div className="flex items-baseline justify-between mb-2">
                           <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">
-                            Select Silhouette / Garment
+                            Select Garments
                           </span>
-                          <span className="text-[11px] font-semibold text-oxblood italic">
-                            {form.dressType}
+                          <span className="text-[11px] font-semibold text-oxblood">
+                            {form.garments.length === 0 ? 'Pick one or more' : `${form.garments.length} selected`}
                           </span>
                         </div>
+                        <p className="mb-3 text-[12px] text-stone">Tap every piece you would like made. Each gets its own details and measurements.</p>
 
                         <div className="flex flex-wrap gap-2">
                           {availableGarments.map((product) => {
-                            const isSelected = form.dressType === product.key;
+                            const isSelected = form.garments.some((g) => g.key === product.key);
                             return (
                               <button
                                 key={product.key}
                                 type="button"
-                                onClick={() => update('dressType', product.key)}
-                                className={`px-3.5 py-2 text-[12px] uppercase tracking-[0.14em] transition-all rounded-xs border ${
+                                aria-pressed={isSelected}
+                                onClick={() => toggleGarment(product.key)}
+                                className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-[12px] uppercase tracking-[0.14em] transition-all rounded-xs border ${
                                   isSelected
                                     ? 'border-ink bg-ink text-ivory font-medium shadow-xs ring-1 ring-zari/40'
                                     : 'border-ink/15 bg-paper/30 text-ink hover:border-ink hover:bg-paper/70'
                                 }`}
                               >
+                                {isSelected && <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />}
                                 {product.name}
                               </button>
                             );
                           })}
                         </div>
+                      </div>
 
-                        <p className="mt-2 text-[11px] text-stone italic">
-                          {getGarmentDescription(form.dressType)}
+                      {/* One card per picked garment: its fabric, craft and design notes */}
+                      {form.garments.length === 0 ? (
+                        <p className="rounded-sm bg-paper/40 px-4 py-3 text-[13px] text-stone">
+                          Not sure yet? That is fine. Leave this empty and we will plan the outfit with you at the consultation.
                         </p>
-                      </div>
-
-
-
-                      {/* Fabric & Handcraft */}
-                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                        <LuxurySelect
-                          label="Preferred Fabric"
-                          value={form.fabricPreference}
-                          onChange={(val) => update('fabricPreference', val)}
-                          options={fabricOptions}
-                        />
-
-                        <LuxurySelect
-                          label="Craft & Embellishment"
-                          value={form.embroideryWork}
-                          onChange={(val) => update('embroideryWork', val)}
-                          options={embroideryOptions}
-                        />
-                      </div>
-
-                      {/* Custom Silhouette Notes */}
-                      <label className="block">
-                        <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">
-                          Specific Silhouette & Design Requests (Optional)
-                        </span>
-                        <input
-                          type="text"
-                          value={form.specialRequests}
-                          onChange={(e) => update('specialRequests', e.target.value)}
-                          className={fieldCls}
-                          placeholder="e.g. Boat neck front, deep V back, elbow sleeve length with hand zardozi work"
-                        />
-                      </label>
+                      ) : (
+                        <div className="space-y-3">
+                          {form.garments.map((g) => (
+                            <div key={g.key} className="rounded-xl bg-paper/45 p-4 sm:p-5">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="font-display text-[19px] leading-tight text-ink">{garmentName(g.key)}</p>
+                                  <p className="mt-0.5 text-[11px] italic text-stone">{getGarmentDescription(garmentName(g.key))}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleGarment(g.key)}
+                                  aria-label={`Remove ${garmentName(g.key)}`}
+                                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stone transition-colors hover:bg-ink/5 hover:text-ink"
+                                >
+                                  <XIcon className="h-4 w-4" strokeWidth={1.5} />
+                                </button>
+                              </div>
+                              <div className="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                <LuxurySelect
+                                  label="Preferred Fabric"
+                                  value={g.fabric}
+                                  onChange={(val) => updateGarment(g.key, { fabric: val })}
+                                  options={fabricOptions}
+                                />
+                                <LuxurySelect
+                                  label="Craft & Embellishment"
+                                  value={g.craft}
+                                  onChange={(val) => updateGarment(g.key, { craft: val })}
+                                  options={embroideryOptions}
+                                />
+                              </div>
+                              <label className="mt-4 block">
+                                <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">
+                                  Design Requests (Optional)
+                                </span>
+                                <input
+                                  type="text"
+                                  value={g.requests}
+                                  onChange={(e) => updateGarment(g.key, { requests: e.target.value })}
+                                  className={fieldCls}
+                                  placeholder="e.g. Boat neck front, deep V back, elbow sleeve length with hand zardozi work"
+                                />
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </motion.div>
                   )}
 
@@ -1416,25 +1479,48 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         </div>
                       </div>
 
-                      {/* Dynamic Measurements */}
-                      {portalMeasurements.length > 0 && (
+                      {/* One tab per garment: each has its own measurements and photo parts */}
+                      {form.garments.length > 1 && (
+                        <div role="tablist" aria-label="Garment" className="flex flex-wrap gap-2">
+                          {form.garments.map((g) => {
+                            const isActive = g.key === currentGarment?.key;
+                            const filled = Object.values(g.measurements).some((v) => v.trim()) || Object.values(g.photos).some((f) => f.length > 0);
+                            return (
+                              <button
+                                key={g.key}
+                                type="button"
+                                role="tab"
+                                aria-selected={isActive}
+                                onClick={() => setActiveGarment(g.key)}
+                                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium transition-colors ${
+                                  isActive ? 'bg-oxblood text-ivory' : 'bg-paper/50 text-ink hover:bg-paper'
+                                }`}
+                              >
+                                {garmentName(g.key)}
+                                {filled && <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-ivory' : 'bg-oxblood'}`} aria-label="has details" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {currentGarment && (measureDefs[currentGarment.key]?.length ?? 0) > 0 && (
                         <div>
                           <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium block mb-3">
-                            Essential Measurements ({form.unit})
+                            {garmentName(currentGarment.key)} Measurements ({form.unit})
                           </span>
                           <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
-                            {portalMeasurements.map(measure => (
+                            {measureDefs[currentGarment.key].map(measure => (
                               <label key={measure.key} className="block">
                                 <span className="text-[10px] uppercase tracking-[0.16em] text-stone font-medium">{measure.label}</span>
                                 <div className="relative mt-1">
                                   <input
                                     type="text"
-                                    value={form.dynamicMeasurements[measure.key] || ''}
-                                    onChange={(e) => {
-                                      const newMeasurements = { ...form.dynamicMeasurements };
-                                      newMeasurements[measure.key] = e.target.value;
-                                      update('dynamicMeasurements', newMeasurements);
-                                    }}
+                                    inputMode="decimal"
+                                    value={currentGarment.measurements[measure.key] || ''}
+                                    onChange={(e) => updateGarment(currentGarment.key, {
+                                      measurements: { ...currentGarment.measurements, [measure.key]: e.target.value }
+                                    })}
                                     className="w-full border-b border-ink/25 bg-transparent py-1.5 pr-6 text-[14px] text-ink font-medium outline-none focus:border-ink placeholder:text-stone/40"
                                     placeholder={form.unit === 'in' ? String(measure.min || 0) : String((measure.min || 0) * 2.54)}
                                   />
@@ -1446,13 +1532,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         </div>
                       )}
 
-                      {/* Photo Uploads for Parts */}
-                      {portalParts && portalParts.parts.length > 0 && (
+                      {/* Photo Uploads for this garment's parts */}
+                      {currentGarment && partsByKey[currentGarment.key] && partsByKey[currentGarment.key]!.parts.length > 0 && (
                         <DesignPhotos
-                          parts={portalParts.parts}
-                          maxPhotos={portalParts.max_photos}
-                          photos={form.photos}
-                          onChange={(photos) => update('photos', photos)}
+                          key={currentGarment.key}
+                          parts={partsByKey[currentGarment.key]!.parts}
+                          maxPhotos={partsByKey[currentGarment.key]!.max_photos}
+                          photos={currentGarment.photos}
+                          onChange={(photos) => updateGarment(currentGarment.key, { photos })}
                         />
                       )}
 
@@ -1699,7 +1786,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       {otpStatus === 'verifying' ? (
                         <>
                           <Loader2Icon className="h-4 w-4 animate-spin text-ivory" />
-                          <span>Verifying & Recording…</span>
+                          <span>{preparingPhotos ? 'Preparing photos…' : 'Verifying & Recording…'}</span>
                         </>
                       ) : (
                         <span>Verify & Submit to CRM</span>
