@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { useSmoothScroll } from '../hooks/useSmoothScroll';
+import { scrollToId, useSmoothScroll } from '../hooks/useSmoothScroll';
 import { SiteHeader } from '../components/SiteHeader';
 import { ThreadOverlay } from '../components/ThreadOverlay';
 import { Hero } from '../components/sections/Hero';
@@ -32,6 +32,14 @@ export function Home() {
     setWishlist((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }, []);
   const closeBooking = useCallback(() => setBookingOpen(false), []);
+
+  // Arriving from another page's menu (/#men): land on that section once the page has laid out.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    const t = setTimeout(() => scrollToId(id), 500);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className="min-h-screen w-full bg-ivory font-sans text-ink">

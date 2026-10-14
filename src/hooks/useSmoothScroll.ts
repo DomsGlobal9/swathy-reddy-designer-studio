@@ -27,8 +27,17 @@ export function useSmoothScroll(enabled: boolean) {
 }
 
 export function scrollToId(id: string) {
+  // A path ('/contact') is another page, not a section.
+  if (id.startsWith('/')) {
+    window.location.href = id;
+    return;
+  }
   const el = document.getElementById(id);
-  if (!el) return;
+  if (!el) {
+    // On another page the home page's sections are not here: go home and land on the section.
+    if (window.location.pathname !== '/') window.location.href = `/#${id}`;
+    return;
+  }
   if (instance) {
     // 0 offset ensures the section aligns perfectly with the top of the screen, utilizing its own built-in padding
     instance.scrollTo(el, { offset: 0 });

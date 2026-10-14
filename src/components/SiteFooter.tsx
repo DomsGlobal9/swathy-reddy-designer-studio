@@ -1,5 +1,6 @@
 import { navigation } from '../data/story';
 import { scrollToId } from '../hooks/useSmoothScroll';
+import { contact } from '../data/contact';
 import { Instagram, Facebook } from 'lucide-react';
 
 function WhatsAppIcon({ className = 'h-4 w-4' }: { className?: string }) {
@@ -20,7 +21,7 @@ function WhatsAppIcon({ className = 'h-4 w-4' }: { className?: string }) {
 }
 
 export function SiteFooter() {
-  const links = [...navigation, { label: 'Contact', target: 'boutique' }];
+  const links = navigation;
 
   return (
     <footer className="relative z-20 bg-ink px-5 pb-10 pt-20 text-ivory md:px-10 md:pt-28">
@@ -89,15 +90,15 @@ export function SiteFooter() {
           <div className="flex flex-col gap-2">
             <span className="text-[12px] uppercase tracking-[0.2em] text-ivory/60">Atelier</span>
             <p className="text-[14px] leading-relaxed text-ivory/80">
-              Road No. 36, Jubilee Hills
+              {contact.street}
               <br />
               Hyderabad, India
             </p>
             <a
-              href="mailto:label.swathyreddy12@gmail.com"
+              href={`mailto:${contact.email}`}
               className="mt-1 text-[13px] text-ivory/70 transition-colors hover:text-ivory hover:underline"
             >
-              label.swathyreddy12@gmail.com
+              {contact.email}
             </a>
           </div>
 
