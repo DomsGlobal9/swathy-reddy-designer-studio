@@ -26,7 +26,7 @@ export function MenSection() {
 
         <div className="md:col-span-5 md:col-start-8">
           <FadeUp>
-            <ChapterMark numeral="ii" label="The man" />
+            <ChapterMark label="The man" />
           </FadeUp>
           <FadeUp delay={0.05}>
             <h2 className="mt-8 font-display text-[2.9rem] leading-[1] tracking-[-0.02em] md:text-[4.6rem]">

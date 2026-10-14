@@ -13,7 +13,7 @@ export function WomanSection() {
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-16 md:grid-cols-12">
         <div className="md:col-span-6">
           <FadeUp>
-            <ChapterMark numeral="i" label="The woman" />
+            <ChapterMark label="The woman" />
           </FadeUp>
           <FadeUp delay={0.05}>
             <h2 className="mt-8 font-display text-[2.9rem] leading-[1] tracking-[-0.02em] md:text-[4.6rem]">

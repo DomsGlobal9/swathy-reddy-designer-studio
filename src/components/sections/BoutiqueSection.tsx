@@ -1,6 +1,7 @@
 import { images } from '../../data/images';
 import { ChapterMark } from '../ui/ChapterMark';
 import { ArrowLink } from '../ui/ArrowLink';
+import { contact, mapsUrl, phoneDigits } from '../../data/contact';
 
 export function BoutiqueSection() {
   return (
@@ -13,7 +14,7 @@ export function BoutiqueSection() {
       
       <div className="absolute inset-0 bg-ink/45" />
       <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end px-5 pb-14 md:px-10 md:pb-20">
-        <ChapterMark numeral="vii" label="The boutique" tone="ivory" />
+        <ChapterMark label="The boutique" tone="ivory" />
         <h2 className="mt-6 font-display text-[3rem] leading-[0.95] tracking-[-0.03em] text-ivory md:text-[7rem]">
           Come into
           <br />
@@ -21,11 +22,11 @@ export function BoutiqueSection() {
         </h2>
         <div className="mt-10 grid grid-cols-1 gap-8 border-t border-ivory/30 pt-8 text-ivory sm:grid-cols-3">
           <div>
-            <p className="font-display text-xl">Swathy Reddy Designer Studio</p>
+            <p className="font-display text-xl">{contact.name}</p>
             <p className="mt-2 text-[14px] leading-relaxed text-ivory/80">
-              Road No. 36, Jubilee Hills
+              {contact.street}
               <br />
-              Hyderabad, Telangana 500033
+              {contact.city}
             </p>
           </div>
           <div>
@@ -37,14 +38,16 @@ export function BoutiqueSection() {
             </p>
           </div>
           <div className="flex flex-col items-start gap-4 sm:items-end sm:justify-end">
-            <ArrowLink tone="ivory" href="https://maps.google.com/?q=Jubilee+Hills+Hyderabad" external>
+            <ArrowLink tone="ivory" href={mapsUrl} external>
               Visit the boutique
             </ArrowLink>
-            <a href="tel:+914000000000" className="text-[14px] text-ivory/80 underline-offset-4 hover:underline">
-              +91 40 0000 0000
-            </a>
-            <a href="mailto:label.swathyreddy12@gmail.com" className="text-[14px] text-ivory/80 underline-offset-4 hover:underline">
-              label.swathyreddy12@gmail.com
+            {contact.phone && (
+              <a href={`tel:+${phoneDigits}`} className="text-[14px] text-ivory/80 underline-offset-4 hover:underline">
+                {contact.phone}
+              </a>
+            )}
+            <a href={`mailto:${contact.email}`} className="text-[14px] text-ivory/80 underline-offset-4 hover:underline">
+              {contact.email}
             </a>
           </div>
         </div>

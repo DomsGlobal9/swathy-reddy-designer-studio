@@ -26,7 +26,7 @@ export function CraftSection() {
         <div className="relative mx-auto grid h-full max-w-[1440px] grid-cols-1 items-center px-5 md:grid-cols-12 md:px-10">
           {/* Left Editorial Info & Fabric Story */}
           <div className="relative z-10 md:col-span-6">
-            <ChapterMark numeral="iii" label="The craft" tone="ivory" />
+            <ChapterMark label="The craft" tone="ivory" />
             <h2 className="mt-8 font-display text-[3rem] leading-[0.98] tracking-[-0.02em] text-ivory md:text-[5.2rem]">
               It starts with
               <br />

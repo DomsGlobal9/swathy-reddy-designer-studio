@@ -25,7 +25,7 @@ export function StylingSection({ onBook }: StylingSectionProps) {
         </div>
         <div className="relative md:col-span-5 md:col-start-8">
           <FadeUp>
-            <ChapterMark numeral="viii" label="Personal styling" />
+            <ChapterMark label="Personal styling" />
           </FadeUp>
           <FadeUp delay={0.05}>
             <h2 className="mt-8 font-display text-[2.8rem] leading-[1] tracking-[-0.02em] md:text-6xl">

@@ -45,7 +45,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
         <DriftingMotif motif="paisley" progress={scrollYProgress} drawRange={[0.4, 0.8]} className="right-[14%] top-[6%] hidden w-[240px] lg:block" opacity={0.14} drift={120} sway={-50} spin={16} />
         <div className="relative mx-auto flex h-full max-w-[1440px] flex-col px-5 pb-8 pt-20 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:pb-0 lg:pt-16">
           <div className="lg:col-span-5">
-            <ChapterMark numeral="iv" label="The collection" />
+            <ChapterMark label="The collection" />
             <div className="relative mt-4 h-[16vw] w-full overflow-hidden px-4 -mx-4 sm:h-[4.2rem] md:h-[6rem] lg:mt-8 xl:h-[7rem]">
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.h2
