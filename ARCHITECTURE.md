@@ -222,6 +222,7 @@ Work by Doms Global LLP, 12–29 October 2026, in order of area. Commit ids are 
 | Phone layout of the collection showcase fixed (photo no longer covers the caption or spills off-screen; faces kept in frame). | Broken on smaller phones. |
 | Friendly 404 page. | Mistyped links showed the home page. |
 | Phone fixes (29 Oct): solid top bar kept below the iPhone clock strip (`viewport-fit=cover` + safe-area padding, also on the booking drawer and coming-soon page); Signature edit arrows on the right with the photos closer; Our story words before the photo; no 01–05 row in Follow the thread (desktop rail keeps it) and the sketch held inside narrow screens; menu Men / Kids open their coming-soon pages. | On iPhones the bar sat under the clock and Safari faded it; the rest came from the owner's phone screenshots. |
+| Phone spacing (29 Oct): every gap between home sections is 64px on phones (was 104–272px), page about 700px shorter; desktop untouched. Collection showcase photo in its 3:4 frame on phones (shows the whole garment) with long names shrunk to fit; Personal styling has a new still photo (`personal-styling-designer-atelier.jpg`). | The owner found the phone page too long, the collection photo cut off below the knees, and "Tissue weave" running off the screen. |
 
 ### Brand, marketing and search
 

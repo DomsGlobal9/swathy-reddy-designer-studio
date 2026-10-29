@@ -6,10 +6,10 @@ import { RevealImage } from '../ui/RevealImage';
 
 export function StorySection() {
   return (
-    <section id="story" className="relative bg-ivory px-5 pb-16 pt-10 md:px-10 md:pb-24 md:pt-16">
+    <section id="story" className="relative bg-ivory px-5 pb-8 pt-8 md:px-10 md:pb-24 md:pt-16">
       <DriftingMotif motif="peacock" tone="zari" className="right-[2%] top-[2%] w-[200px] md:right-[4%] md:w-[300px]" opacity={0.3} drift={140} spin={12} />
       <DriftingMotif motif="needle" className="bottom-[6%] left-[40%] hidden w-[260px] md:block" opacity={0.2} drift={90} sway={-40} />
-      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 gap-y-14 md:grid-cols-12">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 gap-y-10 md:grid-cols-12 md:gap-y-14">
         <div className="md:col-span-6 md:row-span-2">
           <RevealImage still
             src={images.boutiqueInterior}

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AnimatePresence,
   motion,
@@ -14,6 +14,20 @@ import { ChapterMark } from '../ui/ChapterMark';
 import { ArrowLink } from '../ui/ArrowLink';
 import { easeOut } from '../../utils/format';
 import { DriftingMotif } from '../ui/DriftingMotif';
+
+/**
+ * A collection's name is set as big as the screen allows, but names come from the shop and some are long
+ * ("Tissue weave"): shrink one just enough to fit its line instead of letting it run off the edge.
+ */
+function fitToWidth(el: HTMLElement | null) {
+  const words = el?.firstElementChild as HTMLElement | null;
+  if (!el || !words) return;
+  el.style.fontSize = '';
+  const cs = getComputedStyle(el);
+  const room = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  if (room <= 0 || words.offsetWidth <= room) return;
+  el.style.fontSize = `${Math.floor(parseFloat(cs.fontSize) * (room / words.offsetWidth) * 10) / 10}px`;
+}
 
 export function CollectionShowcase() {
   /*
@@ -37,6 +51,20 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
 
   const current = collections[Math.min(active, collections.length - 1)];
 
+  // Re-fit the title when the screen changes size or the display font finishes loading.
+  const titleBoxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const refit = () => titleBoxRef.current?.querySelectorAll('h2').forEach((h) => fitToWidth(h));
+    window.addEventListener('resize', refit);
+    document.fonts?.ready.then(refit);
+    return () => window.removeEventListener('resize', refit);
+  }, []);
+  // A new name has to be laid out before it can be measured.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => titleBoxRef.current?.querySelectorAll('h2').forEach((h) => fitToWidth(h)));
+    return () => cancelAnimationFrame(frame);
+  }, [current.id]);
+
   return (
     <section ref={ref} aria-label="The collection" className="relative z-20 h-[420vh] bg-ivory">
       {/* svh = the height left once the phone's address bar shows, so the caption row is never hidden behind it */}
@@ -46,7 +74,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
         <div className="relative mx-auto flex h-full max-w-[1440px] flex-col px-5 pb-8 pt-20 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:pb-0 lg:pt-16">
           <div className="lg:col-span-5">
             <ChapterMark label="The collection" />
-            <div className="relative mt-4 h-[16vw] w-full overflow-hidden px-4 -mx-4 sm:h-[4.2rem] md:h-[6rem] lg:mt-8 xl:h-[7rem]">
+            <div ref={titleBoxRef} className="relative mt-4 h-[16vw] w-full overflow-hidden px-4 -mx-4 sm:h-[4.2rem] md:h-[6rem] lg:mt-8 xl:h-[7rem]">
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.h2
                   key={current.id}
@@ -56,7 +84,7 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
                   transition={{ duration: 0.3, ease: easeOut }}
                   className="absolute inset-0 w-full whitespace-nowrap px-4 font-display text-[16vw] leading-none tracking-[-0.03em] sm:text-[3.6rem] md:text-[5rem] xl:text-[6rem]">
                   
-                  {current.name}
+                  <span className="inline-block">{current.name}</span>
                 </motion.h2>
               </AnimatePresence>
             </div>
@@ -79,9 +107,12 @@ function ShowcaseBody({ collections }: { collections: Collection[] }) {
             </div>
           </div>
 
-          <div className="relative mt-6 min-h-0 flex-1 lg:col-span-4 lg:col-start-6 lg:mt-0 lg:h-[76vh] lg:flex-none">
-            {/* On mobile, fill whatever height is left between title and caption, so short screens never overlap. On desktop, respect aspect ratio and max height. */}
-            <div className="relative h-full w-full overflow-hidden bg-paper lg:mx-auto lg:w-auto lg:max-h-[76vh] lg:aspect-[3/4]">
+          <div className="relative mt-6 flex min-h-0 flex-1 flex-col justify-center [container-type:size] lg:col-span-4 lg:col-start-6 lg:mt-0 lg:h-[76vh] lg:block lg:flex-none lg:[container-type:normal]">
+            {/* On mobile, a 3:4 frame (the photos' own shape) at the largest size that fits between title and
+                caption: filling the leftover space instead made a near-square frame that cut the garment off.
+                Spare height is shared above and below it.
+                On desktop, respect aspect ratio and max height. */}
+            <div className="relative mx-auto aspect-[3/4] w-[min(100cqw,75cqh)] overflow-hidden bg-paper lg:h-full lg:w-auto lg:max-h-[76vh]">
               {collections.map((collection, i) =>
               <CollectionLayer
                 key={collection.id}

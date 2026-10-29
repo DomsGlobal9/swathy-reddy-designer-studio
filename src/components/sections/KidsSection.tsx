@@ -7,10 +7,10 @@ import { ArrowLink } from '../ui/ArrowLink';
 
 export function KidsSection() {
   return (
-    <section id="kids" className="relative bg-ivory px-5 py-16 md:px-10 md:py-24">
+    <section id="kids" className="relative bg-ivory px-5 py-8 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[60%] top-10 h-px w-px" />
       <DriftingMotif motif="lotus" tone="zari" className="bottom-[4%] left-[38%] hidden w-[220px] md:block" opacity={0.28} drift={-60} sway={-30} />
-      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-16 md:grid-cols-12">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-10 md:grid-cols-12 md:gap-y-16">
         <div className="md:col-span-6">
           <FadeUp>
             <ChapterMark label="The child" />

@@ -5,7 +5,7 @@ import { DriftingMotif } from '../ui/DriftingMotif';
 
 export function Lookbook() {
   return (
-    <section id="lookbook" className="relative bg-ivory px-5 py-16 md:px-10 md:py-24">
+    <section id="lookbook" className="relative bg-ivory px-5 pb-8 pt-16 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[34%] top-10 h-px w-px" />
       <div className="relative mx-auto max-w-[1320px]">
         <DriftingMotif motif="peacock" className="left-[2%] top-[22%] hidden w-[300px] md:block" opacity={0.16} drift={180} spin={12} />
@@ -22,7 +22,7 @@ export function Lookbook() {
         <span data-thread-anchor aria-hidden="true" className="absolute left-[40%] top-[34%] hidden h-px w-px md:block" />
         <span data-thread-anchor aria-hidden="true" className="absolute left-[54%] top-[62%] hidden h-px w-px md:block" />
 
-        <div className="relative mt-14 flex flex-col md:mt-0">
+        <div className="relative mt-8 flex flex-col md:mt-0">
           {lookbook.map((look, i) =>
           <figure key={look.id} className={look.placement}>
               <RevealImage src={look.image} alt={look.alt} className={`relative z-20 ${look.aspect}`} parallax={5} />
@@ -32,7 +32,7 @@ export function Lookbook() {
               </figcaption>
             </figure>
           )}
-          <FadeUp className="mt-20 md:ml-[56%] md:-mt-[8%] md:w-[36%]">
+          <FadeUp className="mt-12 md:ml-[56%] md:-mt-[8%] md:w-[36%]">
             <blockquote className="font-display text-3xl italic leading-[1.15] md:text-5xl">
               “Dressed for no one but herself.”
             </blockquote>

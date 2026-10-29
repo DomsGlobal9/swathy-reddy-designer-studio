@@ -72,7 +72,7 @@ export const lookbook: LookbookItem[] = [
   image: images.lookbook2,
   alt: 'Woman in a black and gold silk saree seated by a window',
   caption: 'Black and gold silk, by the window.',
-  placement: 'w-[72%] mt-16 md:ml-[6%] md:w-[30%] md:-mt-[18%]',
+  placement: 'w-[72%] mt-10 md:ml-[6%] md:w-[30%] md:-mt-[18%]',
   aspect: 'aspect-[4/5]'
 },
 {
@@ -80,7 +80,7 @@ export const lookbook: LookbookItem[] = [
   image: images.lookbook4,
   alt: 'Woman in a teal and copper saree on a rooftop at dusk',
   caption: 'Teal and copper, a rooftop at dusk.',
-  placement: 'w-[78%] ml-auto mt-16 md:ml-[64%] md:w-[28%] md:-mt-[8%]',
+  placement: 'w-[78%] ml-auto mt-10 md:ml-[64%] md:w-[28%] md:-mt-[8%]',
   aspect: 'aspect-[2/3]'
 },
 {
@@ -88,6 +88,6 @@ export const lookbook: LookbookItem[] = [
   image: images.lookbook3,
   alt: 'Hands settling a gold zari pallu over the shoulder',
   caption: 'The pallu, settled on the shoulder.',
-  placement: 'w-[64%] mt-16 md:ml-[22%] md:w-[24%] md:-mt-[22%]',
+  placement: 'w-[64%] mt-10 md:ml-[22%] md:w-[24%] md:-mt-[22%]',
   aspect: 'aspect-[3/4]'
 }];

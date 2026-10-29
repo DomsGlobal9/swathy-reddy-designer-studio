@@ -11,15 +11,15 @@ type StylingSectionProps = {
 
 export function StylingSection({ onBook }: StylingSectionProps) {
   return (
-    <section id="styling" className="relative bg-ivory px-5 py-16 md:px-10 md:py-24">
+    <section id="styling" className="relative bg-ivory px-5 py-8 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[52%] top-12 h-px w-px" />
       <DriftingMotif motif="needle" className="right-[4%] top-[8%] w-[200px] md:w-[300px]" opacity={0.2} drift={110} spin={10} />
       <DriftingMotif motif="lotus" tone="zari" className="bottom-[6%] right-[26%] hidden w-[220px] md:block" opacity={0.3} drift={70} sway={40} />
-      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-14 md:grid-cols-12">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-10 md:grid-cols-12 md:gap-y-14">
         <div className="md:col-span-6">
-          <RevealImage
+          <RevealImage still
             src={images.stylist}
-            alt="A stylist adjusting the pleats of a sage green silk saree on a client in the boutique"
+            alt="A designer in a black banarasi saree fitting a blush pink embroidered saree on a mannequin in the atelier"
             className="relative z-20 aspect-[4/5]" />
           
         </div>

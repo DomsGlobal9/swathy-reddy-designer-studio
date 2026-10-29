@@ -46,7 +46,7 @@ export function SignatureEdit({ wishlist, onToggleSave }: SignatureEditProps) {
   };
 
   return (
-    <section id="edit" className="relative bg-ivory py-16 md:py-24">
+    <section id="edit" className="relative bg-ivory py-8 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[30%] top-6 h-px w-px" />
       <DriftingMotif motif="jasmine" tone="zari" className="right-[18%] top-[2%] w-[200px] md:w-[280px]" opacity={0.32} drift={90} sway={50} />
       <DriftingMotif motif="needle" className="-left-8 bottom-[8%] hidden w-[240px] md:block" opacity={0.16} drift={70} spin={10} />

@@ -7,10 +7,10 @@ import { ArrowLink } from '../ui/ArrowLink';
 
 export function MenSection() {
   return (
-    <section id="men" className="relative bg-ivory px-5 py-16 md:px-10 md:py-24">
+    <section id="men" className="relative bg-ivory px-5 py-8 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[40%] top-10 h-px w-px" />
       <DriftingMotif motif="paisley" className="-right-10 top-[6%] w-[220px] md:right-[2%] md:w-[340px]" opacity={0.14} drift={-120} spin={-10} />
-      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-16 md:grid-cols-12">
+      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-10 md:grid-cols-12 md:gap-y-16">
         <figure className="relative md:col-span-5 md:col-start-2 order-last md:order-first">
           <span data-thread-anchor aria-hidden="true" className="absolute -left-12 top-[18%] h-px w-px" />
           <RevealImage still
