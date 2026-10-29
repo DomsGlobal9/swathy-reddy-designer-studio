@@ -38,8 +38,8 @@ export function ComingSoon({ collection }: { collection: ComingSoonCollection })
   const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
-    document.title = `${c.label}: coming soon · Swathy Reddy Designer Studio`;
-  }, [c.label]);
+    document.title = `The Heritage Collection for ${collection === 'men' ? 'Men' : 'Kids'}, Coming Soon | Swathy Reddy`; // same as scripts/seo-pages.mjs
+  }, [collection]);
 
   const rise = (delay: number) => (reduce ? {} : {
     initial: { opacity: 0, y: 24 },

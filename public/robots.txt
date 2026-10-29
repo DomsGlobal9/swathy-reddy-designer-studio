@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+# The booking form's connection to the CRM; nothing to index.
+Disallow: /api/
+Disallow: /intake/
+
+Sitemap: https://www.labelswathyreddy.com/sitemap.xml

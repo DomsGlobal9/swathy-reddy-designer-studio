@@ -40,9 +40,10 @@ export function Preloader() {
         transition={{ times: [0, 0.5, 1], duration: 2.0, delay: 1.1, ease: 'easeInOut' }}
       >
         <img src="/sr-logo-mark.png" alt="Swathy Reddy Logo" className="w-20 h-auto mb-4 object-contain brightness-0 invert" />
-        <h1 className="font-display text-[8vw] leading-none tracking-[-0.02em] md:text-[5vw]">
-          SWATHI REDDY
-        </h1>
+        {/* Not an h1: the page's one main heading is the hero's. */}
+        <p className="font-display text-[8vw] leading-none tracking-[-0.02em] md:text-[5vw]">
+          SWATHY REDDY
+        </p>
         <p className="mt-4 text-[10px] uppercase tracking-[0.4em] md:text-[12px]">
           Women &middot; Men &middot; Kids
         </p>

@@ -24,7 +24,7 @@ export function Contact() {
   const closeBooking = useCallback(() => setBookingOpen(false), []);
 
   useEffect(() => {
-    document.title = 'Contact · Swathy Reddy Designer Studio';
+    document.title = 'Contact & Visit | Swathy Reddy Designer Studio, Banjara Hills'; // same as scripts/seo-pages.mjs
   }, []);
 
   const openDays = hours.filter(Boolean).length;

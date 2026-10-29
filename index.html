@@ -1,14 +1,64 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Swathy Reddy Designer Studio | Hyderabad</title>
     <meta name="description" content="Bespoke couture for women, men and kids in Hyderabad: heirloom Kanjivaram, Banarasi and Chanderi silks, tailored in our atelier." />
+    <link rel="canonical" href="https://www.labelswathyreddy.com/" />
     <meta name="theme-color" content="#1D1815" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- The business, for Google Search and Maps. Keep in step with src/data/contact.ts. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "ClothingStore",
+          "@id": "https://www.labelswathyreddy.com/#store",
+          "name": "Swathy Reddy Designer Studio",
+          "alternateName": "Label Swathy Reddy",
+          "description": "Bespoke couture for women, men and kids: heirloom Kanjivaram, Banarasi and Chanderi silks, bridal and festive wear, tailored in our Banjara Hills atelier.",
+          "url": "https://www.labelswathyreddy.com/",
+          "logo": "https://www.labelswathyreddy.com/icon-512.png",
+          "image": "https://www.labelswathyreddy.com/og-image.jpg",
+          "telephone": "+91 75690 60926",
+          "email": "label.swathyreddy12@gmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "4th Cross Road, Naveen Nagar, Banjara Hills",
+            "addressLocality": "Hyderabad",
+            "addressRegion": "Telangana",
+            "postalCode": "500034",
+            "addressCountry": "IN"
+          },
+          "geo": { "@type": "GeoCoordinates", "latitude": 17.4146531, "longitude": 78.4512897 },
+          "hasMap": "https://maps.app.goo.gl/S86WdNa27eyp7WbG9",
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+              "opens": "11:00",
+              "closes": "20:00"
+            }
+          ],
+          "areaServed": { "@type": "City", "name": "Hyderabad" }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://www.labelswathyreddy.com/#website",
+          "url": "https://www.labelswathyreddy.com/",
+          "name": "Swathy Reddy Designer Studio",
+          "inLanguage": "en-IN",
+          "publisher": { "@id": "https://www.labelswathyreddy.com/#store" }
+        }
+      ]
+    }
+    </script>
 
     <!-- Link previews (WhatsApp, Facebook, Instagram, LinkedIn, X). Image URLs must be absolute. -->
     <meta property="og:type" content="website" />
@@ -34,7 +84,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Jost:wght@300;400;500&display=swap" />
 
     <!-- Preload Hero image for instant LCP render -->
-    <link rel="preload" as="image" href="/festive_family_hero.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/festive_family_hero.jpg" fetchpriority="high" />
   </head>
   <body>
     <div id="root"></div>
