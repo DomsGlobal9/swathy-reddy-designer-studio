@@ -234,7 +234,7 @@ Work by Doms Global LLP, 12–29 October 2026, in order of area. Commit ids are 
 
 ### Still open
 
-- Instagram and Facebook links in the footer are generic; the boutique's real profiles are needed.
+- Instagram is linked (@label_swathyreddy, footer and business details). A Facebook page, if there is one, goes in `facebook` in `src/data/contact.ts` and `sameAs` in `index.html`; the icon appears by itself.
 - Google Search Console (verify the domain, submit the sitemap) and the Google Business Profile's website link — the boutique's accounts.
 - Visitor analytics (Google Analytics or Vercel Analytics) — needs a choice and an account.
 - Test records in the CRM from the end-to-end tests (customer "Satish" and the enquiries under 8247003162) to delete.

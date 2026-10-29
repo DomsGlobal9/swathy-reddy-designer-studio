@@ -10,6 +10,9 @@ export const contact = {
   email: 'label.swathyreddy12@gmail.com',
   /** With country code. Call and WhatsApp buttons appear only when it is set. */
   phone: '+91 75690 60926',
+  /** Social profiles; an empty one is not shown. Also listed as sameAs in index.html's business details. */
+  instagram: 'https://www.instagram.com/label_swathyreddy/',
+  facebook: '',
   /** The boutique's own Google listing ("Label Swathy Reddy"). */
   mapsLink: 'https://maps.app.goo.gl/S86WdNa27eyp7WbG9',
   /** The listing's exact pin, so the map shows the shop itself and not a search with other boutiques. */

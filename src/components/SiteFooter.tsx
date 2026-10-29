@@ -66,9 +66,14 @@ export function SiteFooter() {
 
           <Column title="Follow">
             <div className="flex items-center gap-3">
-              <Social href="https://instagram.com" label="Instagram"><Instagram className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>
-              <Social href="https://facebook.com" label="Facebook"><Facebook className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>
+              {contact.instagram && <Social href={contact.instagram} label="Instagram @label_swathyreddy"><Instagram className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>}
+              {contact.facebook && <Social href={contact.facebook} label="Facebook"><Facebook className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>}
             </div>
+            {contact.instagram && (
+              <a href={contact.instagram} target="_blank" rel="noreferrer" className="mt-3 inline-block text-[14px] text-ivory/80 transition-colors hover:text-ivory">
+                @label_swathyreddy
+              </a>
+            )}
           </Column>
         </div>
 
