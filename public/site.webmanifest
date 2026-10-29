@@ -4,7 +4,7 @@
   "description": "Bespoke couture for women, men and kids in Hyderabad.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1D1815",
+  "background_color": "#6B1C22",
   "theme_color": "#1D1815",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
