@@ -31,11 +31,15 @@ export function Home() {
   }, []);
   const closeBooking = useCallback(() => setBookingOpen(false), []);
 
-  // Arriving from another page's menu (/#men): land on that section once the page has laid out.
+  // Arriving from another page's menu (/#men): land on that section once the page has laid out,
+  // then drop the #men from the address bar so a copied or shared link is the clean home address.
   useEffect(() => {
     const id = window.location.hash.slice(1);
     if (!id) return;
-    const t = setTimeout(() => scrollToId(id), 500);
+    const t = setTimeout(() => {
+      scrollToId(id);
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }, 500);
     return () => clearTimeout(t);
   }, []);
 

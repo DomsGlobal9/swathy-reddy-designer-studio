@@ -35,7 +35,8 @@ export function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) {
     // On another page the home page's sections are not here: go home and land on the section.
-    if (window.location.pathname !== '/') window.location.href = `/#${id}`;
+    // The top of the page needs no #: a plain '/' keeps the address clean to share.
+    if (window.location.pathname !== '/') window.location.href = id === 'top' ? '/' : `/#${id}`;
     return;
   }
   if (instance) {
