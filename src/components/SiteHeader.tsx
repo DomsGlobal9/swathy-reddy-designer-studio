@@ -82,7 +82,7 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           onClick={() => go('top')}
           className="group flex items-center gap-3 transition-opacity hover:opacity-90">
           <img
-            src="/favicon.svg"
+            src="/sr-logo-mark.png"
             alt="SR"
             className={`h-8 w-auto object-contain transition-all duration-200 group-hover:scale-105 md:h-10 ${!(scrolled || menuOpen) ? 'brightness-0 invert drop-shadow-md' : ''}`}
           />

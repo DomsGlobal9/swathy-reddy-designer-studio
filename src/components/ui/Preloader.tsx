@@ -39,7 +39,7 @@ export function Preloader() {
         animate={{ opacity: [0, 1, 0] }}
         transition={{ times: [0, 0.5, 1], duration: 2.0, delay: 1.1, ease: 'easeInOut' }}
       >
-        <img src="/sr-logo.png" alt="Swathy Reddy Logo" className="w-20 h-auto mb-4 object-contain brightness-0 invert" />
+        <img src="/sr-logo-mark.png" alt="Swathy Reddy Logo" className="w-20 h-auto mb-4 object-contain brightness-0 invert" />
         <h1 className="font-display text-[8vw] leading-none tracking-[-0.02em] md:text-[5vw]">
           SWATHI REDDY
         </h1>
