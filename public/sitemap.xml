@@ -1,26 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Every public page. When a page is added to src/App.tsx, add it here and in scripts/seo-pages.mjs. -->
+<!-- Every public page and the main photos on it. When a page is added to src/App.tsx, add it here
+     and in scripts/seo-pages.mjs. When a page's content or photos change, update its lastmod. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.labelswathyreddy.com/</loc>
+    <lastmod>2026-10-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image><image:loc>https://www.labelswathyreddy.com/festive_family_hero.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/woman-ivory-chanderi-saree.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/man_portrait.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/kids_portrait.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/founder_atelier.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/swathy-reddy-boutique-interior.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/kanjivaram-silk.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/banarasi-zari.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/zardozi-aari-embroidery.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/wedding-bridal-saree.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/festive-diwali-silk-sarees.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/everyday-handloom-saree.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/dusty-rose-organza-saree.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/black-gold-silk-saree.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/gold-zari-pallu.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/teal-copper-saree.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/personal-styling-sage-green-silk-saree.jpg</image:loc></image:image>
     <image:image><image:loc>https://www.labelswathyreddy.com/og-image.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://www.labelswathyreddy.com/contact</loc>
+    <lastmod>2026-10-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/swathy-reddy-boutique-interior.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://www.labelswathyreddy.com/men</loc>
+    <lastmod>2026-10-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://www.labelswathyreddy.com/men_coming_soon.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://www.labelswathyreddy.com/kids</loc>
+    <lastmod>2026-10-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://www.labelswathyreddy.com/kids_coming_soon.jpg</image:loc></image:image>

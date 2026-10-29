@@ -228,6 +228,7 @@ Work by Doms Global LLP, 12–29 October 2026, in order of area. Commit ids are 
 | Clean SR logo (solid gold, smooth edges, fine bronze outline) in the header, intro and icons. | The old file was semi-transparent with a reddish fringe. |
 | Branded link preview for WhatsApp, Facebook, Instagram, LinkedIn and X (Women · Men · Kids card); each page has its own. | Shared links showed only text. |
 | Sitemap, robots.txt, per-page titles and descriptions, canonical addresses, Google business details (ClothingStore: address, phone, hours, map). | The site had no search set-up. |
+| Photos renamed to what they show (`woman-ivory-chanderi-saree.jpg`, `kanjivaram-silk.jpg`…); the sitemap lists each page's main photos with a last-updated date. | Google Images reads file names and the sitemap to know what a photo shows. |
 | Home photo 2.8 MB → 332 KB, portraits ~820 KB → ~175 KB. | Slow first load, especially on mobile data; Google ranks speed. |
 | Tab icon, iPhone and Android home-screen icons, web manifest. | Old icon used the fringed logo; no Android icon. |
 | Name spelling fixed ("SWATHI" → "SWATHY") in the opening animation and a photo description; one main heading per page. | Every visitor saw the misspelling for 3 seconds. |
