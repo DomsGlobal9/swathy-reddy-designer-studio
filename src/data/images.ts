@@ -3,7 +3,7 @@ export const images = {
   portrait: "/woman-ivory-chanderi-saree.jpg",
   boutiqueInterior: "/swathy-reddy-boutique-interior.jpg",
   founder: "/founder_atelier.jpg",
-  stylist: "/personal-styling-designer-atelier.jpg",
+  stylist: "/personal-styling-lavender-saree-fitting.jpg",
   fabricSilk: "/kanjivaram-silk.jpg",
   fabricZari: "/banarasi-zari.jpg",
   fabricEmbroidery: "/zardozi-aari-embroidery.jpg",
