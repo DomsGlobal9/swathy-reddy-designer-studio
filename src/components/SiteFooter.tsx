@@ -20,33 +20,34 @@ export function SiteFooter() {
         <div
           className="absolute inset-x-0 top-0 h-[360px] bg-[length:300%_auto] bg-left-top bg-no-repeat md:h-[420px] md:bg-[length:160%_auto] xl:hidden"
           style={{ backgroundImage: SILK, WebkitMaskImage: 'linear-gradient(to bottom, black 35%, transparent 75%)', maskImage: 'linear-gradient(to bottom, black 35%, transparent 75%)' }} />
-        <div className="absolute inset-x-0 bottom-0 h-[380px] bg-[length:300%_auto] bg-right-bottom bg-no-repeat md:h-[480px] md:bg-[length:160%_auto] xl:hidden"
+        <div className="absolute inset-x-0 bottom-0 h-[300px] bg-[length:300%_auto] bg-right-bottom bg-no-repeat sm:h-[380px] md:h-[480px] md:bg-[length:160%_auto] xl:hidden"
           style={{ backgroundImage: SILK, WebkitMaskImage: 'linear-gradient(to top, black 55%, transparent)', maskImage: 'linear-gradient(to top, black 55%, transparent)' }} />
         {/* A little shade under the bottom row so the small print stays readable on the silk. */}
         <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/70 to-transparent xl:h-32 xl:from-black/55" />
       </div>
 
-      <div className="relative mx-auto max-w-[1440px] px-5 pb-10 pt-16 md:px-10 md:pt-24">
-        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 xl:grid-cols-[1.3fr_1.3fr_1fr_0.8fr] xl:gap-16">
+      <div className="relative mx-auto max-w-[1440px] px-5 pb-8 pt-12 sm:pb-10 sm:pt-16 md:px-10 md:pt-24">
+        <div className="grid grid-cols-1 gap-9 sm:grid-cols-2 sm:gap-12 xl:grid-cols-[1.3fr_1.3fr_1fr_0.8fr] xl:gap-16">
           <Column title="Visit">
             <p className="text-[15px] leading-relaxed text-ivory/85">
               {contact.street}
               <br />
               {contact.area}, Hyderabad
             </p>
-            <div className="mt-5">
+            {/* On a phone the badge and the directions link sit side by side when they fit; wider screens stack them. */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 sm:mt-5 sm:block">
               <OpenNow />
+              <a href={mapsUrl} target="_blank" rel="noreferrer" className="group inline-flex sm:mt-4 items-center gap-1.5 text-[14px] text-[#E8C980] transition-colors hover:text-ivory">
+                Get directions
+                <ArrowUpRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+              </a>
             </div>
-            <a href={mapsUrl} target="_blank" rel="noreferrer" className="group mt-4 inline-flex items-center gap-1.5 text-[14px] text-[#E8C980] transition-colors hover:text-ivory">
-              Get directions
-              <ArrowUpRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
-            </a>
           </Column>
 
           <Column title="Talk to us" divider>
             <a href={`tel:+${phoneDigits}`} className="block text-[15px] text-ivory/85 transition-colors hover:text-ivory">{contact.phone}</a>
             <a href={`mailto:${contact.email}`} className="mt-1 block break-all text-[15px] text-ivory/85 transition-colors hover:text-ivory">{contact.email}</a>
-            <div className="mt-5 flex flex-wrap gap-2.5">
+            <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-5">
               <a
                 href={`https://wa.me/${phoneDigits}?text=${encodeURIComponent('Hello Swathy Reddy Designer Studio')}`}
                 target="_blank"
@@ -62,11 +63,15 @@ export function SiteFooter() {
                 <PhoneIcon className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
                 Call
               </a>
+              <span className="contents sm:hidden">
+                {contact.instagram && <Social href={contact.instagram} label="Instagram @label_swathyreddy"><Instagram className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>}
+                {contact.facebook && <Social href={contact.facebook} label="Facebook"><Facebook className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>}
+              </span>
             </div>
           </Column>
 
           <Column title="Explore" divider>
-            <nav aria-label="Footer" className="flex flex-col items-start gap-2.5">
+            <nav aria-label="Footer" className="grid grid-flow-col grid-cols-2 grid-rows-3 justify-items-start gap-x-8 gap-y-2.5 sm:flex sm:flex-col sm:items-start">
               {navigation.map((link) => (
                 <button
                   key={link.label}
@@ -80,7 +85,7 @@ export function SiteFooter() {
             </nav>
           </Column>
 
-          <Column title="Follow" divider>
+          <Column title="Follow" divider className="hidden sm:block">
             <div className="flex items-center gap-3">
               {contact.instagram && <Social href={contact.instagram} label="Instagram @label_swathyreddy"><Instagram className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>}
               {contact.facebook && <Social href={contact.facebook} label="Facebook"><Facebook className="h-[18px] w-[18px]" strokeWidth={1.5} /></Social>}
@@ -94,13 +99,13 @@ export function SiteFooter() {
         </div>
 
         {/* Gold lotus between two fine lines. */}
-        <div aria-hidden="true" className="mt-14 flex items-center justify-center gap-4 md:mt-16">
+        <div aria-hidden="true" className="mt-10 flex items-center justify-center gap-4 sm:mt-14 md:mt-16">
           <span className="h-px w-20 bg-gradient-to-r from-transparent to-[#C9A45C]/70 sm:w-48 md:w-72" />
           <span className="block h-14 w-14"><MotifArt motif="lotus" color="#E8C980" strokeWidth={2} /></span>
           <span className="h-px w-20 bg-gradient-to-l from-transparent to-[#C9A45C]/70 sm:w-48 md:w-72" />
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 text-[13px] text-ivory/60 sm:flex-row sm:justify-between">
+        <div className="mt-6 flex flex-col items-center gap-2 text-center text-[13px] text-ivory/60 sm:mt-8 sm:flex-row sm:justify-between sm:text-left">
           <p>© {new Date().getFullYear()} {contact.name}</p>
           <p className="whitespace-nowrap text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.22em]">
             Design &amp; Development <span aria-hidden="true" className="mx-1.5 text-[#C9A45C]">·</span> <span className="text-[#E8C980]">Doms Global LLP</span>
@@ -112,9 +117,9 @@ export function SiteFooter() {
 }
 
 /** A footer column; `divider` draws the gold line with a diamond on its left, when the four columns sit in one row. */
-function Column({ title, children, divider = false }: { title: string; children: ReactNode; divider?: boolean }) {
+function Column({ title, children, divider = false, className = '' }: { title: string; children: ReactNode; divider?: boolean; className?: string }) {
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       {divider && (
         <span aria-hidden="true" className="absolute -left-8 top-9 hidden h-[150px] flex-col items-center xl:flex">
           <span className="w-px flex-1 bg-gradient-to-b from-transparent to-[#C9A45C]/60" />
@@ -122,7 +127,7 @@ function Column({ title, children, divider = false }: { title: string; children:
           <span className="w-px flex-1 bg-gradient-to-t from-transparent to-[#C9A45C]/60" />
         </span>
       )}
-      <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.24em] text-[#C9A45C]">{title}</p>
+      <p className="mb-3 text-[11px] font-medium uppercase sm:mb-4 tracking-[0.24em] text-[#C9A45C]">{title}</p>
       {children}
     </div>
   );
