@@ -13,7 +13,7 @@ export function MenSection() {
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-16 md:grid-cols-12">
         <figure className="relative md:col-span-5 md:col-start-2 order-last md:order-first">
           <span data-thread-anchor aria-hidden="true" className="absolute -left-12 top-[18%] h-px w-px" />
-          <RevealImage
+          <RevealImage still
             src={images.menPortrait}
             alt="Portrait of a man in traditional attire"
             className="relative z-20 aspect-[3/4]" />

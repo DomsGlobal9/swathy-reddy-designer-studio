@@ -6,11 +6,13 @@ type RevealImageProps = {
   alt: string;
   className?: string;
   parallax?: number;
+  /** A plain photo: no reveal on scroll, no drift. */
+  still?: boolean;
 };
 
-export function RevealImage({ src, alt, className = '', parallax = 6 }: RevealImageProps) {
+export function RevealImage({ src, alt, className = '', parallax = 6, still = false }: RevealImageProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotion() || still;
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const inset = useTransform(scrollYProgress, [0.04, 0.38], [100, 0]);
   const clipPath = useMotionTemplate`inset(${inset}% 0% 0% 0%)`;

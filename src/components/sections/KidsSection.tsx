@@ -36,7 +36,7 @@ export function KidsSection() {
 
         <figure className="relative md:col-span-5 md:col-start-8">
           <span data-thread-anchor aria-hidden="true" className="absolute -left-12 top-[18%] h-px w-px" />
-          <RevealImage
+          <RevealImage still
             src={images.kidsPortrait}
             alt="Child in festive wear"
             className="relative z-20 aspect-[3/4]" />

@@ -11,7 +11,7 @@ export function StorySection() {
       <DriftingMotif motif="needle" className="bottom-[6%] left-[40%] hidden w-[260px] md:block" opacity={0.2} drift={90} sway={-40} />
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 gap-y-14 md:grid-cols-12">
         <div className="md:col-span-6 md:row-span-2">
-          <RevealImage
+          <RevealImage still
             src={images.boutiqueInterior}
             alt="Inside Swathy Reddy Designer Studio: lime-plaster walls, teak rails and folded silk sarees"
             className="relative z-20 aspect-[4/5]" />
@@ -39,7 +39,7 @@ export function StorySection() {
         </div>
 
         <figure className="relative md:col-span-4 md:col-start-8 md:mt-10">
-          <RevealImage
+          <RevealImage still
             src={images.founder}
             alt="Swathy Reddy in her atelier, examining a length of gold zari silk"
             className="relative z-20 aspect-[3/4]"
