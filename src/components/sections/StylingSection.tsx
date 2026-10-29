@@ -19,7 +19,7 @@ export function StylingSection({ onBook }: StylingSectionProps) {
         <div className="md:col-span-6">
           <RevealImage still
             src={images.stylist}
-            alt="A designer in a black banarasi saree fitting a lavender saree with a green blouse on a smiling client in the atelier"
+            alt="A designer in a maroon and gold banarasi saree fitting a lavender saree with a green blouse on a smiling client in the atelier"
             className="relative z-20 aspect-[4/5]" />
           
         </div>
