@@ -64,12 +64,15 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
   };
 
   return (
+    // The page runs up under an iPhone's clock and battery, and Safari fades whatever sits there.
+    // The safe-area padding keeps the logo and menu below that strip; the bar's solid colour fills it.
     <header
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
       className={`fixed inset-x-0 top-0 z-40 border-b transition-all duration-300 ease-out ${
         visible || menuOpen ? 'translate-y-0' : '-translate-y-full'
       } ${
         scrolled || menuOpen
-          ? 'border-line bg-ivory/95 shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)] backdrop-blur-md'
+          ? 'border-line bg-ivory shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)]'
           : 'border-transparent bg-transparent'
       }`}>
       
@@ -136,7 +139,7 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="absolute inset-x-0 top-full z-30 flex flex-col border-t border-line bg-ivory/95 shadow-xl backdrop-blur-md lg:hidden"
+          className="absolute inset-x-0 top-full z-30 flex flex-col border-t border-line bg-ivory shadow-xl lg:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Menu">

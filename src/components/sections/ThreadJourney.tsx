@@ -36,17 +36,6 @@ export function ThreadJourney() {
               <br className="hidden lg:block" /> <em>the thread</em>
             </h2>
 
-            <ol className="mt-5 flex gap-4 lg:hidden" aria-hidden="true">
-              {threadStages.map((s, i) =>
-              <li
-                key={s.title}
-                className={`text-[13px] transition-colors duration-200 ${i === active ? 'text-oxblood' : 'text-stone/50'}`}>
-                
-                  0{i + 1}
-                </li>
-              )}
-            </ol>
-
             <div className="relative mt-10 hidden h-[calc(100%-7rem)] lg:block">
               <svg viewBox="0 0 60 600" preserveAspectRatio="none" className="absolute left-0 top-0 h-full w-[60px]" fill="none" aria-hidden="true">
                 <path d={railPath} stroke="#6B1C22" strokeOpacity={0.14} strokeWidth={1.2} />
@@ -83,8 +72,10 @@ export function ThreadJourney() {
             </div>
           </div>
 
-          <div className="relative mt-6 min-h-0 flex-1 lg:col-span-5 lg:mt-0 lg:h-[72vh] lg:flex-none">
-            <div className="relative mx-auto aspect-[3/4] h-full max-h-[72vh]">
+          {/* The sketch keeps its 3:4 page shape at whichever is smaller: the full width or three
+              quarters of the height. Sizing by height alone let it run off narrow, tall phones. */}
+          <div className="relative mt-6 min-h-0 flex-1 [container-type:size] lg:col-span-5 lg:mt-0 lg:h-[72vh] lg:flex-none">
+            <div className="relative mx-auto aspect-[3/4] max-h-[72vh] w-[min(100cqw,75cqh)]">
               {threadStages.map((s, i) =>
               <motion.img
                 key={s.title}

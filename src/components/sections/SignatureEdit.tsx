@@ -51,14 +51,14 @@ export function SignatureEdit({ wishlist, onToggleSave }: SignatureEditProps) {
       <DriftingMotif motif="jasmine" tone="zari" className="right-[18%] top-[2%] w-[200px] md:w-[280px]" opacity={0.32} drift={90} sway={50} />
       <DriftingMotif motif="needle" className="-left-8 bottom-[8%] hidden w-[240px] md:block" opacity={0.16} drift={70} spin={10} />
       <div className="relative mx-auto max-w-[1440px] px-5 md:px-10">
-        <FadeUp className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+        <FadeUp className="flex flex-col justify-between gap-5 md:flex-row md:items-end md:gap-8">
           <div>
             <ChapterMark label="The edit" />
             <h2 className="mt-6 font-display text-[2.8rem] leading-[1] tracking-[-0.02em] md:text-7xl">
               The signature <em>edit</em>
             </h2>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 self-end md:self-auto">
             <button
               type="button"
               onClick={() => scrollByCard(-1)}
@@ -84,7 +84,7 @@ export function SignatureEdit({ wishlist, onToggleSave }: SignatureEditProps) {
       <div
         ref={trackRef}
         onScroll={updateEdges}
-        className="no-scrollbar relative mt-14 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-px-5 px-5 pb-4 md:mt-20 md:scroll-px-10 md:px-10"
+        className="no-scrollbar relative mt-6 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-px-5 px-5 pb-4 md:mt-20 md:scroll-px-10 md:px-10"
         aria-label="Signature edit pieces">
         
         {status === 'loading' ?

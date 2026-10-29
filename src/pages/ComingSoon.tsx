@@ -54,7 +54,7 @@ export function ComingSoon({ collection }: { collection: ComingSoonCollection })
         <section className="relative overflow-hidden bg-ink">
           {/* Warm lamplight behind the framed photo. */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_60%_at_75%_55%,rgba(201,164,92,0.20),transparent_70%)]" />
-          <div className="relative mx-auto grid min-h-[100svh] w-full max-w-[1440px] items-center gap-12 px-5 pb-16 pt-28 md:grid-cols-12 md:gap-10 md:px-10 md:pb-20 md:pt-32">
+          <div className="relative mx-auto grid min-h-[100svh] w-full max-w-[1440px] items-center gap-12 px-5 pb-16 pt-[calc(7rem+env(safe-area-inset-top))] md:grid-cols-12 md:gap-10 md:px-10 md:pb-20 md:pt-32">
             <div className="md:col-span-6">
             <motion.div {...rise(0)}>
               <ChapterMark label={c.label} tone="ivory" />

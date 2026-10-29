@@ -940,6 +940,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
             aria-modal="true"
             aria-labelledby="booking-title"
             className="absolute inset-y-0 right-0 flex h-full w-full max-w-[640px] flex-col overflow-hidden bg-ivory shadow-[0_20px_60px_-15px_rgba(29,24,21,0.35)]"
+            style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

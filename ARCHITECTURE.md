@@ -52,7 +52,8 @@ What happens behind the scenes when someone opens the site, for example from a W
    show empty frames; if it can't be reached, they offer the online shop instead.
 4. **The customer explores.** The home page tells the story (Woman / Men / Kids, Story, Craft,
    Collection showcase, Signature edit, Follow the thread, Occasions, Lookbook, Personal styling).
-   Men and Kids have **Explore the collection**, which opens their coming-soon pages.
+   Men and Kids have **Explore the collection**, which opens their coming-soon pages; the Men and
+   Kids items in the top menu and the footer open those pages directly too.
 5. **Then one of four things:**
    - **Buys** — *Shop online*, a collection's *Explore*, or a piece in the Signature edit opens the
      ScaleEzy online shop (next section). The purchase happens there, not on this site.
@@ -220,6 +221,7 @@ Work by Doms Global LLP, 12–29 October 2026, in order of area. Commit ids are 
 | Shorter home page: removed the Explore-collections grid, the boutique section, the closing statement, the occasion slides' dead Explore links and the Roman numerals; the collection showcase now uses each collection's best photo. | The page was long and repeated itself. |
 | Phone layout of the collection showcase fixed (photo no longer covers the caption or spills off-screen; faces kept in frame). | Broken on smaller phones. |
 | Friendly 404 page. | Mistyped links showed the home page. |
+| Phone fixes (29 Oct): solid top bar kept below the iPhone clock strip (`viewport-fit=cover` + safe-area padding, also on the booking drawer and coming-soon page); Signature edit arrows on the right with the photos closer; Our story words before the photo; no 01–05 row in Follow the thread (desktop rail keeps it) and the sketch held inside narrow screens; menu Men / Kids open their coming-soon pages. | On iPhones the bar sat under the clock and Safari faded it; the rest came from the owner's phone screenshots. |
 
 ### Brand, marketing and search
 

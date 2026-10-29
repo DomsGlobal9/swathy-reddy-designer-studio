@@ -3,8 +3,8 @@ import type { ThreadStage, Occasion, LookbookItem, NavLink } from '../types/cata
 
 export const navigation: NavLink[] = [
 { label: 'About', target: 'about' },
-{ label: 'Men', target: 'men' },
-{ label: 'Kids', target: 'kids' },
+{ label: 'Men', target: '/men' },
+{ label: 'Kids', target: '/kids' },
 { label: 'Lookbook', target: 'lookbook' },
 { label: 'Contact', target: '/contact' }];
 

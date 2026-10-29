@@ -18,7 +18,7 @@ export function StorySection() {
           
         </div>
 
-        <div className="relative md:col-span-5 md:col-start-8 md:pt-24">
+        <div className="relative order-first md:order-none md:col-span-5 md:col-start-8 md:pt-24">
           <span data-thread-anchor aria-hidden="true" className="absolute -left-10 top-0 h-px w-px md:-left-16" />
           <FadeUp>
             <ChapterMark label="Our story" />

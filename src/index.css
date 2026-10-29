@@ -12,6 +12,9 @@ body {
   -webkit-font-smoothing: antialiased;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE / Edge */
+  /* viewport-fit=cover lets the page reach under a landscape iPhone's camera notch; keep it out. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* Hide scrollbars globally across all browsers */
