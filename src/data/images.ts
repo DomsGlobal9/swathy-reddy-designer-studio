@@ -2,7 +2,7 @@ export const images = {
   hero: "/festive_family_hero.jpg",
   portrait: "/857637fe-8e84-4eaf-9b74-d00ca460e262.jpg",
   boutiqueInterior: "/163a88aa-aad8-4664-9fcb-60951c405235.jpg",
-  founder: "/3a5e5bf7-1ffb-44a4-98fd-15f06dff4a7a.jpg",
+  founder: "/founder_atelier.jpg",
   stylist: "/480f745c-2646-45ed-a88c-b57129c0e737.jpg",
   fabricSilk: "/41429270-f710-488a-bf82-bba8657b5d39.jpg",
   fabricZari: "/1696a871-31d7-44de-9fdf-c4aec816512c.jpg",

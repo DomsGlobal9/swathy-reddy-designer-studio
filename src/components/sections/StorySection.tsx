@@ -41,7 +41,7 @@ export function StorySection() {
         <figure className="relative md:col-span-4 md:col-start-8 md:mt-10">
           <RevealImage still
             src={images.founder}
-            alt="Swathy Reddy in her atelier, examining a length of gold zari silk"
+            alt="Swathy Reddy at her design table, smiling over blush embroidered net, with sketches and swatches"
             className="relative z-20 aspect-[3/4]"
             parallax={4} />
           
