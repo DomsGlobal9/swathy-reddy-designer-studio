@@ -2,7 +2,7 @@ import { images } from './images';
 import type { ThreadStage, Occasion, LookbookItem, NavLink } from '../types/catalog';
 
 export const navigation: NavLink[] = [
-{ label: 'About', target: 'about' },
+{ label: 'Women', target: 'about' },
 { label: 'Men', target: '/men' },
 { label: 'Kids', target: '/kids' },
 { label: 'Lookbook', target: 'lookbook' },

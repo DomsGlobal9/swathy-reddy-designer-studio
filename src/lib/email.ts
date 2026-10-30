@@ -137,13 +137,13 @@ export async function sendAppointmentEmail(data: BookingData): Promise<BookingRe
 
     return {
       success: false,
-      message: `We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (${contact.phone}) and we will immediately reserve your slot.`
+      message: `We could not send the email just now. Please WhatsApp or call us on ${contact.phone} and we will book you in.`
     };
   } catch (error: unknown) {
     console.error('[EmailJS] Booking request failed:', error);
     return {
       success: false,
-      message: `We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (${contact.phone}) and we will immediately reserve your slot.`
+      message: `We could not send the email just now. Please WhatsApp or call us on ${contact.phone} and we will book you in.`
     };
   }
 }

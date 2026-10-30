@@ -72,6 +72,12 @@ export function formatBoutiqueErrorMessage(
 
   const lower = errStr.toLowerCase();
 
+  // An email failure is always explained as one: its own text mentions WhatsApp, which the
+  // checks below would read as a failed WhatsApp code.
+  if (context === 'email') {
+    return `We could not send the email just now. Please WhatsApp or call us on ${contact.phone} and we will book you in.`;
+  }
+
   // 1. Invalid or incorrect OTP code
   if (
     lower.includes('code is not valid') ||
@@ -81,12 +87,12 @@ export function formatBoutiqueErrorMessage(
     lower.includes('incorrect') ||
     lower.includes('not match')
   ) {
-    return 'The 6-digit verification code did not match. Please verify the code on your WhatsApp or request a fresh one.';
+    return 'That code does not match. Please check the code on WhatsApp, or tap “Resend code”.';
   }
 
   // 2. Expired code
   if (lower.includes('expired') || lower.includes('timeout')) {
-    return 'This verification code has expired. Please tap “Resend WhatsApp Code” to receive a fresh code.';
+    return 'That code has expired. Please tap “Resend code” for a new one.';
   }
 
   // 3. Rate limiting / Too many attempts (429)
@@ -97,7 +103,7 @@ export function formatBoutiqueErrorMessage(
     lower.includes('attempts') ||
     lower.includes('frequent')
   ) {
-    return 'For your security, please wait a brief moment before requesting another code.';
+    return 'Too many tries. Please wait a minute and try again.';
   }
 
   // 4. WhatsApp delivery / service unavailable (503 / provider issue)
@@ -108,7 +114,7 @@ export function formatBoutiqueErrorMessage(
     lower.includes('provider') ||
     lower.includes('gateway')
   ) {
-    return 'Our instant WhatsApp verification is momentarily busy. You may submit your details using the “Send Email” option or reach our styling concierge directly.';
+    return `We could not send a WhatsApp code just now. Please use “Email it instead”, or call us on ${contact.phone}.`;
   }
 
   // 5. Network / connection / fetch failures
@@ -119,7 +125,7 @@ export function formatBoutiqueErrorMessage(
     lower.includes('offline') ||
     lower.includes('econnrefused')
   ) {
-    return 'We were unable to connect to our salon server just now. Please check your internet connection or use “Send Email” to book.';
+    return 'We could not reach the boutique just now. Please check your internet connection and try again, or use “Email it instead”.';
   }
 
   // 6. Portal disabled or maintenance (404 / 401 / 403)
@@ -131,27 +137,23 @@ export function formatBoutiqueErrorMessage(
     lower.includes('unauthorized') ||
     lower.includes('disabled')
   ) {
-    return 'Online booking is temporarily undergoing maintenance. Please use “Send Email” or contact our atelier directly.';
+    return `Online booking is not available just now. Please use “Email it instead”, or call us on ${contact.phone}.`;
   }
 
   // 7. Context-specific graceful fallbacks (zero tech jargon)
   if (context === 'otp_request') {
-    return 'We were unable to send your WhatsApp verification code just now. Please check your mobile number or try again in a moment.';
+    return 'We could not send a code to this number. Please check the number and try again.';
   }
 
   if (context === 'otp_verify') {
-    return 'The verification code could not be confirmed at this time. Please check your WhatsApp or request a new code.';
+    return 'We could not confirm that code. Please try again, or tap “Resend code”.';
   }
 
   if (context === 'customer' || context === 'requirement') {
-    return 'We were unable to record your measurements in the salon database just now. Please use the “Send Email” option or contact our styling desk.';
+    return `We could not send your request just now. Please try again, use “Email it instead”, or call us on ${contact.phone}.`;
   }
 
-  if (context === 'email') {
-    return `We were unable to deliver your booking email at this instant. Please reach out to our concierge via WhatsApp or phone (${contact.phone}) and we will immediately reserve your slot.`;
-  }
-
-  return 'Our atelier concierge is momentarily taking a breath. Please try again in a moment or contact our studio directly.';
+  return `Something went wrong on our side. Please try again in a moment, or call us on ${contact.phone}.`;
 }
 
 /* ── 1. Product Catalogue (GET /intake/products/) ─────────────────────────────────── */
@@ -307,7 +309,7 @@ export async function verifyWhatsAppOtp(
   if (!cleanCode || cleanCode.length !== 6) {
     return {
       success: false,
-      message: 'Kindly enter the complete 6-digit code received on your WhatsApp.'
+      message: 'Please enter all 6 digits of the code.'
     };
   }
 

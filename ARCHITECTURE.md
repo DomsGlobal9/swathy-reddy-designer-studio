@@ -59,7 +59,7 @@ What happens behind the scenes when someone opens the site, for example from a W
      ScaleEzy online shop (next section). The purchase happens there, not on this site.
    - **Books a consultation** — *Book an appointment* opens the booking form; on submit the CRM
      sends a WhatsApp code, the customer types it, and the customer plus one requirement per garment
-     land in the Boutique CRM (see **Booking**). Or *Submit via Email* sends it by EmailJS.
+     land in the Boutique CRM (see **Booking**). Or *Email it instead* sends it by EmailJS.
    - **Gets in touch** — the Contact page: live open/closed badge, Get directions (Google Maps
      listing), Call / WhatsApp (`tel:`, `wa.me`), Send an email, Copy.
    - **Waits for Men or Kids** — *Notify me on WhatsApp* opens a chat with the boutique with the
@@ -117,11 +117,17 @@ Routing is a path check in `src/App.tsx` (no router library: four fixed pages). 
 `ShopData` loads once, picks a cover per collection without repeating any photo on the page, and
 shows designed empty frames while loading or a link to the shop if it can't be reached.
 
-## Booking (Private Consultation)
+## Booking (Book an appointment)
 
-`src/components/BookingDialog.tsx`, three steps: **Consultation** (name, mobile, date, mode) →
-**The Outfit** (one or more garments, each with fabric, craft, design notes) → **Measurements**
-(a tab per garment: the CRM's own size fields and design-photo slots via `DesignPhotos`).
+`src/components/BookingDialog.tsx`, three steps: **Your details** (name, Indian WhatsApp number,
+boutique visit or video call, date — Sundays closed — occasion) → **The outfit** (garments in
+Women / Men / Western & everyday tabs, several allowed, nothing pre-picked; each with fabric and
+work, "No preference" unless chosen, and design ideas) → **Sizes & photos** (a tab per garment: the
+CRM's own size fields in the CRM's own groups, the first open and the rest folded; a size that is
+not a number stops the send; design-photo slots via `DesignPhotos`).
+
+The CRM lists garments without categories, so `GARMENT_GROUPS` in the form places them; a garment
+the CRM adds later shows under *Western & everyday* until it is added there.
 
 Sending (Scaleezy Customer Portal API v1.1):
 
@@ -132,8 +138,9 @@ Sending (Scaleezy Customer Portal API v1.1):
    requirement; measurements and photo parts must belong to it), all with the same token.
    Photos go as multipart `images[<part>]`; sizes in inches (cm converted).
 
-A retry after a partial failure resends only what didn't arrive. **Submit via Email** sends the same
-request through EmailJS (`src/lib/email.ts`) instead.
+A retry after a partial failure resends only what didn't arrive. **Email it instead** sends the same
+request through EmailJS (`src/lib/email.ts`). Customer-facing errors come from
+`formatBoutiqueErrorMessage` and name buttons that exist (*Resend code*, *Email it instead*).
 
 ### Why there is a server function
 
@@ -222,6 +229,7 @@ Work by Doms Global LLP, 12–29 October 2026, in order of area. Commit ids are 
 | Phone layout of the collection showcase fixed (photo no longer covers the caption or spills off-screen; faces kept in frame). | Broken on smaller phones. |
 | Friendly 404 page. | Mistyped links showed the home page. |
 | Phone fixes (29 Oct): solid top bar kept below the iPhone clock strip (`viewport-fit=cover` + safe-area padding, also on the booking drawer and coming-soon page); Signature edit arrows on the right with the photos closer; Our story words before the photo; no 01–05 row in Follow the thread (desktop rail keeps it) and the sketch held inside narrow screens; menu Men / Kids open their coming-soon pages. | On iPhones the bar sat under the clock and Safari faded it; the rest came from the owner's phone screenshots. |
+| Booking form review (30 Oct): fixed a live bug where, after going past step 1 or after booking, closing the form left an invisible layer over the site so nothing could be tapped (the step tabs' sliding underline kept it from leaving); "salon" and internal words (CRM, lead, intake) gone; one honest +91 number field instead of a country list that was ignored; Sundays closed in the calendar, which now opens in place instead of behind the buttons; nothing pre-picked (garment, fabric, work); garments in Women / Men / Western tabs; sizes grouped and folded; wrong sizes caught before sending; the code window says when a code could not be sent and offers Try again; Resend works for the step it is on; email failures no longer read as WhatsApp failures; menu "About" renamed "Women". | The owner asked for an end-to-end check of the form. |
 | Phone spacing (29 Oct): every gap between home sections is 64px on phones (was 104–272px), page about 700px shorter; desktop untouched. Collection showcase photo in its 3:4 frame on phones (shows the whole garment) with long names shrunk to fit; Personal styling has a new still photo (`personal-styling-lavender-saree-fitting.jpg`). | The owner found the phone page too long, the collection photo cut off below the knees, and "Tissue weave" running off the screen. |
 
 ### Brand, marketing and search
