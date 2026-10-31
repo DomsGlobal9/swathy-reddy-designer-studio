@@ -43,6 +43,7 @@ import type {
 } from '../types/booking';
 import { shrinkPhotos } from '../lib/shrinkPhotos';
 import { DesignPhotos } from './DesignPhotos';
+import { getShop } from '../lib/shop';
 
 type BookingDialogProps = {
   open: boolean;
@@ -81,6 +82,10 @@ type Garment = {
   fabric: string;
   craft: string;
   requests: string;
+  /** Finishing / style picks, e.g. { fall: 'Big', sleeve: 'Puff sleeve' }. */
+  choices: Record<string, string>;
+  /** The customer chose "Other" and is typing the fabric. */
+  fabricOther: boolean;
   measurements: Record<string, string>;
   photos: Record<string, File[]>;
 };
@@ -90,19 +95,11 @@ const newGarment = (key: string): Garment => ({
   fabric: '',
   craft: '',
   requests: '',
+  choices: {},
+  fabricOther: false,
   measurements: {},
   photos: {}
 });
-
-/** The CRM takes inches; a value typed in cm is converted. Empty or non-numeric values are skipped. */
-function measurementsInInches(values: Record<string, string>, unit: MeasurementUnit): Record<string, number> | undefined {
-  const out: Record<string, number> = {};
-  for (const [key, raw] of Object.entries(values)) {
-    const n = parseFloat(raw);
-    if (Number.isFinite(n)) out[key] = Math.round((unit === 'cm' ? n / 2.54 : n) * 100) / 100;
-  }
-  return Object.keys(out).length ? out : undefined;
-}
 
 type Errors = Partial<Record<'name' | 'phone' | 'email' | 'date', string>>;
 
@@ -127,6 +124,100 @@ const GARMENT_GROUPS: { id: string; label: string; keys: string[] }[] = [
 const groupOf = (key: string) => GARMENT_GROUPS.find((g) => g.keys.includes(key))?.id ?? 'western';
 
 const NO_PREFERENCE = 'No preference';
+const OWN_FABRIC = 'I will bring my own fabric';
+const OTHER_FABRIC = 'Other (type it)';
+
+/** One size box. `crm` is the CRM's own field for it; a box without one reaches the CRM as a written note. */
+type SizeField = { id: string; label: string; crm?: string };
+type SizeGroup = { name: string; fields: SizeField[] };
+
+/*
+ * The boutique's own blouse measurements (owner, 31 Oct). The CRM's blouse list is longer and named
+ * differently, so the form shows this one. A box listed in two groups (shoulder, upper chest, chest,
+ * waist) is one box: typing in either fills both. Boxes the CRM has no field for yet go as notes.
+ */
+const BLOUSE_SIZES: SizeGroup[] = [
+  { name: 'Main measurements', fields: [
+    { id: 'blouse_length', label: 'Blouse length', crm: 'blouse_length' },
+    { id: 'shoulder', label: 'Shoulder', crm: 'shoulder' },
+    { id: 'upper_chest', label: 'Upper chest (upper bust)', crm: 'upper_chest' },
+    { id: 'chest', label: 'Chest / bust', crm: 'chest' },
+    { id: 'waist', label: 'Waist', crm: 'waist' }
+  ] },
+  { name: 'Body measurements', fields: [
+    { id: 'front_length', label: 'Front blouse length', crm: 'front_length' },
+    { id: 'back_length', label: 'Back blouse length', crm: 'back_length' },
+    { id: 'shoulder', label: 'Shoulder', crm: 'shoulder' },
+    { id: 'front_shoulder', label: 'Front shoulder', crm: 'front_shoulder' },
+    { id: 'back_shoulder', label: 'Back shoulder', crm: 'back_shoulder' },
+    { id: 'upper_chest', label: 'Upper chest', crm: 'upper_chest' },
+    { id: 'chest', label: 'Chest / bust', crm: 'chest' },
+    { id: 'waist', label: 'Waist', crm: 'waist' },
+    { id: 'shoulder_to_bust', label: 'Shoulder to bust', crm: 'shoulder_to_bust' }
+  ] },
+  { name: 'Sleeves', fields: [
+    { id: 'bicep_length', label: 'Bicep length', crm: 'bicep_length' },
+    { id: 'bicep_round', label: 'Bicep round', crm: 'bicep_round' },
+    { id: 'short_sleeve_length', label: 'Short sleeve length' },
+    { id: 'short_sleeve_round', label: 'Short sleeve round' },
+    { id: 'elbow_length', label: 'Elbow sleeve length', crm: 'elbow_length' },
+    { id: 'elbow_round', label: 'Elbow round', crm: 'elbow_round' },
+    { id: 'three_quarter_length', label: '3/4 sleeve length' },
+    { id: 'three_quarter_round', label: '3/4 sleeve round' },
+    { id: 'full_sleeve_length', label: 'Full sleeve length' },
+    { id: 'full_sleeves_round', label: 'Full sleeve round (wrist)', crm: 'full_sleeves_round' }
+  ] },
+  { name: 'Neck', fields: [
+    { id: 'front_neck_depth', label: 'Front neck depth', crm: 'front_neck_depth' },
+    { id: 'back_neck_depth', label: 'Back neck depth', crm: 'back_neck_depth' },
+    { id: 'neck_width', label: 'Front neck width', crm: 'neck_width' },
+    { id: 'back_neck_width', label: 'Back neck width' },
+    { id: 'collar_neck', label: 'Collar', crm: 'collar_neck' }
+  ] }
+];
+
+/** Garments whose size boxes the form sets itself; an empty list asks none (a saree is finished, not fitted). */
+const OWN_SIZES: Record<string, SizeGroup[]> = { blouse: BLOUSE_SIZES, lehenga_blouse: BLOUSE_SIZES, saree: [] };
+
+/** Limits for a box the CRM has no field for: the CRM's own range for its sizes. */
+const ANY_SIZE: PortalMeasurementDef = { key: '', label: '', unit: 'inches', group: null, min: 0, max: 120, step: 0.25, help_text: '' };
+
+type ChoiceDef = {
+  id: string;
+  label: string;
+  options: { value: string; hint?: string }[];
+  /** A note shown when this answer is picked, e.g. asking for a reference photo. */
+  reference?: { when: string; note: string };
+};
+const SLEEVE_TYPE: ChoiceDef = {
+  id: 'sleeve',
+  label: 'Sleeve type',
+  options: [
+    { value: 'Short sleeve', hint: 'Reaches the mid-upper arm' },
+    { value: 'Long sleeve', hint: 'All the way to the wrist' },
+    { value: 'Cap sleeve', hint: 'Covers just the top of the shoulder' },
+    { value: 'Puff sleeve', hint: 'Gathered at the shoulder, puffs out' },
+    { value: 'Bell sleeve', hint: 'Fitted at the top, flares out' },
+    { value: 'Raglan sleeve', hint: 'One piece up to the collar' },
+    { value: 'Sleeveless' }
+  ]
+};
+/** Finishing and style picks per garment (owner, 31 Oct), sent to the CRM as written notes. */
+const GARMENT_CHOICES: Record<string, ChoiceDef[]> = {
+  saree: [
+    { id: 'fall', label: 'Fall', options: [{ value: 'Big' }, { value: 'Small' }, { value: 'No fall' }] },
+    { id: 'pico', label: 'Pico', options: [{ value: 'Yes' }, { value: 'No' }] },
+    {
+      id: 'tassels',
+      label: 'Tassels',
+      options: [{ value: 'Yes' }, { value: 'No' }],
+      reference: { when: 'Yes', note: 'Please add a photo of the tassels you like, under “Pallu Design” below.' }
+    },
+    { id: 'border', label: 'Border', options: [{ value: 'Yes' }, { value: 'No' }] }
+  ],
+  blouse: [SLEEVE_TYPE],
+  lehenga_blouse: [SLEEVE_TYPE]
+};
 
 const initialForm: FormState = {
   // Client & Consultation
@@ -168,17 +259,6 @@ const defaultOutfitCategories = [
   { id: 'Couture Gown', label: 'Couture Gown', desc: 'Contemporary draping & rich textures' },
   { id: 'Indo-Western', label: 'Indo-Western', desc: 'Jacket sets, drape skirts & bespoke co-ords' },
   { id: 'Custom Tailoring', label: 'Custom Tailoring', desc: 'Bespoke pattern crafted from your reference' }
-];
-
-const fabricOptions = [
-  'Pure Kanchipuram Silk',
-  'Raw Silk (Mulberry)',
-  'Tissue Silk with Metallic Sheen',
-  'Rich Brocade / Banarasi',
-  'Pure Organza',
-  'Georgette / Chiffon',
-  'Velvet',
-  'Client Providing Own Fabric'
 ];
 
 const embroideryOptions = [
@@ -493,6 +573,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [activeGarment, setActiveGarment] = useState<string | null>(null);
   // Which garment group is showing on the outfit step, and which size groups are unfolded.
   const [garmentTab, setGarmentTab] = useState('women');
+  // The fabrics the boutique sells in its online shop (ScaleEzy), so the list follows what it stocks.
+  const [shopFabrics, setShopFabrics] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   // A retry after a partial failure must not resend what the CRM already has.
   const customerSaved = useRef(false);
@@ -518,6 +600,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     fetchPortalProducts().then((res) => {
       if (res && res.length > 0) setPortalProducts(res);
     });
+    getShop()
+      .then((shop) => setShopFabrics((shop.facets?.fabrics ?? []).filter((f) => f.value && f.count > 0).map((f) => f.value)))
+      .catch(() => setShopFabrics([]));
     
     // Load saved profiles from localStorage
     try {
@@ -662,9 +747,45 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     return true;
   };
 
+  /** The size boxes shown for a garment: the boutique's own list where it has one, else the CRM's, in the CRM's groups. */
+  const sizeGroupsFor = (key: string): SizeGroup[] => {
+    if (key in OWN_SIZES) return OWN_SIZES[key];
+    const groups: SizeGroup[] = [];
+    for (const d of measureDefs[key] ?? []) {
+      const name = d.group || 'Main sizes';
+      const field = { id: d.key, label: d.label, crm: d.key };
+      const found = groups.find((x) => x.name === name);
+      if (found) found.fields.push(field); else groups.push({ name, fields: [field] });
+    }
+    return groups;
+  };
+  /** Each box once: a box listed in two groups is the same box. */
+  const sizeFieldsFor = (key: string): SizeField[] => {
+    const seen = new Set<string>();
+    return sizeGroupsFor(key).flatMap((g) => g.fields).filter((f) => !seen.has(f.id) && !!seen.add(f.id));
+  };
+  const limitsFor = (key: string, f: SizeField) => measureDefs[key]?.find((d) => d.key === f.crm) ?? ANY_SIZE;
+
+  /** What one garment sends: sizes the CRM has fields for (in inches), and the rest as note lines. */
+  const garmentSpec = (g: Garment) => {
+    const measurements: Record<string, number> = {};
+    const otherSizes: string[] = [];
+    let filled = 0;
+    for (const f of sizeFieldsFor(g.key)) {
+      const raw = (g.measurements[f.id] ?? '').trim();
+      const n = parseFloat(raw);
+      if (!raw || !Number.isFinite(n)) continue;
+      filled++;
+      if (f.crm) measurements[f.crm] = Math.round((form.unit === 'cm' ? n / 2.54 : n) * 100) / 100;
+      else otherSizes.push(`${f.label} ${raw} ${form.unit}`);
+    }
+    const choices = (GARMENT_CHOICES[g.key] ?? []).filter((c) => g.choices[c.id]).map((c) => `${c.label}: ${g.choices[c.id]}`);
+    return { measurements: Object.keys(measurements).length ? measurements : undefined, otherSizes, choices, filled };
+  };
+
   /** The first garment with a size that does not make sense, so the send can point the customer to it. */
   const garmentWithBadSize = () =>
-    form.garments.find((g) => (measureDefs[g.key] ?? []).some((d) => badMeasurement(g.measurements[d.key] ?? '', d, form.unit)));
+    form.garments.find((g) => sizeFieldsFor(g.key).some((f) => badMeasurement(g.measurements[f.id] ?? '', limitsFor(g.key, f), form.unit)));
 
   const checkSizes = (): boolean => {
     const bad = garmentWithBadSize();
@@ -678,16 +799,16 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   /** Each garment as the email fallback lists it: details plus the sizes filled for it. */
   const buildEmailOutfits = () =>
     form.garments.map((g) => {
-      const defs = measureDefs[g.key] ?? [];
-      const sizes = defs
-        .filter((d) => (g.measurements[d.key] ?? '').trim())
-        .map((d) => `• ${d.label}: ${g.measurements[d.key].trim()} ${form.unit}`);
+      const sizes = sizeFieldsFor(g.key)
+        .filter((f) => (g.measurements[f.id] ?? '').trim())
+        .map((f) => `• ${f.label}: ${g.measurements[f.id].trim()} ${form.unit}`);
+      const { choices } = garmentSpec(g);
       const dress: DressDetails = {
         dressType: garmentName(g.key),
         customDressName: form.customDressName.trim() || undefined,
-        fabricPreference: g.fabric || undefined,
+        fabricPreference: g.fabric.trim() || undefined,
         embroideryWork: g.craft || undefined,
-        specialRequests: g.requests.trim() || undefined
+        specialRequests: [...choices, g.requests.trim()].filter(Boolean).join('; ') || undefined
       };
       return { dress, measurements: sizes.length ? sizes.join('\n') : 'To be taken at the boutique' };
     });
@@ -825,14 +946,23 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
       const id = g?.key ?? '_general';
       if (sentGarments.current.has(id)) continue;
 
-      const notes = [appointment, pieces.length > 1 ? `Outfit ${i + 1} of ${pieces.length}.` : '', form.notes.trim()]
-        .filter(Boolean).join(' ').slice(0, 500);
-      const custom = [
-        g?.requests.trim() ? `Design: ${g.requests.trim()}` : null,
+      const spec = g ? garmentSpec(g) : null;
+      // Each text field takes 500 characters; what does not fit in the requirement spills into the notes.
+      const customFull = [
+        spec?.choices.length ? spec.choices.join('; ') : null,
+        g?.requests.trim() ? `${g.key === 'saree' ? 'Specifications' : 'Design'}: ${g.requests.trim()}` : null,
+        spec?.otherSizes.length ? `Other sizes: ${spec.otherSizes.join(', ')}` : null,
         form.customDressName ? `Style: ${form.customDressName}` : null,
         form.additionalNotes ? `Notes: ${form.additionalNotes}` : null
-      ].filter(Boolean).join(' | ').slice(0, 500);
-      const measurements = g ? measurementsInInches(g.measurements, form.unit) : undefined;
+      ].filter(Boolean).join(' | ');
+      const custom = customFull.slice(0, 500);
+      const notes = [
+        appointment,
+        pieces.length > 1 ? `Outfit ${i + 1} of ${pieces.length}.` : '',
+        form.notes.trim(),
+        customFull.length > 500 ? `(continued) ${customFull.slice(500)}` : ''
+      ].filter(Boolean).join(' ').slice(0, 500);
+      const measurements = spec?.measurements;
       const hasPhotos = !!g && Object.values(g.photos).some((files) => files.length > 0);
 
       let payload: PortalRequirementPayload | FormData;
@@ -841,7 +971,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
         fd.append('garment_type', g.key);
         fd.append('occasion', form.occasion);
         if (g.craft) fd.append('embellishments', g.craft);
-        if (g.fabric) fd.append('pattern_style', g.fabric);
+        if (g.fabric.trim()) fd.append('pattern_style', g.fabric.trim());
         fd.append('notes', notes);
         if (custom) fd.append('custom_requirements', custom);
         if (measurements) fd.append('measurements', JSON.stringify(measurements)); // JSON text in multipart
@@ -854,7 +984,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
           garment_type: g?.key,
           occasion: form.occasion,
           embellishments: g?.craft || undefined,
-          pattern_style: g?.fabric || undefined,
+          pattern_style: g?.fabric.trim() || undefined,
           custom_requirements: custom || undefined,
           notes,
           measurements
@@ -1055,12 +1185,12 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                     <div className="mt-4 space-y-1.5 border-t border-ink/10 pt-3.5 text-[12.5px] text-stone">
                       {form.garments.length === 0 && <p>• Outfit: we will plan it with you at the appointment</p>}
                       {form.garments.map((g) => {
-                        const sizes = Object.values(g.measurements).filter((v) => v.trim()).length;
+                        const sizes = garmentSpec(g).filled;
                         const photos = Object.values(g.photos).reduce((n, f) => n + f.length, 0);
                         return (
                           <p key={g.key}>
                             • <span className="font-medium text-ink">{garmentName(g.key)}</span>
-                            {g.fabric && <> · {g.fabric}</>}
+                            {g.fabric.trim() && <> · {g.fabric.trim()}</>}
                             {sizes > 0 && <> · {sizes} {sizes === 1 ? 'size' : 'sizes'}</>}
                             {photos > 0 && <> · {photos} {photos === 1 ? 'photo' : 'photos'}</>}
                           </p>
@@ -1420,13 +1550,30 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 </button>
                               </div>
                               <div className="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                <LuxurySelect
-                                  label="Fabric"
-                                  value={g.fabric}
-                                  onChange={(val) => updateGarment(g.key, { fabric: val })}
-                                  options={fabricOptions}
-                                  allowNone
-                                />
+                                <div>
+                                  <LuxurySelect
+                                    label="Fabric"
+                                    value={g.fabricOther ? OTHER_FABRIC : g.fabric}
+                                    onChange={(val) =>
+                                      val === OTHER_FABRIC
+                                        ? updateGarment(g.key, { fabricOther: true, fabric: '' })
+                                        : updateGarment(g.key, { fabricOther: false, fabric: val })
+                                    }
+                                    options={[...shopFabrics, OWN_FABRIC, OTHER_FABRIC]}
+                                    allowNone
+                                  />
+                                  {g.fabricOther && (
+                                    <input
+                                      type="text"
+                                      autoFocus
+                                      value={g.fabric}
+                                      onChange={(e) => updateGarment(g.key, { fabric: e.target.value })}
+                                      className={fieldCls}
+                                      placeholder="Type the fabric, for example Chanderi"
+                                      aria-label={`${garmentName(g.key)} fabric`}
+                                    />
+                                  )}
+                                </div>
                                 <LuxurySelect
                                   label="Embroidery & work"
                                   value={g.craft}
@@ -1437,14 +1584,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                               </div>
                               <label className="mt-4 block">
                                 <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">
-                                  Design ideas (optional)
+                                  {g.key === 'saree' ? 'Any other specifications (optional)' : 'Design ideas (optional)'}
                                 </span>
                                 <input
                                   type="text"
                                   value={g.requests}
                                   onChange={(e) => updateGarment(g.key, { requests: e.target.value })}
                                   className={fieldCls}
-                                  placeholder="For example: boat neck, deep V back, elbow sleeves"
+                                  placeholder={g.key === 'saree' ? 'For example: contrast border, a motif on the pallu' : 'For example: boat neck, deep V back, elbow sleeves'}
                                 />
                               </label>
                             </div>
@@ -1500,7 +1647,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         <div role="tablist" aria-label="Garment" className="flex flex-wrap gap-2">
                           {form.garments.map((g) => {
                             const isActive = g.key === currentGarment?.key;
-                            const filled = Object.values(g.measurements).some((v) => v.trim()) || Object.values(g.photos).some((f) => f.length > 0);
+                            const filled = Object.values(g.measurements).some((v) => v.trim()) || Object.values(g.choices).some(Boolean) || Object.values(g.photos).some((f) => f.length > 0);
                             return (
                               <button
                                 key={g.key}
@@ -1527,14 +1674,46 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         </p>
                       )}
 
-                      {currentGarment && (measureDefs[currentGarment.key]?.length ?? 0) > 0 && (() => {
-                        const defs = measureDefs[currentGarment.key];
-                        const groups: { name: string; defs: PortalMeasurementDef[] }[] = [];
-                        for (const d of defs) {
-                          const name = d.group || 'Main sizes';
-                          const found = groups.find((x) => x.name === name);
-                          if (found) found.defs.push(d); else groups.push({ name, defs: [d] });
-                        }
+                      {currentGarment && (GARMENT_CHOICES[currentGarment.key] ?? []).length > 0 && (
+                        <div className="space-y-4">
+                          <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-stone">
+                            {garmentName(currentGarment.key)} {currentGarment.key === 'saree' ? 'finishing' : 'style'}
+                          </span>
+                          {GARMENT_CHOICES[currentGarment.key].map((c) => (
+                            <div key={c.id}>
+                              <p className="mb-2 text-[12.5px] font-medium text-ink">{c.label}</p>
+                              <div role="radiogroup" aria-label={c.label} className="flex flex-wrap gap-2">
+                                {c.options.map((o) => {
+                                  const on = currentGarment.choices[c.id] === o.value;
+                                  return (
+                                    <button
+                                      key={o.value}
+                                      type="button"
+                                      role="radio"
+                                      aria-checked={on}
+                                      onClick={() =>
+                                        updateGarment(currentGarment.key, { choices: { ...currentGarment.choices, [c.id]: on ? '' : o.value } })
+                                      }
+                                      className={`rounded-xs border px-3 py-2 text-left text-[12.5px] transition-colors ${
+                                        on ? 'border-ink bg-ink text-ivory' : 'border-ink/15 bg-paper/30 text-ink hover:border-ink'
+                                      }`}
+                                    >
+                                      <span className="block font-medium">{o.value}</span>
+                                      {o.hint && <span className={`block text-[11px] ${on ? 'text-ivory/70' : 'text-stone'}`}>{o.hint}</span>}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {c.reference && currentGarment.choices[c.id] === c.reference.when && (
+                                <p className="mt-2 text-[12px] text-oxblood">{c.reference.note}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {currentGarment && sizeGroupsFor(currentGarment.key).length > 0 && (() => {
+                        const groups = sizeGroupsFor(currentGarment.key);
                         return (
                           <div className="space-y-3">
                             <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-stone">
@@ -1542,8 +1721,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                             </span>
                             {groups.map((grp, gi) => {
                               const id = `${currentGarment.key}:${grp.name}`;
-                              const filled = grp.defs.filter((d) => (currentGarment.measurements[d.key] ?? '').trim()).length;
-                              const hasBad = grp.defs.some((d) => badMeasurement(currentGarment.measurements[d.key] ?? '', d, form.unit));
+                              const filled = grp.fields.filter((f) => (currentGarment.measurements[f.id] ?? '').trim()).length;
+                              const hasBad = grp.fields.some((f) => badMeasurement(currentGarment.measurements[f.id] ?? '', limitsFor(currentGarment.key, f), form.unit));
                               const isOpen = openGroups[id] ?? (gi === 0 || hasBad);
                               return (
                                 <div key={id} className="rounded-sm border border-ink/10">
@@ -1556,18 +1735,19 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                     <span className="text-[13px] font-medium text-ink">
                                       {grp.name}
                                       <span className="ml-2 text-[11.5px] font-normal text-stone">
-                                        {filled > 0 ? `${filled} of ${grp.defs.length} filled` : `${grp.defs.length} sizes`}
+                                        {filled > 0 ? `${filled} of ${grp.fields.length} filled` : `${grp.fields.length} sizes`}
                                       </span>
                                     </span>
                                     <ChevronDownIcon className={`h-4 w-4 text-stone transition-transform ${isOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
                                   </button>
                                   {isOpen && (
                                     <div className="grid grid-cols-2 gap-x-5 gap-y-4 border-t border-ink/10 px-3.5 pb-4 pt-3 sm:grid-cols-3">
-                                      {grp.defs.map((measure) => {
-                                        const raw = currentGarment.measurements[measure.key] || '';
-                                        const bad = badMeasurement(raw, measure, form.unit);
+                                      {grp.fields.map((measure) => {
+                                        const raw = currentGarment.measurements[measure.id] || '';
+                                        const limits = limitsFor(currentGarment.key, measure);
+                                        const bad = badMeasurement(raw, limits, form.unit);
                                         return (
-                                          <label key={measure.key} className="block">
+                                          <label key={measure.id} className="block">
                                             <span className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-stone">{measure.label}</span>
                                             <div className="relative mt-1">
                                               <input
@@ -1577,7 +1757,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                                 aria-invalid={bad}
                                                 onChange={(e) => {
                                                   updateGarment(currentGarment.key, {
-                                                    measurements: { ...currentGarment.measurements, [measure.key]: e.target.value }
+                                                    measurements: { ...currentGarment.measurements, [measure.id]: e.target.value }
                                                   });
                                                   if (submitError) setSubmitError(null);
                                                 }}
@@ -1588,7 +1768,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                               <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-stone/60">{form.unit}</span>
                                             </div>
                                             {bad && <span className="mt-1 block text-[11px] text-oxblood">Not a size we expect</span>}
-                                            {!bad && measure.help_text && <span className="mt-1 block text-[11px] text-stone">{measure.help_text}</span>}
+                                            {!bad && limits.help_text && <span className="mt-1 block text-[11px] text-stone">{limits.help_text}</span>}
                                           </label>
                                         );
                                       })}
