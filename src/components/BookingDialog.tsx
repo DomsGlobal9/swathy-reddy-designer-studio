@@ -1154,7 +1154,11 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 type="tel"
                                 value={localPhone}
                                 onChange={(e) => {
-                                  const val = e.target.value;
+                                  // Digits only, at most the 10 of an Indian mobile; a pasted +91 or leading 0 is dropped.
+                                  let val = e.target.value.replace(/\D/g, '');
+                                  if (val.length > 10 && val.startsWith('91')) val = val.slice(2);
+                                  if (val.length > 10 && val.startsWith('0')) val = val.slice(1);
+                                  val = val.slice(0, 10);
                                   setLocalPhone(val);
                                   startTransition(() => {
                                     update('phone', val);

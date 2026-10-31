@@ -3,6 +3,8 @@ import { ChapterMark } from '../ui/ChapterMark';
 import { DriftingMotif } from '../ui/DriftingMotif';
 import { FadeUp } from '../ui/FadeUp';
 import { RevealImage } from '../ui/RevealImage';
+import { ArrowLink } from '../ui/ArrowLink';
+import { shopHome } from '../../lib/shop';
 
 export function WomanSection() {
   return (
@@ -29,6 +31,10 @@ export function WomanSection() {
               She doesn't dress for the room. She dresses for the memory — the wedding she'll talk about for years, the
               ordinary Tuesday that deserved silk.
             </p>
+          </FadeUp>
+          {/* Women's pieces are on sale now, so this opens the online shop (Men and Kids open their coming-soon pages). */}
+          <FadeUp delay={0.15}>
+            <ArrowLink className="mt-10" href={shopHome()}>Explore the collection</ArrowLink>
           </FadeUp>
         </div>
 

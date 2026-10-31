@@ -74,43 +74,48 @@ export function Contact() {
               </p>
             </FadeUp>
 
-            <div className={`mt-14 grid gap-5 sm:grid-cols-2 ${contact.phone ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
-              <Channel icon={<MapPinIcon />} label="Visit the atelier" note="Walk in during opening hours, or book a private fitting.">
-                <div>
-                  <Value>
-                    {contact.street.split(', ').map((line, i) => <span key={i} className="block">{line}</span>)}
-                  </Value>
-                  <p className="mt-2 text-[14px] text-stone">{contact.city}</p>
-                </div>
-                <Pill href={mapsUrl} external>Get directions</Pill>
+            {/* Four in a row only from 1400px: narrower, the two buttons in a card wrap and the rows stop lining up. */}
+            <div className={`mt-14 grid gap-5 sm:grid-cols-2 ${contact.phone ? 'min-[1400px]:grid-cols-4' : 'min-[1400px]:grid-cols-3'}`}>
+              <Channel
+                icon={<MapPinIcon />}
+                label="Visit the atelier"
+                note="Walk in during opening hours, or book a private fitting."
+                actions={<Pill href={mapsUrl} external>Get directions</Pill>}>
+                <Value>
+                  {contact.street.split(', ').map((line, i) => <span key={i} className="block">{line}</span>)}
+                </Value>
+                <p className="mt-2 text-[14px] text-stone">{contact.city}</p>
               </Channel>
 
-              <Channel icon={<MailIcon />} label="Write to us" note="For orders, alterations, and everything in between.">
+              <Channel
+                icon={<MailIcon />}
+                label="Write to us"
+                note="For orders, alterations, and everything in between."
+                actions={<><Pill href={`mailto:${contact.email}`}>Send an email</Pill><CopyButton text={contact.email} /></>}>
                 {/* A zero-width space lets a long address break before the @, never mid-word. */}
                 <Value>{contact.email.replace('@', '​@')}</Value>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                  <Pill href={`mailto:${contact.email}`}>Send an email</Pill>
-                  <CopyButton text={contact.email} />
-                </div>
               </Channel>
 
               {contact.phone && (
-                <Channel icon={<PhoneIcon />} label="Call or WhatsApp" note="We answer during opening hours.">
+                <Channel
+                  icon={<PhoneIcon />}
+                  label="Call or WhatsApp"
+                  note="We answer during opening hours."
+                  actions={<><Pill href={`tel:+${phoneDigits}`}>Call</Pill><Pill href={`https://wa.me/${phoneDigits}`} external quiet>WhatsApp</Pill></>}>
                   <Value>{contact.phone}</Value>
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                    <Pill href={`tel:+${phoneDigits}`}>Call</Pill>
-                    <Pill href={`https://wa.me/${phoneDigits}`} external quiet>WhatsApp</Pill>
-                  </div>
                 </Channel>
               )}
 
-              <Channel icon={<CalendarIcon />} label="Private consultation" note="Bridal, festive and made-to-measure, with time set aside only for you.">
+              <Channel
+                icon={<CalendarIcon />}
+                label="Private consultation"
+                note="Bridal, festive and made-to-measure, with time set aside only for you."
+                actions={<Pill onClick={openBooking}>Book a consultation</Pill>}>
                 <Value>
                   In the atelier
                   <br />
                   or on video
                 </Value>
-                <Pill onClick={openBooking}>Book a consultation</Pill>
               </Channel>
             </div>
           </div>
@@ -160,17 +165,22 @@ export function Contact() {
   );
 }
 
-function Channel({ icon, label, note, children }: { icon: ReactNode; label: string; note: string; children: ReactNode }) {
+/**
+ * A way to reach the boutique. The same order in every card (title, note, details, buttons), with the
+ * details stretching, so the buttons of cards side by side always sit on one line.
+ */
+function Channel({ icon, label, note, actions, children }: { icon: ReactNode; label: string; note: string; actions: ReactNode; children: ReactNode }) {
   return (
-    <FadeUp className="flex h-full flex-col gap-6 rounded-3xl bg-paper/55 p-7 transition-shadow duration-300 hover:shadow-[0_24px_48px_-28px_rgba(29,24,21,0.35)] md:p-9">
+    <FadeUp className="flex h-full flex-col rounded-3xl bg-paper/55 p-7 transition-shadow duration-300 hover:shadow-[0_24px_48px_-28px_rgba(29,24,21,0.35)] md:p-8">
       <span className="flex items-center gap-3 text-[14px] font-medium text-ink">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-oxblood/10 text-oxblood [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:stroke-[1.6]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-oxblood/10 text-oxblood [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:stroke-[1.6]">
           {icon}
         </span>
         {label}
       </span>
-      {children}
-      <p className="mt-auto text-[13px] leading-relaxed text-stone">{note}</p>
+      <p className="mt-3 text-[13px] leading-relaxed text-stone">{note}</p>
+      <div className="mt-6 flex-1">{children}</div>
+      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">{actions}</div>
     </FadeUp>
   );
 }
