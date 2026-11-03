@@ -42,7 +42,7 @@ export function DesignPhotos({
       </div>
       <p className="mb-3 text-[12px] text-stone">Optional. Add photos under the part they show.</p>
 
-      <ul className="divide-y divide-ink/10 border-y border-ink/10">
+      <ul className="divide-y divide-ink/8 overflow-hidden rounded-2xl border border-ink/8 bg-white/35 px-3.5">
         {parts.map((part) => {
           const files = photos[part.key] ?? [];
           return (

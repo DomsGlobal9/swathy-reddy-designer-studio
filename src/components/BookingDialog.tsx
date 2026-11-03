@@ -51,6 +51,7 @@ import { DesignPhotos } from './DesignPhotos';
 import { getShop } from '../lib/shop';
 import { contact } from '../data/contact';
 import { MeasureGuide, guideFor } from './MeasureGuide';
+import { clearDraft, loadDraft, loadDraftPhotos, saveDraft, saveDraftPhotos, type DraftPhotos } from '../lib/bookingDraft';
 
 type BookingDialogProps = {
   open: boolean;
@@ -298,7 +299,7 @@ function Notice({ tone = 'info', className = '', children }: { tone?: 'info' | '
   return (
     <div
       role={tone === 'warn' ? 'alert' : 'note'}
-      className={`flex items-start gap-2.5 rounded-r-sm border-l-[3px] px-3.5 py-3 text-[12.5px] leading-relaxed ${
+      className={`flex items-start gap-2.5 rounded-xl border-l-[3px] px-3.5 py-3 text-[12.5px] leading-relaxed ${
         tone === 'warn' ? 'border-oxblood bg-oxblood/[0.09] text-oxblood' : 'border-oxblood/45 bg-oxblood/[0.045] text-ink'
       } ${className}`}
     >
@@ -415,7 +416,7 @@ function LuxurySelect({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="mt-1.5 flex w-full items-center justify-between border-b border-ink/25 bg-transparent py-2.5 text-left text-[14px] text-ink outline-none transition-colors duration-200 hover:border-ink focus:border-ink"
+        className="mt-1.5 flex w-full items-center justify-between rounded-xl border border-ink/10 bg-white/55 transition-all duration-200 hover:border-ink/20 focus:border-oxblood/45 focus:bg-white/85 focus:ring-2 focus:ring-oxblood/10 px-3.5 py-2.5 text-left text-[14px] text-ink outline-none"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -436,7 +437,7 @@ function LuxurySelect({
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             role="listbox"
-            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-sm border border-ink/15 bg-ivory shadow-[0_16px_40px_-6px_rgba(29,24,21,0.2)] py-1"
+            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-ink/10 bg-ivory p-1.5 shadow-[0_16px_40px_-6px_rgba(29,24,21,0.2)] py-1"
           >
             {shown.map((option) => {
               const selected = option === value || (option === NO_PREFERENCE && !value);
@@ -452,7 +453,7 @@ function LuxurySelect({
                   }}
                   className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-[13px] transition-colors duration-150 ${
                     selected
-                      ? 'bg-ink text-ivory font-medium'
+                      ? 'bg-oxblood/10 text-oxblood font-medium'
                       : 'text-ink hover:bg-oxblood/10 hover:text-oxblood'
                   }`}
                 >
@@ -541,12 +542,12 @@ function LuxuryDatePicker({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`mt-1.5 flex w-full items-center justify-between border-b bg-transparent py-2.5 text-left text-[14px] outline-none transition-colors duration-200 ${
+        className={`mt-1.5 flex w-full items-center justify-between rounded-xl border bg-white/55 px-3.5 py-2.5 text-left text-[14px] outline-none transition-all duration-200 ${
           hasError
-            ? 'border-oxblood text-oxblood'
+            ? 'border-oxblood/60 text-oxblood ring-2 ring-oxblood/10'
             : open
-            ? 'border-ink text-ink'
-            : 'border-ink/25 text-ink hover:border-ink focus:border-ink'
+            ? 'border-oxblood/45 bg-white/85 text-ink ring-2 ring-oxblood/10'
+            : 'border-ink/10 text-ink hover:border-ink/20'
         }`}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -564,7 +565,7 @@ function LuxuryDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="mt-2 w-full max-w-[320px] rounded-sm border border-ink/15 bg-ivory p-3.5 shadow-[0_16px_36px_-6px_rgba(29,24,21,0.18)]"
+            className="mt-2 w-full max-w-[320px] rounded-2xl border border-ink/10 bg-ivory p-3.5 shadow-[0_16px_36px_-6px_rgba(29,24,21,0.18)]"
           >
             <div className="flex items-center justify-between border-b border-ink/10 pb-2.5">
               <button
@@ -624,7 +625,7 @@ function LuxuryDatePicker({
                     }}
                     className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[12px] transition-all duration-150 ${
                       isSelected
-                        ? 'bg-ink font-medium text-ivory shadow-xs'
+                        ? 'bg-oxblood font-medium text-ivory shadow-[0_4px_10px_-4px_rgba(107,28,34,0.6)]'
                         : isDisabled
                         ? 'cursor-not-allowed text-stone/30'
                         : 'text-ink hover:bg-oxblood/10 hover:text-oxblood'
@@ -649,6 +650,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [portalProducts, setPortalProducts] = useState<PortalProduct[]>([]);
   const [form, setForm] = useState<FormState>(initialForm);
   const [activeTab, setActiveTab] = useState<'consultation' | 'dress' | 'measurements'>('consultation');
+  // True when the form holds a kept draft: shows "We kept what you typed earlier".
+  const [restored, setRestored] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   
   // Local Storage Autocomplete state
@@ -720,6 +723,50 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
       }
     } catch (e) {}
   }, []);
+
+  // Bring back a draft from an earlier visit (a refresh or a closed form), photos included. Photos are
+  // not saved until this has finished, or the empty first render would wipe the saved ones.
+  const photosRestored = useRef(false);
+  useEffect(() => {
+    const draft = loadDraft<{ form: FormState; tab: typeof activeTab }>();
+    if (!draft?.form) {
+      photosRestored.current = true;
+      return;
+    }
+    setForm({
+      ...initialForm,
+      ...draft.form,
+      garments: (draft.form.garments ?? []).map((g) => ({ ...newGarment(g.key), ...g, photos: {} }))
+    });
+    setActiveTab(draft.tab ?? 'consultation');
+    setRestored(true);
+    loadDraftPhotos().then((photos) => {
+      setForm((prev) => ({ ...prev, garments: prev.garments.map((g) => (photos[g.key] ? { ...g, photos: photos[g.key] } : g)) }));
+      photosRestored.current = true;
+    });
+  }, []);
+
+  const isEmpty = (f: FormState) => f.garments.length === 0 && JSON.stringify({ ...f, garments: [] }) === JSON.stringify(initialForm);
+
+  // Keep the typed details as the customer goes (photos are saved separately, only when they change).
+  useEffect(() => {
+    if (submissionSuccessType) return;
+    const t = window.setTimeout(() => {
+      if (isEmpty(form)) clearDraft();
+      else saveDraft({ form: { ...form, garments: form.garments.map((g) => ({ ...g, photos: {} })) }, tab: activeTab });
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [form, activeTab, submissionSuccessType]);
+
+  const photoSignature = form.garments
+    .map((g) => `${g.key}:${Object.entries(g.photos).map(([k, fs]) => `${k}=${fs.map((f) => `${f.name}/${f.size}`).join(',')}`).join(';')}`)
+    .join('|');
+  useEffect(() => {
+    if (submissionSuccessType || !photosRestored.current) return;
+    const all: DraftPhotos = {};
+    for (const g of form.garments) if (Object.values(g.photos).some((fs) => fs.length)) all[g.key] = g.photos;
+    void saveDraftPhotos(all);
+  }, [photoSignature, submissionSuccessType]);
 
   const [, startTransition] = useTransition();
   const [localPhone, setLocalPhone] = useState(form.phone);
@@ -1120,6 +1167,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
     // Success!
     saveProfileToLocal();
+    clearDraft();
     setOtpModalOpen(false);
     setSubmissionSuccessType('lead');
     return true;
@@ -1157,11 +1205,35 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     sentGarments.current.clear();
   };
 
+  /** Closing keeps what was typed (a draft); only a finished booking starts the next one fresh. */
+  const afterClose = () => {
+    if (submissionSuccessType) {
+      reset();
+      setRestored(false);
+      return;
+    }
+    setOtpModalOpen(false);
+    setOtpCode('');
+    setOtpStatus('idle');
+    setOtpError(null);
+    setGuideOpen(null);
+    setErrors({});
+    setSubmitError(null);
+    setRestored(!isEmpty(form));
+  };
+
+  const startOver = () => {
+    clearDraft();
+    reset();
+    setRestored(false);
+    setLocalPhone('');
+  };
+
   const fieldCls =
-    'mt-1.5 w-full border-b border-ink/25 bg-transparent py-2 text-[14px] text-ink outline-none transition-colors duration-200 placeholder:text-stone/50 focus:border-ink';
+    'mt-1.5 w-full rounded-xl border border-ink/10 bg-white/55 transition-all duration-200 hover:border-ink/20 focus:border-oxblood/45 focus:bg-white/85 focus:ring-2 focus:ring-oxblood/10 px-3.5 py-2.5 text-[14px] text-ink outline-none placeholder:text-stone/45';
 
   return (
-    <AnimatePresence onExitComplete={reset}>
+    <AnimatePresence onExitComplete={afterClose}>
       {open && (
         <div className="fixed inset-0 z-50">
           {/* Backdrop */}
@@ -1179,7 +1251,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="booking-title"
-            className="absolute inset-y-0 right-0 flex h-full w-full max-w-[640px] flex-col overflow-hidden bg-ivory shadow-[0_20px_60px_-15px_rgba(29,24,21,0.35)]"
+            className="absolute inset-y-0 right-0 flex h-full w-full max-w-[640px] flex-col overflow-hidden bg-ivory sm:rounded-l-[28px] shadow-[0_20px_60px_-15px_rgba(29,24,21,0.35)]"
             style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -1257,7 +1329,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                     Request <em>received.</em>
                   </h2>
 
-                  <div className="mt-5 rounded-sm border border-line bg-paper/70 p-5 shadow-xs">
+                  <div className="mt-5 rounded-2xl border border-ink/10 bg-white/45 p-5 shadow-[0_12px_30px_-22px_rgba(29,24,21,0.5)]">
                     <p className="text-[14px] leading-relaxed text-ink">
                       Thank you, <strong className="font-semibold text-oxblood">{form.name.trim().split(' ')[0]}</strong>. We have your request for a{' '}
                       <strong>{form.mode === 'boutique' ? 'visit to the boutique' : 'video call'}</strong> on{' '}
@@ -1298,7 +1370,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                   <button
                     type="button"
                     onClick={onClose}
-                    className="mt-8 self-start bg-ink px-8 py-3.5 text-[11px] font-medium uppercase tracking-[0.22em] text-ivory transition-colors duration-200 hover:bg-oxblood shadow-xs"
+                    className="mt-8 self-start rounded-full bg-ink px-8 py-3.5 text-[11px] font-medium uppercase tracking-[0.22em] text-ivory transition-colors duration-200 hover:bg-oxblood shadow-xs"
                   >
                     Close
                   </button>
@@ -1317,6 +1389,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                   />
 
                   {/* Atelier Consultation Notice (Polite & Softened) */}
+                  {restored && (
+                    <Notice className="mb-5">
+                      We kept what you typed earlier.{' '}
+                      <button type="button" onClick={startOver} className="font-medium text-oxblood underline underline-offset-2 hover:text-ink">
+                        Start over
+                      </button>
+                    </Notice>
+                  )}
                   {submitError && <Notice tone="warn" className="mb-5">{submitError}</Notice>}
 
                   {/* ────────────────────────────────────────────────────────────── */}
@@ -1329,7 +1409,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       key="tab-consultation"
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.18 }}
+                      transition={{ duration: 0.32, ease: easeOut }}
                       className="space-y-6"
                     >
                       {/* Name & Phone side-by-side */}
@@ -1526,7 +1606,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       key="tab-dress"
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.18 }}
+                      transition={{ duration: 0.32, ease: easeOut }}
                       className="space-y-6"
                     >
                       {/* Garments in groups (the CRM's list has no categories), several can be picked */}
@@ -1592,7 +1672,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       ) : (
                         <div className="space-y-3">
                           {form.garments.map((g) => (
-                            <div key={g.key} className="rounded-xl bg-paper/45 p-4 sm:p-5">
+                            <div key={g.key} className="rounded-2xl border border-ink/8 bg-white/40 p-4 shadow-[0_10px_26px_-22px_rgba(29,24,21,0.5)] sm:p-5">
                               <div className="flex items-start justify-between gap-3">
                                 <p className="font-display text-[19px] leading-tight text-ink">{garmentName(g.key)}</p>
                                 <button
@@ -1664,7 +1744,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       key="tab-measurements"
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.18 }}
+                      transition={{ duration: 0.32, ease: easeOut }}
                       className="space-y-6"
                     >
                       {/* Reassurance note & Unit selector */}
@@ -1778,7 +1858,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                               const hasBad = grp.fields.some((f) => badMeasurement(currentGarment.measurements[f.id] ?? '', limitsFor(currentGarment.key, f), form.unit));
                               const isOpen = openGroups[id] ?? (gi === 0 || hasBad);
                               return (
-                                <div key={id} className="rounded-sm border border-ink/10">
+                                <div key={id} className="overflow-hidden rounded-2xl border border-ink/8 bg-white/35">
                                   <button
                                     type="button"
                                     aria-expanded={isOpen}
@@ -1816,11 +1896,11 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                                   });
                                                   if (submitError) setSubmitError(null);
                                                 }}
-                                                className={`w-full border-b bg-transparent py-1.5 pr-7 text-[14px] font-medium text-ink outline-none placeholder:text-stone/40 ${
-                                                  bad ? 'border-oxblood' : 'border-ink/25 focus:border-ink'
+                                                className={`w-full rounded-lg border bg-white/60 px-2.5 py-2 pr-8 text-[14px] font-medium text-ink outline-none transition-all duration-200 placeholder:text-stone/40 ${
+                                                  bad ? 'border-oxblood/60 ring-2 ring-oxblood/10' : 'border-ink/10 hover:border-ink/20 focus:border-oxblood/45 focus:ring-2 focus:ring-oxblood/10'
                                                 }`}
                                               />
-                                              <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-stone/60">{form.unit}</span>
+                                              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-stone/60">{form.unit}</span>
                                             </div>
                                             {bad && (
                                               <span className="mt-1 flex items-center gap-1 text-[11px] font-medium text-oxblood">
@@ -1996,10 +2076,11 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         onClick={() => {
                           if (validateCoreForm()) switchTab('dress');
                         }}
-                        className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap py-2 text-[11px] uppercase tracking-[0.14em] text-ink underline underline-offset-4 transition-colors hover:text-oxblood"
+                        className="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-full border border-oxblood/40 bg-white/50 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-oxblood transition-all duration-200 hover:-translate-y-px hover:border-oxblood hover:bg-oxblood/[0.06] sm:w-auto"
                       >
-                        <span>Add outfit &amp; sizes (optional)</span>
-                        <ArrowRightIcon className="h-3 w-3 shrink-0" />
+                        <span>Add outfit &amp; sizes</span>
+                        <span className="rounded-full bg-oxblood/10 px-2 py-0.5 text-[9.5px] tracking-[0.12em]">Optional</span>
+                        <ArrowRightIcon className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
                       </button>
                       <button
                         type="button"
@@ -2084,7 +2165,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0.95, opacity: 0, y: 10 }}
                   transition={{ duration: 0.2 }}
-                  className="w-full max-w-[420px] rounded-sm border border-ink/20 bg-ivory p-6 shadow-2xl"
+                  className="w-full max-w-[420px] rounded-3xl border border-ink/10 bg-ivory p-6 shadow-[0_30px_70px_-20px_rgba(29,24,21,0.55)]"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-ink/10">
                     <div className="flex items-center gap-2 text-emerald-800">
@@ -2140,7 +2221,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                         placeholder="••••••"
-                        className="mt-1.5 w-full border border-ink/30 bg-paper/50 py-2.5 text-center font-mono text-2xl tracking-[0.5em] text-ink outline-none transition-colors focus:border-ink rounded-xs placeholder:text-stone/30"
+                        className="mt-1.5 w-full rounded-2xl border border-ink/15 bg-white/60 py-3 text-center font-mono text-2xl tracking-[0.5em] text-ink outline-none transition-colors focus:border-ink rounded-xs placeholder:text-stone/30"
                       />
                     </label>
                   </div>
@@ -2168,7 +2249,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       <button
                         type="button"
                         onClick={() => requestCode(otpPurpose)}
-                        className="flex w-full items-center justify-center gap-2 rounded-xs bg-ink py-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory shadow-xs transition-colors hover:bg-oxblood"
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-ink py-3.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory shadow-xs transition-colors hover:bg-oxblood"
                       >
                         <RefreshCwIcon className="h-3.5 w-3.5" />
                         <span>Try again</span>
@@ -2178,7 +2259,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       type="button"
                       disabled={otpStatus === 'verifying' || otpStatus === 'requesting' || (!(otpPurpose === 'submit' && portalToken) && otpCode.length !== 6)}
                       onClick={handleConfirmOtpAndSubmit}
-                      className="flex w-full items-center justify-center gap-2 bg-ink py-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-oxblood disabled:cursor-not-allowed disabled:opacity-50 rounded-xs shadow-xs"
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-oxblood py-3.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-oxblood disabled:cursor-not-allowed disabled:opacity-50 rounded-xs shadow-xs"
                     >
                       {otpStatus === 'verifying' ? (
                         <>

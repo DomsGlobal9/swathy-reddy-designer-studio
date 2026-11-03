@@ -167,7 +167,7 @@ export function MeasureGuide({ label, guide, onClose }: { label: string; guide: 
         aria-modal="true"
         aria-label={`How to measure: ${label}`}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[360px] rounded-sm border border-ink/15 bg-ivory p-5 shadow-2xl"
+        className="w-full max-w-[360px] rounded-3xl border border-ink/10 bg-ivory p-5 shadow-[0_30px_70px_-20px_rgba(29,24,21,0.55)]"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -178,7 +178,7 @@ export function MeasureGuide({ label, guide, onClose }: { label: string; guide: 
             <XIcon className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative mt-3 rounded-sm bg-paper/60 py-3">
+        <div className="relative mt-3 rounded-2xl bg-paper/60 py-3">
           <span className="absolute left-3 top-2 text-[10px] font-medium uppercase tracking-[0.2em] text-stone">{guide.view} view</span>
           <svg viewBox="0 0 200 300" className="mx-auto h-[260px] w-auto" aria-hidden="true">
             <g className="text-stone/45"><Figure /></g>
