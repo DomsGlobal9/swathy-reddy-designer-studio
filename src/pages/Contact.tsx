@@ -16,6 +16,15 @@ import { easeOut } from '../utils/format';
 const WEEK = [1, 2, 3, 4, 5, 6, 0]; // Monday first, as Indian calendars print it
 const COUNT_WORDS = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven'];
 
+/** How far India (UTC+5:30) is from the visitor's own clock, e.g. "1 hr 30 min ahead of you"; null in India. */
+function istDifference(): string | null {
+  const diff = 330 + new Date().getTimezoneOffset(); // minutes India is ahead of the visitor
+  if (diff === 0) return null;
+  const abs = Math.abs(diff);
+  const span = [Math.floor(abs / 60) ? `${Math.floor(abs / 60)} hr` : '', abs % 60 ? `${abs % 60} min` : ''].filter(Boolean).join(' ');
+  return `${span} ${diff > 0 ? 'ahead of' : 'behind'} you`;
+}
+
 export function Contact() {
   const reduce = useReducedMotion();
   useSmoothScroll(!reduce);
@@ -132,7 +141,8 @@ export function Contact() {
                 <em>{COUNT_WORDS[openDays]} days a week.</em>
               </h2>
               <WeekHours />
-              <p className="mt-5 text-[13px] text-stone">All times are Hyderabad time (IST).</p>
+              {/* Only a visitor outside India's time zone needs this, and then with the actual difference. */}
+              {istDifference() && <p className="mt-5 text-[13px] text-stone">These are India times (IST), {istDifference()}.</p>}
             </FadeUp>
 
             <div className="relative min-h-[480px] overflow-hidden rounded-3xl bg-paper sm:min-h-[420px] lg:col-span-7 lg:min-h-0">

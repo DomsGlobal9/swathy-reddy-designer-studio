@@ -10,7 +10,7 @@ const pages = [
   {
     path: 'contact',
     title: 'Contact & Visit | Swathy Reddy Designer Studio, Banjara Hills',
-    description: 'Visit the atelier at 4th Cross Road, Naveen Nagar, Banjara Hills, Hyderabad. Open Monday to Saturday, 11am to 8pm. Call or WhatsApp +91 75690 60926, or book a private consultation.',
+    description: 'Visit the atelier at 4th Cross Road, Naveen Nagar, Banjara Hills, Hyderabad. Open Monday to Saturday, 11am to 7pm. Call or WhatsApp +91 75690 60926, or book a private consultation.',
     image: { url: '/og-image.jpg', width: 1200, height: 630, alt: 'Swathy Reddy Designer Studio, Hyderabad' }
   },
   {

@@ -26,7 +26,7 @@ export const phoneDigits = contact.phone.replace(/\D/g, '');
 
 /** Opening hours by JavaScript weekday (0 = Sunday), as [open, close] in 24-hour time; null = closed. */
 export const hours: (readonly [number, number] | null)[] = [
-  null, [11, 20], [11, 20], [11, 20], [11, 20], [11, 20], [11, 20]
+  null, [11, 19], [11, 19], [11, 19], [11, 19], [11, 19], [11, 19]
 ];
 export const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -49,7 +49,7 @@ export function hyderabadNow(now = new Date()) {
   };
 }
 
-/** "Open now · until 8pm", "Opens today at 11am" or "Closed · opens Tuesday at 11am". */
+/** "Open now · until 7pm", "Opens today at 11am" or "Closed · opens Tuesday at 11am". */
 export function openStatus(now = new Date()): { open: boolean; text: string } {
   const { day, time } = hyderabadNow(now);
   const today = hours[day];
