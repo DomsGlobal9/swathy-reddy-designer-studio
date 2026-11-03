@@ -1687,36 +1687,76 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-stone">
                             {garmentName(currentGarment.key)} {currentGarment.key === 'saree' ? 'finishing' : 'style'}
                           </span>
-                          {GARMENT_CHOICES[currentGarment.key].map((c) => (
-                            <div key={c.id}>
-                              <p className="mb-2 text-[12.5px] font-medium text-ink">{c.label}</p>
-                              <div role="radiogroup" aria-label={c.label} className="flex flex-wrap gap-2">
-                                {c.options.map((o) => {
-                                  const on = currentGarment.choices[c.id] === o.value;
-                                  return (
-                                    <button
-                                      key={o.value}
-                                      type="button"
-                                      role="radio"
-                                      aria-checked={on}
-                                      onClick={() =>
-                                        updateGarment(currentGarment.key, { choices: { ...currentGarment.choices, [c.id]: on ? '' : o.value } })
-                                      }
-                                      className={`rounded-xs border px-3 py-2 text-left text-[12.5px] transition-colors ${
-                                        on ? 'border-ink bg-ink text-ivory' : 'border-ink/15 bg-paper/30 text-ink hover:border-ink'
-                                      }`}
-                                    >
-                                      <span className="block font-medium">{o.value}</span>
-                                      {o.hint && <span className={`block text-[11px] ${on ? 'text-ivory/70' : 'text-stone'}`}>{o.hint}</span>}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                              {c.reference && currentGarment.choices[c.id] === c.reference.when && (
-                                <Notice className="mt-2.5">{c.reference.note}</Notice>
-                              )}
-                            </div>
-                          ))}
+                          {(() => {
+                            const all = GARMENT_CHOICES[currentGarment.key];
+                            const pick = (c: ChoiceDef, value: string) =>
+                              updateGarment(currentGarment.key, {
+                                choices: { ...currentGarment.choices, [c.id]: currentGarment.choices[c.id] === value ? '' : value }
+                              });
+                            // Short answers (Yes / No, Big / Small) sit as a tidy table: name left, one joined set of
+                            // equal buttons right, so every row lines up. Answers with a description stay as cards.
+                            const short = all.filter((c) => c.options.every((o) => !o.hint));
+                            const described = all.filter((c) => c.options.some((o) => o.hint));
+                            const notes = all.filter((c) => c.reference && currentGarment.choices[c.id] === c.reference.when);
+                            return (
+                              <>
+                                {short.length > 0 && (
+                                  <div className="grid grid-cols-1 gap-x-8 border-t border-ink/10 sm:grid-cols-2">
+                                    {short.map((c) => (
+                                      <div key={c.id} className="flex items-center justify-between gap-4 border-b border-ink/10 py-2.5">
+                                        <span className="text-[13px] font-medium text-ink">{c.label}</span>
+                                        <div role="radiogroup" aria-label={c.label} className="inline-flex overflow-hidden rounded-xs border border-ink/20">
+                                          {c.options.map((o, i) => {
+                                            const on = currentGarment.choices[c.id] === o.value;
+                                            return (
+                                              <button
+                                                key={o.value}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={on}
+                                                onClick={() => pick(c, o.value)}
+                                                className={`w-[70px] py-2 text-center text-[12.5px] font-medium transition-colors ${i > 0 ? 'border-l border-ink/20' : ''} ${
+                                                  on ? 'bg-ink text-ivory' : 'bg-paper/30 text-ink hover:bg-paper'
+                                                }`}
+                                              >
+                                                {o.value}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {described.map((c) => (
+                                  <div key={c.id}>
+                                    <p className="mb-2 text-[12.5px] font-medium text-ink">{c.label}</p>
+                                    <div role="radiogroup" aria-label={c.label} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                      {c.options.map((o) => {
+                                        const on = currentGarment.choices[c.id] === o.value;
+                                        return (
+                                          <button
+                                            key={o.value}
+                                            type="button"
+                                            role="radio"
+                                            aria-checked={on}
+                                            onClick={() => pick(c, o.value)}
+                                            className={`rounded-xs border px-3 py-2 text-left text-[12.5px] transition-colors ${
+                                              on ? 'border-ink bg-ink text-ivory' : 'border-ink/15 bg-paper/30 text-ink hover:border-ink'
+                                            }`}
+                                          >
+                                            <span className="block font-medium">{o.value}</span>
+                                            {o.hint && <span className={`block text-[11px] leading-snug ${on ? 'text-ivory/70' : 'text-stone'}`}>{o.hint}</span>}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                ))}
+                                {notes.map((c) => <Notice key={c.id}>{c.reference!.note}</Notice>)}
+                              </>
+                            );
+                          })()}
                         </div>
                       )}
 
