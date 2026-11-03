@@ -146,6 +146,27 @@ const NO_PREFERENCE = 'No preference';
 const OWN_FABRIC = 'I will bring my own fabric';
 const OTHER_FABRIC = 'Other (type it)';
 
+/*
+ * The fabrics the boutique works with, after whatever its online shop stocks (which comes first and
+ * changes by itself). Silks and handlooms first, then everyday and Western fabrics.
+ */
+const COMMON_FABRICS = [
+  'Kanchipuram silk', 'Banarasi silk', 'Pure silk', 'Soft silk', 'Raw silk', 'Tussar silk', 'Mysore silk',
+  'Gadwal', 'Uppada', 'Pochampally ikkat', 'Mangalagiri', 'Narayanpet', 'Chanderi', 'Maheshwari', 'Kota doria',
+  'Tissue', 'Organza', 'Brocade', 'Jacquard', 'Dola silk', 'Georgette', 'Chiffon', 'Crepe', 'Satin', 'Velvet',
+  'Net', 'Cotton', 'Mul cotton', 'Linen', 'Khadi', 'Rayon', 'Modal'
+];
+
+/** Shop fabrics first, then the common list, each fabric once ("Kanchi Pattu" and "Kanchipuram silk" are one). */
+function fabricList(shop: string[]): string[] {
+  const key = (f: string) => {
+    const k = f.toLowerCase().replace(/[^a-z]/g, '');
+    return k.startsWith('kanchi') ? 'kanchi' : k.replace(/silk$/, '') || k;
+  };
+  const seen = new Set<string>();
+  return [...shop, ...COMMON_FABRICS].filter((f) => !seen.has(key(f)) && !!seen.add(key(f)));
+}
+
 /** One size box. `crm` is the CRM's own field for it; a box without one reaches the CRM as a written note. */
 type SizeField = { id: string; label: string; crm?: string };
 type SizeGroup = { name: string; fields: SizeField[] };
@@ -289,11 +310,14 @@ const defaultOutfitCategories = [
 ];
 
 const embroideryOptions = [
+  'Regular (simple finish, no heavy work)',
   'Maggam / Aari Hand Embroidery',
   'Zardozi & Antique Gold Zari Thread',
   'Pearl & Hand-cut Beads',
   'Subtle Resham Thread Work',
   'Cutwork & Scallop Borders',
+  'Mirror Work',
+  'Sequin Work',
   'Clean Minimal Border'
 ];
 
@@ -1814,7 +1838,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                         ? updateGarment(g.key, { fabricOther: true, fabric: '' })
                                         : updateGarment(g.key, { fabricOther: false, fabric: val })
                                     }
-                                    options={[...shopFabrics, OWN_FABRIC, OTHER_FABRIC]}
+                                    options={[...fabricList(shopFabrics), OWN_FABRIC, OTHER_FABRIC]}
                                     allowNone
                                   />
                                   {g.fabricOther && (
