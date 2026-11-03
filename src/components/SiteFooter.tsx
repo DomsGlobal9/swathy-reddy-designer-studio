@@ -34,10 +34,15 @@ export function SiteFooter() {
               <br />
               {contact.area}, Hyderabad
             </p>
-            {/* On a phone the badge and the directions link sit side by side when they fit; wider screens stack them. */}
-            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 sm:mt-5 sm:block">
+            {/* The open/closed badge, then directions as its own small gold pill underneath, on every screen. */}
+            <div className="mt-4 flex flex-col items-start gap-3 sm:mt-5">
               <OpenNow />
-              <a href={mapsUrl} target="_blank" rel="noreferrer" className="group inline-flex sm:mt-4 items-center gap-1.5 text-[14px] text-[#E8C980] transition-colors hover:text-ivory">
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="group inline-flex items-center gap-1.5 rounded-full border border-[#C9A45C]/70 bg-[#E8C980]/[0.07] px-4 py-2 text-[13px] text-[#E8C980] transition-all duration-200 hover:border-[#E8C980] hover:bg-[#E8C980]/10 hover:text-ivory"
+              >
                 Get directions
                 <ArrowUpRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
               </a>
