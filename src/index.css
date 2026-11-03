@@ -63,3 +63,13 @@ body::after {
   background: #6b1c22;
   color: #f4eee4;
 }
+
+/* iPhone Safari zooms the whole page into a box whose text is smaller than 16px when it is tapped.
+   On phones every typing box uses 16px, so tapping one never zooms; desktop keeps the smaller size. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='file']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

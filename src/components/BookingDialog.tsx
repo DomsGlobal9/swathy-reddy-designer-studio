@@ -561,6 +561,7 @@ function LuxuryDatePicker({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
 
   const initialDate = value ? new Date(value + 'T00:00:00') : new Date();
   const [currentMonth, setCurrentMonth] = useState<Date>(
@@ -580,7 +581,7 @@ function LuxuryDatePicker({
   }, [open]);
 
   useEffect(() => {
-    if (open) window.setTimeout(() => containerRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 160);
+    if (open) window.setTimeout(() => popRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 160);
   }, [open]);
 
   const year = currentMonth.getFullYear();
@@ -612,7 +613,7 @@ function LuxuryDatePicker({
   const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   return (
-    <div ref={containerRef} className="relative block scroll-mb-6">
+    <div ref={containerRef} className="relative block">
       <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">Preferred date *</span>
       <button
         type="button"
@@ -640,7 +641,9 @@ function LuxuryDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="mt-2 w-full max-w-[320px] rounded-2xl border border-ink/10 bg-ivory p-3.5 shadow-[0_16px_36px_-6px_rgba(29,24,21,0.18)]"
+            ref={popRef}
+            // Floats over the fields below, so the row beside it keeps its height; scroll-mb keeps it clear of the button bar.
+            className="absolute left-0 top-full z-50 mt-2 w-full min-w-[280px] max-w-[320px] scroll-mb-6 rounded-2xl border border-ink/10 bg-ivory p-3.5 shadow-[0_16px_36px_-6px_rgba(29,24,21,0.22)]"
           >
             <div className="flex items-center justify-between border-b border-ink/10 pb-2.5">
               <button
@@ -727,6 +730,20 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [activeTab, setActiveTab] = useState<'consultation' | 'dress' | 'measurements'>('consultation');
   // True when the form holds a kept draft: shows "We kept what you typed earlier".
   const [restored, setRestored] = useState(false);
+  // The part of the screen the keyboard leaves visible (iPhone does not shrink the page for it).
+  const [visible, setVisible] = useState<{ top: number; height: number } | null>(null);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!open || !vv) return;
+    const fit = () => setVisible({ top: vv.offsetTop, height: vv.height });
+    fit();
+    vv.addEventListener('resize', fit);
+    vv.addEventListener('scroll', fit);
+    return () => {
+      vv.removeEventListener('resize', fit);
+      vv.removeEventListener('scroll', fit);
+    };
+  }, [open]);
   const [errors, setErrors] = useState<Errors>({});
   
   // Local Storage Autocomplete state
@@ -1319,7 +1336,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   return (
     <AnimatePresence onExitComplete={afterClose}>
       {open && (
-        <div className="fixed inset-0 z-50">
+        <div
+          className="fixed inset-x-0 top-0 z-50 h-[100dvh]"
+          style={visible ? { top: visible.top, height: visible.height } : undefined}
+        >
           {/* Backdrop */}
           <motion.div
             className="absolute inset-0 bg-ink/55 backdrop-blur-[2px]"
@@ -1400,6 +1420,18 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
             {/* SCROLLABLE MAIN BODY */}
             <div
               ref={scrollContainerRef}
+              onFocusCapture={(e) => {
+                const el = e.target;
+                if (el instanceof HTMLInputElement && el.type !== 'file' || el instanceof HTMLTextAreaElement) {
+                  window.setTimeout(() => {
+                    const box = scrollContainerRef.current?.getBoundingClientRect();
+                    const r = el.getBoundingClientRect();
+                    if (document.activeElement === el && box && (r.bottom > box.bottom || r.top < box.top)) {
+                      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                  }, 320);
+                }
+              }}
               className="flex-1 overflow-y-auto overscroll-contain px-6 py-6 md:px-9"
             >
               {/* SUCCESS VIEW */}
@@ -2231,147 +2263,148 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                 )}
               </div>
             )}
-          </motion.div>
 
-          {guideOpen && guideFor(guideOpen.garment, ...guideOpen.ids) && (
-            <MeasureGuide label={guideOpen.label} guide={guideFor(guideOpen.garment, ...guideOpen.ids)!} onClose={() => setGuideOpen(null)} />
-          )}
-
-          {/* ────────────────────────────────────────────────────────────────── */}
-          {/* WHATSAPP OTP VERIFICATION MODAL OVERLAY                            */}
-          {/* ────────────────────────────────────────────────────────────────── */}
-          <AnimatePresence>
-            {otpModalOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-ink/65 backdrop-blur-xs"
-              >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-full max-w-[420px] rounded-3xl border border-ink/10 bg-ivory p-6 shadow-[0_30px_70px_-20px_rgba(29,24,21,0.55)]"
-                >
-                  <div className="flex items-center justify-between pb-3 border-b border-ink/10">
-                    <div className="flex items-center gap-2 text-emerald-800">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                        <MessageSquareIcon className="h-4 w-4" />
-                      </div>
-                      <span className="font-display text-[15px] font-semibold tracking-wide text-ink">
-                        Confirm your number
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setOtpModalOpen(false)}
-                      aria-label="Close"
-                      className="text-stone hover:text-ink transition-colors p-1"
-                    >
-                      <XIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <div className="mt-4">
-                    <p className="text-[13px] leading-relaxed text-stone">
-                      {otpStatus === 'requesting'
-                        ? 'Sending a 6-digit code on WhatsApp to'
-                        : otpPurpose === 'submit' && portalToken
-                        ? 'Your number is confirmed. Sending your request for'
-                        : codeSent
-                        ? 'We have sent a 6-digit code on WhatsApp to'
-                        : 'We could not send a code to'}
-                    </p>
-                    <p className="mt-1 font-display text-[16px] font-semibold text-ink tracking-wider">
-                      {shownPhone}
-                    </p>
-                  </div>
-
-                  {otpNote && <Notice className="mt-3.5">{otpNote}</Notice>}
-
-                  {otpError && <Notice tone="warn" className="mt-3.5">{otpError}</Notice>}
-
-                  {!(otpPurpose === 'submit' && portalToken) && (codeSent || otpStatus === 'requesting') && (
-                  <div>
-                  <div className="mt-5">
-                    <label className="block">
-                      <span className="text-[11px] uppercase tracking-[0.18em] text-stone font-semibold">
-                        6-digit code
-                      </span>
-                      <input
-                        ref={otpInputRef}
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={6}
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                        placeholder="••••••"
-                        className="mt-1.5 w-full rounded-2xl border border-ink/15 bg-white/60 py-3 text-center font-mono text-2xl tracking-[0.5em] text-ink outline-none transition-colors focus:border-ink rounded-xs placeholder:text-stone/30"
-                      />
-                    </label>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between text-[12px]">
-                    <span className="text-stone/80">No code? <a href={`https://wa.me/${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="font-medium text-ink underline underline-offset-2 hover:text-oxblood">WhatsApp us</a></span>
-                    {otpStatus === 'requesting' ? null : otpCooldown > 0 ? (
-                      <span className="text-stone font-medium">Resend in {otpCooldown}s</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => requestCode(otpPurpose)}
-                        className="inline-flex items-center gap-1 font-semibold text-oxblood hover:underline"
-                      >
-                        <RefreshCwIcon className="h-3 w-3" />
-                        <span>{otpStatus === 'error' && !otpCode ? 'Try again' : 'Resend code'}</span>
-                      </button>
-                    )}
-                  </div>
-                  </div>
-                  )}
-
-                  <div className="mt-6 flex flex-col gap-2">
-                    {!codeSent && otpStatus === 'error' && !(otpPurpose === 'submit' && portalToken) ? (
-                      <button
-                        type="button"
-                        onClick={() => requestCode(otpPurpose)}
-                        className="flex w-full items-center justify-center gap-2 rounded-full bg-ink py-3.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory shadow-xs transition-colors hover:bg-oxblood"
-                      >
-                        <RefreshCwIcon className="h-3.5 w-3.5" />
-                        <span>Try again</span>
-                      </button>
-                    ) : (
-                    <button
-                      type="button"
-                      disabled={otpStatus === 'verifying' || otpStatus === 'requesting' || (!(otpPurpose === 'submit' && portalToken) && otpCode.length !== 6)}
-                      onClick={handleConfirmOtpAndSubmit}
-                      className="flex w-full items-center justify-center gap-2 rounded-full bg-oxblood py-3.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-oxblood disabled:cursor-not-allowed disabled:opacity-50 rounded-xs shadow-xs"
-                    >
-                      {otpStatus === 'verifying' ? (
-                        <>
-                          <Loader2Icon className="h-4 w-4 animate-spin text-ivory" />
-                          <span>{preparingPhotos ? 'Preparing photos…' : otpPurpose === 'autofill' ? 'Checking…' : 'Sending your request…'}</span>
-                        </>
-                      ) : (
-                        <span>{otpPurpose === 'autofill' ? 'Confirm' : otpPurpose === 'submit' && portalToken ? 'Try again' : 'Confirm & send request'}</span>
-                      )}
-                    </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => setOtpModalOpen(false)}
-                      className="py-1 text-center text-[11px] text-stone hover:text-ink transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </motion.div>
-              </motion.div>
+            {/* Pop-ups sit inside the form panel, centred over it. */}
+            {guideOpen && guideFor(guideOpen.garment, ...guideOpen.ids) && (
+              <MeasureGuide label={guideOpen.label} guide={guideFor(guideOpen.garment, ...guideOpen.ids)!} onClose={() => setGuideOpen(null)} />
             )}
-          </AnimatePresence>
+
+            {/* ────────────────────────────────────────────────────────────────── */}
+            {/* WHATSAPP OTP VERIFICATION MODAL OVERLAY                            */}
+            {/* ────────────────────────────────────────────────────────────────── */}
+            <AnimatePresence>
+              {otpModalOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-60 flex items-center justify-center bg-ink/55 p-4 backdrop-blur-[2px]"
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-full max-w-[420px] rounded-3xl border border-ink/10 bg-ivory p-6 shadow-[0_30px_70px_-20px_rgba(29,24,21,0.55)]"
+                  >
+                    <div className="flex items-center justify-between pb-3 border-b border-ink/10">
+                      <div className="flex items-center gap-2 text-emerald-800">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                          <MessageSquareIcon className="h-4 w-4" />
+                        </div>
+                        <span className="font-display text-[15px] font-semibold tracking-wide text-ink">
+                          Confirm your number
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setOtpModalOpen(false)}
+                        aria-label="Close"
+                        className="text-stone hover:text-ink transition-colors p-1"
+                      >
+                        <XIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="mt-4">
+                      <p className="text-[13px] leading-relaxed text-stone">
+                        {otpStatus === 'requesting'
+                          ? 'Sending a 6-digit code on WhatsApp to'
+                          : otpPurpose === 'submit' && portalToken
+                          ? 'Your number is confirmed. Sending your request for'
+                          : codeSent
+                          ? 'We have sent a 6-digit code on WhatsApp to'
+                          : 'We could not send a code to'}
+                      </p>
+                      <p className="mt-1 font-display text-[16px] font-semibold text-ink tracking-wider">
+                        {shownPhone}
+                      </p>
+                    </div>
+
+                    {otpNote && <Notice className="mt-3.5">{otpNote}</Notice>}
+
+                    {otpError && <Notice tone="warn" className="mt-3.5">{otpError}</Notice>}
+
+                    {!(otpPurpose === 'submit' && portalToken) && (codeSent || otpStatus === 'requesting') && (
+                    <div>
+                    <div className="mt-5">
+                      <label className="block">
+                        <span className="text-[11px] uppercase tracking-[0.18em] text-stone font-semibold">
+                          6-digit code
+                        </span>
+                        <input
+                          ref={otpInputRef}
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                          placeholder="••••••"
+                          className="mt-1.5 w-full rounded-2xl border border-ink/15 bg-white/60 py-3 text-center font-mono text-2xl tracking-[0.5em] text-ink outline-none transition-colors focus:border-ink rounded-xs placeholder:text-stone/30"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between text-[12px]">
+                      <span className="text-stone/80">No code? <a href={`https://wa.me/${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="font-medium text-ink underline underline-offset-2 hover:text-oxblood">WhatsApp us</a></span>
+                      {otpStatus === 'requesting' ? null : otpCooldown > 0 ? (
+                        <span className="text-stone font-medium">Resend in {otpCooldown}s</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => requestCode(otpPurpose)}
+                          className="inline-flex items-center gap-1 font-semibold text-oxblood hover:underline"
+                        >
+                          <RefreshCwIcon className="h-3 w-3" />
+                          <span>{otpStatus === 'error' && !otpCode ? 'Try again' : 'Resend code'}</span>
+                        </button>
+                      )}
+                    </div>
+                    </div>
+                    )}
+
+                    <div className="mt-6 flex flex-col gap-2">
+                      {!codeSent && otpStatus === 'error' && !(otpPurpose === 'submit' && portalToken) ? (
+                        <button
+                          type="button"
+                          onClick={() => requestCode(otpPurpose)}
+                          className="flex w-full items-center justify-center gap-2 rounded-full bg-ink py-3.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory shadow-xs transition-colors hover:bg-oxblood"
+                        >
+                          <RefreshCwIcon className="h-3.5 w-3.5" />
+                          <span>Try again</span>
+                        </button>
+                      ) : (
+                      <button
+                        type="button"
+                        disabled={otpStatus === 'verifying' || otpStatus === 'requesting' || (!(otpPurpose === 'submit' && portalToken) && otpCode.length !== 6)}
+                        onClick={handleConfirmOtpAndSubmit}
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-oxblood py-3.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-oxblood disabled:cursor-not-allowed disabled:opacity-50 rounded-xs shadow-xs"
+                      >
+                        {otpStatus === 'verifying' ? (
+                          <>
+                            <Loader2Icon className="h-4 w-4 animate-spin text-ivory" />
+                            <span>{preparingPhotos ? 'Preparing photos…' : otpPurpose === 'autofill' ? 'Checking…' : 'Sending your request…'}</span>
+                          </>
+                        ) : (
+                          <span>{otpPurpose === 'autofill' ? 'Confirm' : otpPurpose === 'submit' && portalToken ? 'Try again' : 'Confirm & send request'}</span>
+                        )}
+                      </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setOtpModalOpen(false)}
+                        className="py-1 text-center text-[11px] text-stone hover:text-ink transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       )}
     </AnimatePresence>

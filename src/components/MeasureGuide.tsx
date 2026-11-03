@@ -161,7 +161,7 @@ export function MeasureGuide({ label, guide, onClose }: { label: string; guide: 
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/60 p-4" onClick={onClose}>
+    <div className="absolute inset-0 z-[70] flex items-center justify-center bg-ink/50 p-4 backdrop-blur-[2px]" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
