@@ -51,7 +51,7 @@ export function DesignPhotos({
                 <span className="min-w-0 flex-1 text-[13px] text-ink">{part.label}</span>
                 <label
                   aria-disabled={full}
-                  className={`relative flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-sm border border-dashed border-ink/30 px-3 text-[11px] uppercase tracking-wider text-ink transition-colors hover:border-ink/60 hover:bg-white/60 has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-ink ${full ? 'pointer-events-none opacity-40' : ''}`}>
+                  className={`relative flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-full border border-oxblood/35 bg-white/50 px-4 text-[11px] font-medium uppercase tracking-wider text-oxblood transition-all duration-200 hover:border-oxblood hover:bg-oxblood hover:text-ivory has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-oxblood/40 ${full ? 'pointer-events-none opacity-40' : ''}`}>
                   <PlusIcon className="h-4 w-4" aria-hidden="true" />
                   <span>Add<span className="sr-only"> {part.label} photo</span></span>
                   <input

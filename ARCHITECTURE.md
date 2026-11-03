@@ -23,7 +23,6 @@ flowchart LR
   RZP["Razorpay<br/>boutique's own account"]
   CRM["Scaleezy Boutique CRM<br/>crm-b-ry43.onrender.com<br/>/intake/* Customer Portal API"]
   WA["Boutique WhatsApp<br/>(OTP codes, sent by the CRM)"]
-  EJ["EmailJS<br/>(booking email fallback)"]
   EXT["Google Fonts · Google Maps embed<br/>wa.me / tel: / mailto: links"]
 
   V -->|pages, assets| S
@@ -34,7 +33,6 @@ flowchart LR
   V -->|"/intake/* (booking)"| P
   P -->|"X-Portal-Key + body, streamed"| CRM
   CRM --> WA
-  V -->|Submit via Email| EJ
   V --> EXT
 ```
 
@@ -59,7 +57,7 @@ What happens behind the scenes when someone opens the site, for example from a W
      ScaleEzy online shop (next section). The purchase happens there, not on this site.
    - **Books a consultation** — *Book an appointment* opens the booking form; on submit the CRM
      sends a WhatsApp code, the customer types it, and the customer plus one requirement per garment
-     land in the Boutique CRM (see **Booking**). Or *Email it instead* sends it by EmailJS.
+     land in the Boutique CRM (see **Booking**). Booking works from the first step; outfit, sizes and photos are optional.
    - **Gets in touch** — the Contact page: live open/closed badge, Get directions (Google Maps
      listing), Call / WhatsApp (`tel:`, `wa.me`), Send an email, Copy.
    - **Waits for Men or Kids** — *Notify me on WhatsApp* opens a chat with the boutique with the
@@ -151,9 +149,14 @@ Sending (Scaleezy Customer Portal API v1.1):
    requirement; measurements and photo parts must belong to it), all with the same token.
    Photos go as multipart `images[<part>]`; sizes in inches (cm converted).
 
-A retry after a partial failure resends only what didn't arrive. **Email it instead** sends the same
-request through EmailJS (`src/lib/email.ts`). Customer-facing errors come from
-`formatBoutiqueErrorMessage` and name buttons that exist (*Resend code*, *Email it instead*).
+A retry after a partial failure resends only what didn't arrive. There is no email route (removed
+3 Nov, owner): when a WhatsApp code cannot be sent, the message asks the customer to WhatsApp or call
+the boutique. Customer-facing errors come from `formatBoutiqueErrorMessage` and name only buttons that
+exist (*Resend code*, *Try again*).
+
+**Getting your outfit** (last step): *Collect at the boutique* or *Courier it to me*. A courier
+address goes to the CRM customer's `address` and every requirement's notes say `Delivery: …`. A
+note with the boutique's postal address (and Copy) shows for video calls, couriers and own-fabric orders.
 
 ### Why there is a server function
 
@@ -188,7 +191,6 @@ Locally, `vite.config.ts` does the proxy's job (`npm run dev`).
 | `SCALEEZY_PORTAL_KEY` | Vercel (server only) and local `.env` | Portal API key; identifies the boutique in the CRM. **Never** prefix with `VITE_`. |
 | `SCALEEZY_BASE_URL` | optional | CRM address (default `https://crm-b-ry43.onrender.com`). |
 | `VITE_SHOP_SLUG`, `VITE_SHOP_URL`, `VITE_SHOP_API` | optional | Point the site at another shop. |
-| `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY` | Vercel | Email fallback (public by design). |
 | `VITE_SCALEEZY_DEMO=true` | local only | Offline demo of the booking flow with fake codes. |
 
 ## Stack
@@ -242,6 +244,7 @@ Work by Doms Global LLP, 12–29 October 2026, in order of area. Commit ids are 
 | Phone layout of the collection showcase fixed (photo no longer covers the caption or spills off-screen; faces kept in frame). | Broken on smaller phones. |
 | Friendly 404 page. | Mistyped links showed the home page. |
 | Phone fixes (29 Oct): solid top bar kept below the iPhone clock strip (`viewport-fit=cover` + safe-area padding, also on the booking drawer and coming-soon page); Signature edit arrows on the right with the photos closer; Our story words before the photo; no 01–05 row in Follow the thread (desktop rail keeps it) and the sketch held inside narrow screens; menu Men / Kids open their coming-soon pages. | On iPhones the bar sat under the clock and Safari faded it; the rest came from the owner's phone screenshots. |
+| 3 Nov (later): book straight from step 1; step numbers gone; *Getting your outfit* (collect / courier with address) and the boutique's postal address; notes maroon; choices restyled as cards, pills and rounded buttons; email option removed. | Owner review of the form. |
 | 3 Nov: how-to-measure drawings on every size box; notes and warnings highlighted (gold / maroon) instead of plain grey; size boxes in a row line up when a label wraps. | The owner wanted guidance at each size box and visible warnings. |
 | Client feedback (31 Oct): Woman section links to the collection (the shop); contact cards' buttons line up (four in a row only from 1400px); WhatsApp box takes digits only; fabrics from the shop + type your own; saree finishing instead of sizes; the boutique's blouse sizes and sleeve type. | The boutique's review of the live site. |
 | Booking form review (30 Oct): fixed a live bug where, after going past step 1 or after booking, closing the form left an invisible layer over the site so nothing could be tapped (the step tabs' sliding underline kept it from leaving); "salon" and internal words (CRM, lead, intake) gone; one honest +91 number field instead of a country list that was ignored; Sundays closed in the calendar, which now opens in place instead of behind the buttons; nothing pre-picked (garment, fabric, work); garments in Women / Men / Western tabs; sizes grouped and folded; wrong sizes caught before sending; the code window says when a code could not be sent and offers Try again; Resend works for the step it is on; email failures no longer read as WhatsApp failures; menu "About" renamed "Women". | The owner asked for an end-to-end check of the form. |

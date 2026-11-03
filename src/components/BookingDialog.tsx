@@ -16,11 +16,15 @@ import {
   MessageSquareIcon,
   RefreshCwIcon,
   InfoIcon,
-  RulerIcon
+  RulerIcon,
+  CopyIcon,
+  StoreIcon,
+  VideoIcon,
+  PackageIcon,
+  TruckIcon
 } from 'lucide-react';
 import { setScrollLocked } from '../hooks/useSmoothScroll';
 import { easeOut } from '../utils/format';
-import { sendAppointmentEmail } from '../lib/email';
 import {
   fetchCustomerProfile,
   fetchPortalProducts,
@@ -35,7 +39,6 @@ import {
 } from '../lib/scaleezyPortal';
 
 import type {
-  DressDetails,
   MeasurementUnit,
   PortalCustomerPayload,
   PortalProduct,
@@ -46,6 +49,7 @@ import type {
 import { shrinkPhotos } from '../lib/shrinkPhotos';
 import { DesignPhotos } from './DesignPhotos';
 import { getShop } from '../lib/shop';
+import { contact } from '../data/contact';
 import { MeasureGuide, guideFor } from './MeasureGuide';
 
 type BookingDialogProps = {
@@ -74,6 +78,14 @@ type FormState = {
   
   // General Notes
   additionalNotes: string;
+
+  // Getting the outfit: picked up at the boutique, or couriered to this address.
+  handover: '' | 'collect' | 'courier';
+  addrLine: string;
+  addrArea: string;
+  addrCity: string;
+  addrState: string;
+  addrPin: string;
 
   // Honeypot
   companyWebsite: string;
@@ -104,7 +116,7 @@ const newGarment = (key: string): Garment => ({
   photos: {}
 });
 
-type Errors = Partial<Record<'name' | 'phone' | 'email' | 'date', string>>;
+type Errors = Partial<Record<'name' | 'phone' | 'email' | 'date' | 'addrLine' | 'addrCity' | 'addrPin', string>>;
 
 /** A typed size that is not a number, or is outside what the CRM accepts for it. */
 function badMeasurement(raw: string, def: PortalMeasurementDef, unit: MeasurementUnit): boolean {
@@ -242,6 +254,13 @@ const initialForm: FormState = {
   unit: 'in',
   additionalNotes: '',
 
+  handover: '',
+  addrLine: '',
+  addrArea: '',
+  addrCity: '',
+  addrState: 'Telangana',
+  addrPin: '',
+
   // Honeypot
   companyWebsite: ''
 };
@@ -273,18 +292,87 @@ const embroideryOptions = [
   'Clean Minimal Border'
 ];
 
-/** A note that stands out from the black-and-white form: gold for guidance, maroon for a problem. */
+/** A note that stands out from the black-and-white form: soft maroon for guidance, strong maroon for a problem. */
 function Notice({ tone = 'info', className = '', children }: { tone?: 'info' | 'warn'; className?: string; children: React.ReactNode }) {
   const Icon = tone === 'warn' ? AlertCircleIcon : InfoIcon;
   return (
     <div
       role={tone === 'warn' ? 'alert' : 'note'}
       className={`flex items-start gap-2.5 rounded-r-sm border-l-[3px] px-3.5 py-3 text-[12.5px] leading-relaxed ${
-        tone === 'warn' ? 'border-oxblood bg-oxblood/[0.07] text-oxblood' : 'border-zari bg-zari/[0.13] text-ink'
+        tone === 'warn' ? 'border-oxblood bg-oxblood/[0.09] text-oxblood' : 'border-oxblood/45 bg-oxblood/[0.045] text-ink'
       } ${className}`}
     >
-      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone === 'warn' ? 'text-oxblood' : 'text-zari'}`} strokeWidth={1.8} aria-hidden="true" />
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone === 'warn' ? 'text-oxblood' : 'text-oxblood/75'}`} strokeWidth={1.8} aria-hidden="true" />
       <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * A choice as a card: soft white, rounded, an optional icon, and a round tick that fills maroon when
+ * chosen. The chosen card gets a maroon edge and tint rather than turning solid black.
+ */
+function ChoiceCard({
+  selected, onClick, title, sub, icon
+}: { selected: boolean; onClick: () => void; title: string; sub?: string; icon?: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onClick}
+      className={`relative flex w-full items-start gap-3 rounded-xl border p-3.5 text-left transition-all duration-200 ${
+        selected
+          ? 'border-oxblood bg-oxblood/[0.05] shadow-[0_8px_20px_-12px_rgba(107,28,34,0.55)]'
+          : 'border-ink/12 bg-white/45 hover:border-oxblood/35 hover:bg-white/80 hover:shadow-[0_8px_18px_-14px_rgba(29,24,21,0.4)]'
+      }`}
+    >
+      {icon && (
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors [&_svg]:h-4 [&_svg]:w-4 ${
+          selected ? 'bg-oxblood text-ivory' : 'bg-paper text-oxblood'
+        }`}>
+          {icon}
+        </span>
+      )}
+      <span className="min-w-0 flex-1 pr-5">
+        <span className="block text-[13px] font-medium leading-tight text-ink">{title}</span>
+        {sub && <span className="mt-1 block text-[11px] leading-snug text-stone">{sub}</span>}
+      </span>
+      <span
+        aria-hidden="true"
+        className={`absolute right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border transition-colors ${
+          selected ? 'border-oxblood bg-oxblood text-ivory' : 'border-ink/25 bg-white'
+        }`}
+      >
+        {selected && <CheckIcon className="h-2.5 w-2.5" strokeWidth={3} />}
+      </span>
+    </button>
+  );
+}
+
+/** Short answers as a rounded pill toggle; the chosen one is a maroon pill. */
+function PillToggle({
+  label, options, value, onPick, width = 'w-[66px]'
+}: { label: string; options: string[]; value: string; onPick: (v: string) => void; width?: string }) {
+  return (
+    <div role="radiogroup" aria-label={label} className="inline-flex shrink-0 rounded-full bg-paper p-1 ring-1 ring-ink/10">
+      {options.map((o) => {
+        const on = value === o;
+        return (
+          <button
+            key={o}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onPick(o)}
+            className={`${width} rounded-full py-1.5 text-center text-[12.5px] font-medium transition-all duration-200 ${
+              on ? 'bg-oxblood text-ivory shadow-[0_4px_10px_-4px_rgba(107,28,34,0.6)]' : 'text-ink/70 hover:text-ink'
+            }`}
+          >
+            {o}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -580,8 +668,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [codeSent, setCodeSent] = useState(false);
   const [portalToken, setPortalToken] = useState<string | null>(null);
 
-  const [submittingAction, setSubmittingAction] = useState<'lead' | 'email' | null>(null);
-  const [submissionSuccessType, setSubmissionSuccessType] = useState<'lead' | 'email' | null>(null);
+  const [submittingAction, setSubmittingAction] = useState<'lead' | null>(null);
+  const [submissionSuccessType, setSubmissionSuccessType] = useState<'lead' | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // New Dynamic States
@@ -816,22 +904,26 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     return false;
   };
 
-  /** Each garment as the email fallback lists it: details plus the sizes filled for it. */
-  const buildEmailOutfits = () =>
-    form.garments.map((g) => {
-      const sizes = sizeFieldsFor(g.key)
-        .filter((f) => (g.measurements[f.id] ?? '').trim())
-        .map((f) => `• ${f.label}: ${g.measurements[f.id].trim()} ${form.unit}`);
-      const { choices } = garmentSpec(g);
-      const dress: DressDetails = {
-        dressType: garmentName(g.key),
-        customDressName: form.customDressName.trim() || undefined,
-        fabricPreference: g.fabric.trim() || undefined,
-        embroideryWork: g.craft || undefined,
-        specialRequests: [...choices, g.requests.trim()].filter(Boolean).join('; ') || undefined
-      };
-      return { dress, measurements: sizes.length ? sizes.join('\n') : 'To be taken at the boutique' };
-    });
+  /** With "Courier it to me", the address must be complete enough to post to. */
+  const checkDelivery = (): boolean => {
+    if (form.handover !== 'courier') return true;
+    const next: Errors = {};
+    if (!form.addrLine.trim()) next.addrLine = 'Please enter the house or flat and street.';
+    if (!form.addrCity.trim()) next.addrCity = 'Please enter the city.';
+    if (!/^\d{6}$/.test(form.addrPin)) next.addrPin = 'Please enter the 6-digit pincode.';
+    if (Object.keys(next).length === 0) return true;
+    setErrors((prev) => ({ ...prev, ...next }));
+    switchTab('measurements');
+    setSubmitError('Please complete the delivery address, or choose to collect at the boutique.');
+    return false;
+  };
+  const deliveryAddress = () =>
+    [form.addrLine, form.addrArea, form.addrCity, form.addrState].map((x) => x.trim()).filter(Boolean).join(', ') +
+    (form.addrPin ? ` - ${form.addrPin}` : '');
+  const deliveryLine = () =>
+    form.handover === 'courier' ? `Delivery: courier to ${deliveryAddress()}` : form.handover === 'collect' ? 'Delivery: collect at the boutique' : '';
+  const [copied, setCopied] = useState(false);
+  const boutiqueAddress = `${contact.name}, ${contact.street}, ${contact.city}. Phone ${contact.phone}`;
 
   /** Opens the code window and asks the CRM to send a code on WhatsApp. */
   const requestCode = async (purpose: 'autofill' | 'submit') => {
@@ -866,7 +958,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
   /* ── Send the request: confirm the number by a WhatsApp code first ─────────────── */
   const handleInitiateLeadWithOtp = async () => {
-    if (!validateCoreForm() || !checkSizes()) return;
+    if (!validateCoreForm() || !checkSizes() || !checkDelivery()) return;
 
     if (portalToken) {
       // The number was already confirmed on the first step: send straight away.
@@ -945,6 +1037,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
         first_name: nameParts[0] || 'Client',
         last_name: nameParts.slice(1).join(' ') || undefined,
         email_address: form.email.trim() || undefined,
+        address: form.handover === 'courier' ? deliveryAddress() : undefined,
         city_region: form.city.trim() || 'Hyderabad',
         preferred_communication: form.preferredCommunication,
         company_website: '' // Honeypot
@@ -979,6 +1072,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
       const notes = [
         appointment,
         pieces.length > 1 ? `Outfit ${i + 1} of ${pieces.length}.` : '',
+        deliveryLine() ? `${deliveryLine()}.` : '',
         form.notes.trim(),
         customFull.length > 500 ? `(continued) ${customFull.slice(500)}` : ''
       ].filter(Boolean).join(' ').slice(0, 500);
@@ -1029,33 +1123,6 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     setOtpModalOpen(false);
     setSubmissionSuccessType('lead');
     return true;
-  };
-
-  /* ── ACTION 2: Send as Email (Existing flow via EmailJS) ─────────────────────────── */
-  const handleSendEmail = async () => {
-    if (!validateCoreForm() || !checkSizes()) return;
-
-    setSubmittingAction('email');
-    setSubmitError(null);
-
-    const result = await sendAppointmentEmail({
-      name: form.name.trim(),
-      phone: form.phone.trim(),
-      email: form.email.trim() || undefined,
-      occasion: form.occasion,
-      date: form.date,
-      mode: form.mode,
-      notes: [form.notes.trim(), form.additionalNotes.trim() && `Tailoring notes: ${form.additionalNotes.trim()}`].filter(Boolean).join('\n') || undefined,
-      outfits: buildEmailOutfits()
-    });
-
-    if (result.success) {
-      saveProfileToLocal();
-      setSubmissionSuccessType('email');
-    } else {
-      setSubmitError(formatBoutiqueErrorMessage(result.message, 'email'));
-    }
-    setSubmittingAction(null);
   };
 
   const handleFormSubmit = (e: FormEvent) => {
@@ -1146,9 +1213,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
               {!submissionSuccessType && (
                 <div className="mt-4 flex items-center justify-between border-t border-ink/8 pt-3">
                   {[
-                    { id: 'consultation', step: '01', title: 'Your details' },
-                    { id: 'dress', step: '02', title: 'The outfit' },
-                    { id: 'measurements', step: '03', title: 'Sizes & photos' }
+                    { id: 'consultation', title: 'Your details' },
+                    { id: 'dress', title: 'The outfit' },
+                    { id: 'measurements', title: 'Sizes & photos' }
                   ].map((tab) => {
                     const isActive = activeTab === tab.id;
                     return (
@@ -1162,9 +1229,6 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                             : 'text-stone/60 hover:text-ink'
                         }`}
                       >
-                        <span className={`hidden text-[10px] font-mono tracking-wider sm:inline ${isActive ? 'text-oxblood font-bold' : 'text-stone/60'}`}>
-                          {tab.step}
-                        </span>
                         <span className="whitespace-nowrap text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.16em]">
                           {tab.title}
                         </span>
@@ -1217,15 +1281,18 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           </p>
                         );
                       })}
+                      {form.handover && (
+                        <p>
+                          • Delivery: <span className="font-medium text-ink">{form.handover === 'courier' ? `Courier to ${deliveryAddress()}` : 'Collect at the boutique'}</span>
+                        </p>
+                      )}
                       <p>• WhatsApp: <span className="font-medium text-ink">+91 {normalizeIndianMobile(form.phone)}</span></p>
                       {form.email && <p>• Email: <span className="font-medium text-ink">{form.email}</span></p>}
                     </div>
                   </div>
 
                   <p className="mt-5 text-[13.5px] leading-relaxed text-stone">
-                    {submissionSuccessType === 'lead'
-                      ? 'We will call or WhatsApp you within a day to confirm the time.'
-                      : 'Your request has been emailed to the boutique. We will call or WhatsApp you within a day to confirm the time.'}
+                    We will call or WhatsApp you within a day to confirm the time.
                   </p>
 
                   <button
@@ -1285,8 +1352,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">
                             WhatsApp number *
                           </span>
-                          <div className="relative flex shadow-xs mt-1.5">
-                            <span className="flex h-[46px] shrink-0 items-center rounded-l-xs border border-r-0 border-ink/20 bg-paper/50 px-3 text-[13.5px] text-ink">
+                          <div className="relative mt-1.5 flex">
+                            <span className="flex h-[46px] shrink-0 items-center rounded-l-xl border border-r-0 border-ink/15 bg-paper/60 px-3.5 text-[13.5px] text-ink">
                               +91
                             </span>
                             <div className="relative flex-1">
@@ -1306,7 +1373,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 }}
                                 inputMode="numeric"
                                 autoComplete="tel-national"
-                                className="w-full h-[46px] rounded-r-xs border border-ink/20 bg-paper/50 px-3.5 py-0 text-[13.5px] text-ink placeholder:text-stone/40 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink transition-colors pr-[84px]"
+                                className="w-full h-[46px] rounded-r-xl border border-ink/15 bg-white/50 px-3.5 py-0 text-[13.5px] text-ink placeholder:text-stone/40 focus:border-oxblood/50 focus:outline-none focus:ring-2 focus:ring-oxblood/15 transition-all pr-[92px]"
                                 placeholder="98765 43210"
                                 aria-invalid={!!errors.phone}
                               />
@@ -1314,7 +1381,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 <button
                                   type="button"
                                   onClick={handleInitiateAutofill}
-                                  className="absolute right-1 top-1 bottom-1 rounded-sm bg-stone/10 px-3 text-[11px] font-semibold uppercase tracking-wider text-ink transition-colors hover:bg-stone/20"
+                                  className="absolute bottom-1.5 right-1.5 top-1.5 rounded-full bg-oxblood/10 px-3.5 text-[11px] font-semibold uppercase tracking-wider text-oxblood transition-colors hover:bg-oxblood hover:text-ivory"
                                 >
                                   Verify
                                 </button>
@@ -1382,29 +1449,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium block mb-2">
                           How would you like to meet?
                         </span>
-                        <div className="grid grid-cols-2 gap-3">
-                          {(
-                            [
-                              ['boutique', 'Visit the boutique', 'Banjara Hills, Hyderabad'],
-                              ['video', 'Video call', 'From wherever you are']
-                            ] as const
-                          ).map(([value, label, sub]) => (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() => update('mode', value)}
-                              className={`p-3 text-left border rounded-xs transition-all ${
-                                form.mode === value
-                                  ? 'border-ink bg-ink text-ivory shadow-xs'
-                                  : 'border-ink/15 bg-paper/30 text-ink hover:border-ink hover:bg-paper/70'
-                              }`}
-                            >
-                              <p className="text-[12.5px] font-medium leading-tight">{label}</p>
-                              <p className={`text-[10.5px] mt-0.5 leading-tight ${form.mode === value ? 'text-ivory/70' : 'text-stone'}`}>
-                                {sub}
-                              </p>
-                            </button>
-                          ))}
+                        <div role="radiogroup" aria-label="How would you like to meet?" className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
+                          <ChoiceCard selected={form.mode === 'boutique'} onClick={() => update('mode', 'boutique')} icon={<StoreIcon />} title="Visit the boutique" sub="Banjara Hills, Hyderabad" />
+                          <ChoiceCard selected={form.mode === 'video'} onClick={() => update('mode', 'video')} icon={<VideoIcon />} title="Video call" sub="From wherever you are" />
                         </div>
                       </div>
 
@@ -1525,10 +1572,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 type="button"
                                 aria-pressed={isSelected}
                                 onClick={() => toggleGarment(product.key)}
-                                className={`inline-flex items-center gap-1.5 rounded-xs border px-3.5 py-2 text-[13px] transition-all ${
+                                className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] transition-all duration-200 ${
                                   isSelected
-                                    ? 'border-ink bg-ink font-medium text-ivory shadow-xs'
-                                    : 'border-ink/15 bg-paper/30 text-ink hover:border-ink hover:bg-paper/70'
+                                    ? 'border-oxblood bg-oxblood font-medium text-ivory shadow-[0_6px_14px_-8px_rgba(107,28,34,0.7)]'
+                                    : 'border-ink/15 bg-white/50 text-ink hover:border-oxblood/40 hover:bg-white/80'
                                 }`}
                               >
                                 {isSelected && <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />}
@@ -1628,26 +1675,13 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                             : 'All optional. Fill in what you know; we will guide you through the rest on the video call.'}
                         </p>
 
-                        <div className="flex items-center rounded-xs border border-ink/20 bg-ivory p-0.5 shadow-2xs shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => update('unit', 'in')}
-                            className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
-                              form.unit === 'in' ? 'bg-ink text-ivory rounded-xs' : 'text-stone hover:text-ink'
-                            }`}
-                          >
-                            Inches
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => update('unit', 'cm')}
-                            className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
-                              form.unit === 'cm' ? 'bg-ink text-ivory rounded-xs' : 'text-stone hover:text-ink'
-                            }`}
-                          >
-                            CM
-                          </button>
-                        </div>
+                        <PillToggle
+                          label="Units"
+                          options={['Inches', 'CM']}
+                          value={form.unit === 'in' ? 'Inches' : 'CM'}
+                          onPick={(v) => update('unit', v === 'CM' ? 'cm' : 'in')}
+                          width="w-[64px]"
+                        />
                       </div>
 
                       {/* One tab per garment: each has its own measurements and photo parts */}
@@ -1705,25 +1739,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                     {short.map((c) => (
                                       <div key={c.id} className="flex items-center justify-between gap-4 border-b border-ink/10 py-2.5">
                                         <span className="text-[13px] font-medium text-ink">{c.label}</span>
-                                        <div role="radiogroup" aria-label={c.label} className="inline-flex overflow-hidden rounded-xs border border-ink/20">
-                                          {c.options.map((o, i) => {
-                                            const on = currentGarment.choices[c.id] === o.value;
-                                            return (
-                                              <button
-                                                key={o.value}
-                                                type="button"
-                                                role="radio"
-                                                aria-checked={on}
-                                                onClick={() => pick(c, o.value)}
-                                                className={`w-[70px] py-2 text-center text-[12.5px] font-medium transition-colors ${i > 0 ? 'border-l border-ink/20' : ''} ${
-                                                  on ? 'bg-ink text-ivory' : 'bg-paper/30 text-ink hover:bg-paper'
-                                                }`}
-                                              >
-                                                {o.value}
-                                              </button>
-                                            );
-                                          })}
-                                        </div>
+                                        <PillToggle label={c.label} options={c.options.map((o) => o.value)} value={currentGarment.choices[c.id] ?? ''} onPick={(v) => pick(c, v)} />
                                       </div>
                                     ))}
                                   </div>
@@ -1732,24 +1748,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                   <div key={c.id}>
                                     <p className="mb-2 text-[12.5px] font-medium text-ink">{c.label}</p>
                                     <div role="radiogroup" aria-label={c.label} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                                      {c.options.map((o) => {
-                                        const on = currentGarment.choices[c.id] === o.value;
-                                        return (
-                                          <button
-                                            key={o.value}
-                                            type="button"
-                                            role="radio"
-                                            aria-checked={on}
-                                            onClick={() => pick(c, o.value)}
-                                            className={`rounded-xs border px-3 py-2 text-left text-[12.5px] transition-colors ${
-                                              on ? 'border-ink bg-ink text-ivory' : 'border-ink/15 bg-paper/30 text-ink hover:border-ink'
-                                            }`}
-                                          >
-                                            <span className="block font-medium">{o.value}</span>
-                                            {o.hint && <span className={`block text-[11px] leading-snug ${on ? 'text-ivory/70' : 'text-stone'}`}>{o.hint}</span>}
-                                          </button>
-                                        );
-                                      })}
+                                      {c.options.map((o) => (
+                                        <ChoiceCard key={o.value} selected={currentGarment.choices[c.id] === o.value} onClick={() => pick(c, o.value)} title={o.value} sub={o.hint} />
+                                      ))}
                                     </div>
                                   </div>
                                 ))}
@@ -1874,6 +1875,109 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           placeholder="For example: 2-inch inner margin, cotton lining, extra hooks"
                         />
                       </label>
+
+                      {/* How the finished outfit reaches the customer, and where to post fabric to us. */}
+                      <div className="mt-6 space-y-4 border-t border-ink/10 pt-5">
+                        <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-stone">Getting your outfit</span>
+                        <div role="radiogroup" aria-label="Getting your outfit" className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
+                          <ChoiceCard
+                            selected={form.handover === 'collect'}
+                            onClick={() => update('handover', form.handover === 'collect' ? '' : 'collect')}
+                            icon={<PackageIcon />}
+                            title="Collect at the boutique"
+                            sub="Banjara Hills, Hyderabad"
+                          />
+                          <ChoiceCard
+                            selected={form.handover === 'courier'}
+                            onClick={() => update('handover', form.handover === 'courier' ? '' : 'courier')}
+                            icon={<TruckIcon />}
+                            title="Courier it to me"
+                            sub="Anywhere in India"
+                          />
+                        </div>
+
+                        {form.handover === 'courier' && (
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <label className="block sm:col-span-2">
+                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">House / flat and street *</span>
+                              <input
+                                value={form.addrLine}
+                                onChange={(e) => update('addrLine', e.target.value)}
+                                autoComplete="address-line1"
+                                className={fieldCls}
+                                placeholder="Flat 302, Lakeview Apartments, Road No. 12"
+                                aria-invalid={!!errors.addrLine}
+                              />
+                              {errors.addrLine && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrLine}</span>}
+                            </label>
+                            <label className="block sm:col-span-2">
+                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">Area / landmark</span>
+                              <input
+                                value={form.addrArea}
+                                onChange={(e) => update('addrArea', e.target.value)}
+                                autoComplete="address-line2"
+                                className={fieldCls}
+                                placeholder="Near KBR Park, Jubilee Hills"
+                              />
+                            </label>
+                            <label className="block">
+                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">City *</span>
+                              <input
+                                value={form.addrCity}
+                                onChange={(e) => update('addrCity', e.target.value)}
+                                autoComplete="address-level2"
+                                className={fieldCls}
+                                placeholder="Hyderabad"
+                                aria-invalid={!!errors.addrCity}
+                              />
+                              {errors.addrCity && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrCity}</span>}
+                            </label>
+                            <label className="block">
+                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">Pincode *</span>
+                              <input
+                                value={form.addrPin}
+                                onChange={(e) => update('addrPin', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                inputMode="numeric"
+                                autoComplete="postal-code"
+                                className={fieldCls}
+                                placeholder="500033"
+                                aria-invalid={!!errors.addrPin}
+                              />
+                              {errors.addrPin && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrPin}</span>}
+                            </label>
+                            <label className="block sm:col-span-2">
+                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">State</span>
+                              <input
+                                value={form.addrState}
+                                onChange={(e) => update('addrState', e.target.value)}
+                                autoComplete="address-level1"
+                                className={fieldCls}
+                                placeholder="Telangana"
+                              />
+                            </label>
+                          </div>
+                        )}
+
+                        {(form.mode === 'video' || form.handover === 'courier' || form.garments.some((g) => g.fabric === OWN_FABRIC)) && (
+                          <Notice>
+                            <p className="font-medium">Sending us your fabric or a garment?</p>
+                            <p className="mt-1 text-stone">Post it to: {boutiqueAddress}</p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard?.writeText(boutiqueAddress).then(() => {
+                                  setCopied(true);
+                                  window.setTimeout(() => setCopied(false), 2000);
+                                }).catch(() => {});
+                              }}
+                              className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-oxblood underline underline-offset-2 hover:text-ink"
+                            >
+                              <CopyIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                              {copied ? 'Copied' : 'Copy address'}
+                            </button>
+                          </Notice>
+                        )}
+                      </div>
                     </motion.div>
                   )}
                 </form>
@@ -1883,29 +1987,50 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
             {/* FIXED FOOTER (Serene, uncluttered & intuitive) */}
             {!submissionSuccessType && (
               <div className="shrink-0 border-t border-line/80 bg-ivory px-6 py-4 md:px-9">
-                {activeTab !== 'measurements' ? (
-                  <div className="flex items-center justify-between gap-3">
-                    {activeTab === 'dress' ? (
+                {activeTab === 'consultation' ? (
+                  <div>
+                    {/* Phones: Book appointment full width on top, the optional extras link under it. */}
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                       <button
                         type="button"
-                        onClick={() => switchTab('consultation')}
-                        className="inline-flex items-center gap-1.5 py-2 text-[11px] uppercase tracking-[0.16em] text-stone transition-colors hover:text-ink"
+                        onClick={() => {
+                          if (validateCoreForm()) switchTab('dress');
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap py-2 text-[11px] uppercase tracking-[0.14em] text-ink underline underline-offset-4 transition-colors hover:text-oxblood"
                       >
-                        <ArrowLeftIcon className="h-3 w-3" />
-                        <span>Back</span>
+                        <span>Add outfit &amp; sizes (optional)</span>
+                        <ArrowRightIcon className="h-3 w-3 shrink-0" />
                       </button>
-                    ) : (
-                      <span className="text-[11px] text-stone">Step 1 of 3</span>
-                    )}
+                      <button
+                        type="button"
+                        disabled={Boolean(submittingAction)}
+                        onClick={handleInitiateLeadWithOtp}
+                        className="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-full bg-oxblood px-7 py-3.5 text-ivory shadow-[0_12px_26px_-12px_rgba(107,28,34,0.75)] transition-all duration-200 hover:-translate-y-px hover:bg-ink disabled:opacity-60 sm:w-auto"
+                      >
+                        <SendIcon className="h-3.5 w-3.5 text-zari transition-transform group-hover:translate-x-0.5" />
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.18em]">Book appointment</span>
+                      </button>
+                    </div>
+                    <p className="mt-1.5 text-center text-[11px] leading-relaxed text-stone sm:mt-2.5 sm:text-right">
+                      You can tell us about the outfit at the appointment.
+                    </p>
+                  </div>
+                ) : activeTab === 'dress' ? (
+                  <div className="flex items-center justify-between gap-3">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (activeTab === 'dress') switchTab('measurements');
-                        else if (validateCoreForm()) switchTab('dress');
-                      }}
-                      className="inline-flex items-center gap-2 rounded-xs bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-ivory shadow-xs transition-colors hover:bg-oxblood"
+                      onClick={() => switchTab('consultation')}
+                      className="inline-flex items-center gap-1.5 py-2 text-[11px] uppercase tracking-[0.16em] text-stone transition-colors hover:text-ink"
                     >
-                      <span>{activeTab === 'dress' ? 'Next: sizes & photos' : 'Next: the outfit'}</span>
+                      <ArrowLeftIcon className="h-3 w-3" />
+                      <span>Back</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => switchTab('measurements')}
+                      className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-ink px-7 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-ivory shadow-[0_12px_26px_-14px_rgba(29,24,21,0.8)] transition-all duration-200 hover:-translate-y-px hover:bg-oxblood"
+                    >
+                      <span>Next: sizes &amp; photos</span>
                       <ArrowRightIcon className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -1924,22 +2049,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         type="button"
                         disabled={Boolean(submittingAction)}
                         onClick={handleInitiateLeadWithOtp}
-                        className="group inline-flex items-center justify-center gap-2 rounded-xs bg-ink px-6 py-3 text-ivory shadow-xs transition-all duration-200 hover:bg-oxblood disabled:opacity-60"
+                        className="group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-oxblood px-7 py-3.5 text-ivory shadow-[0_12px_26px_-12px_rgba(107,28,34,0.75)] transition-all duration-200 hover:-translate-y-px hover:bg-ink disabled:opacity-60"
                       >
                         <SendIcon className="h-3.5 w-3.5 text-zari transition-transform group-hover:translate-x-0.5" />
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.18em]">Send request</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.18em]">Book appointment</span>
                       </button>
                     </div>
                     <p className="mt-2.5 text-right text-[11px] leading-relaxed text-stone">
-                      {portalToken ? 'Your number is verified.' : 'We will send a 6-digit code to your WhatsApp to confirm your number.'}{' '}
-                      <button
-                        type="button"
-                        onClick={handleSendEmail}
-                        disabled={Boolean(submittingAction)}
-                        className="whitespace-nowrap font-medium text-ink underline underline-offset-2 hover:text-oxblood"
-                      >
-                        {submittingAction === 'email' ? 'Sending email…' : 'Email it instead'}
-                      </button>
+                      {portalToken ? 'Your number is verified.' : 'We will send a 6-digit code to your WhatsApp to confirm your number.'}
                     </p>
                   </div>
                 )}
@@ -2029,7 +2146,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between text-[12px]">
-                    <span className="text-stone/80">No code? Cancel and use “Email it instead”.</span>
+                    <span className="text-stone/80">No code? <a href={`https://wa.me/${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="font-medium text-ink underline underline-offset-2 hover:text-oxblood">WhatsApp us</a></span>
                     {otpStatus === 'requesting' ? null : otpCooldown > 0 ? (
                       <span className="text-stone font-medium">Resend in {otpCooldown}s</span>
                     ) : (

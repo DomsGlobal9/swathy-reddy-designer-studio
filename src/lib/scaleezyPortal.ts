@@ -114,7 +114,7 @@ export function formatBoutiqueErrorMessage(
     lower.includes('provider') ||
     lower.includes('gateway')
   ) {
-    return `We could not send a WhatsApp code just now. Please use “Email it instead”, or call us on ${contact.phone}.`;
+    return `We could not send a WhatsApp code just now. Please WhatsApp or call us on ${contact.phone} and we will book you in.`;
   }
 
   // 5. Network / connection / fetch failures
@@ -125,7 +125,7 @@ export function formatBoutiqueErrorMessage(
     lower.includes('offline') ||
     lower.includes('econnrefused')
   ) {
-    return 'We could not reach the boutique just now. Please check your internet connection and try again, or use “Email it instead”.';
+    return `We could not reach the boutique just now. Please check your internet connection and try again, or call us on ${contact.phone}.`;
   }
 
   // 6. Portal disabled or maintenance (404 / 401 / 403)
@@ -137,7 +137,7 @@ export function formatBoutiqueErrorMessage(
     lower.includes('unauthorized') ||
     lower.includes('disabled')
   ) {
-    return `Online booking is not available just now. Please use “Email it instead”, or call us on ${contact.phone}.`;
+    return `Online booking is not available just now. Please WhatsApp or call us on ${contact.phone}.`;
   }
 
   // 7. Context-specific graceful fallbacks (zero tech jargon)
@@ -150,7 +150,7 @@ export function formatBoutiqueErrorMessage(
   }
 
   if (context === 'customer' || context === 'requirement') {
-    return `We could not send your request just now. Please try again, use “Email it instead”, or call us on ${contact.phone}.`;
+    return `We could not send your request just now. Please try again, or WhatsApp or call us on ${contact.phone}.`;
   }
 
   return `Something went wrong on our side. Please try again in a moment, or call us on ${contact.phone}.`;
