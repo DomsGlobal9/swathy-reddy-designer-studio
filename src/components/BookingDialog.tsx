@@ -19,6 +19,7 @@ import {
   RulerIcon,
   CopyIcon,
   StoreIcon,
+  SearchIcon,
   VideoIcon,
   PackageIcon,
   TruckIcon
@@ -31,7 +32,6 @@ import {
   fetchProductMeasurements,
   fetchProductParts,
   formatBoutiqueErrorMessage,
-  normalizeIndianMobile,
   requestWhatsAppOtp,
   submitPortalCustomer,
   submitPortalRequirement,
@@ -50,6 +50,7 @@ import { shrinkPhotos } from '../lib/shrinkPhotos';
 import { DesignPhotos } from './DesignPhotos';
 import { getShop } from '../lib/shop';
 import { contact } from '../data/contact';
+import { COUNTRY_CODES } from '../data/countryCodes';
 import { MeasureGuide, guideFor } from './MeasureGuide';
 import { clearDraft, loadDraft, loadDraftPhotos, saveDraft, saveDraftPhotos, type DraftPhotos } from '../lib/bookingDraft';
 
@@ -62,6 +63,8 @@ type FormState = {
   // Step 1: Client & Consultation
   name: string;
   phone: string;
+  /** Country of the WhatsApp number (ISO code, e.g. IN, AE). */
+  countryIso: string;
   email: string;
   city: string;
   occasion: string;
@@ -239,6 +242,7 @@ const initialForm: FormState = {
   // Client & Consultation
   name: '',
   phone: '',
+  countryIso: 'IN',
   email: '',
   city: 'Hyderabad',
   occasion: 'Wedding',
@@ -374,6 +378,77 @@ function PillToggle({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+const INDIA = COUNTRY_CODES.find((c) => c.iso === 'IN')!;
+/** Countries most of the boutique's customers write from, shown first. */
+const POPULAR = ['IN', 'AE', 'US', 'GB', 'SG', 'AU', 'CA', 'SA', 'QA', 'KW', 'OM', 'BH', 'MY', 'NZ'];
+
+/** The country part of the WhatsApp number: a searchable list, India first. */
+function CountryPicker({ iso, onPick }: { iso: string; onPick: (iso: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+  const current = COUNTRY_CODES.find((c) => c.iso === iso) ?? INDIA;
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', away);
+    return () => document.removeEventListener('mousedown', away);
+  }, [open]);
+  const query = q.trim().toLowerCase().replace(/^\+/, '');
+  const list = query
+    ? COUNTRY_CODES.filter((c) => c.name.toLowerCase().includes(query) || c.iso.toLowerCase() === query || c.dial.startsWith(query))
+    : [...POPULAR.map((i) => COUNTRY_CODES.find((c) => c.iso === i)!).filter(Boolean), ...COUNTRY_CODES.filter((c) => !POPULAR.includes(c.iso))];
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => { setOpen(!open); setQ(''); }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Country code: ${current.name} +${current.dial}`}
+        className="flex h-[46px] items-center gap-1.5 rounded-l-xl border border-r-0 border-ink/15 bg-paper/60 px-3 text-[13.5px] text-ink transition-colors hover:bg-paper"
+      >
+        <span className="text-[11px] font-semibold tracking-wider text-stone">{current.iso}</span>
+        <span>+{current.dial}</span>
+        <ChevronDownIcon className={`h-3.5 w-3.5 text-stone transition-transform ${open ? 'rotate-180' : ''}`} strokeWidth={1.5} />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-2 w-[280px] rounded-2xl border border-ink/10 bg-ivory p-2 shadow-[0_18px_40px_-12px_rgba(29,24,21,0.3)]">
+          <div className="relative">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone" aria-hidden="true" />
+            <input
+              autoFocus
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search country or code"
+              aria-label="Search country"
+              className="w-full rounded-xl border border-ink/10 bg-white/70 py-2 pl-8 pr-3 text-[13px] outline-none focus:border-oxblood/40 focus:ring-2 focus:ring-oxblood/10"
+            />
+          </div>
+          <div role="listbox" aria-label="Country" className="mt-1.5 max-h-60 overflow-y-auto">
+            {list.length === 0 && <p className="px-3 py-2 text-[12.5px] text-stone">No country found.</p>}
+            {list.map((c) => (
+              <button
+                key={c.iso}
+                type="button"
+                role="option"
+                aria-selected={c.iso === current.iso}
+                onClick={() => { onPick(c.iso); setOpen(false); }}
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[13px] transition-colors ${
+                  c.iso === current.iso ? 'bg-oxblood/10 font-medium text-oxblood' : 'text-ink hover:bg-oxblood/5'
+                }`}
+              >
+                <span className="truncate pr-2">{c.name}</span>
+                <span className="shrink-0 text-stone">+{c.dial}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -537,7 +612,7 @@ function LuxuryDatePicker({
   const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   return (
-    <div ref={containerRef} className="relative block">
+    <div ref={containerRef} className="relative block scroll-mb-6">
       <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">Preferred date *</span>
       <button
         type="button"
@@ -768,6 +843,15 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     void saveDraftPhotos(all);
   }, [photoSignature, submissionSuccessType]);
 
+  // The WhatsApp number: Indian numbers are the CRM's 10 digits, others go in full (+country code).
+  const country = COUNTRY_CODES.find((c) => c.iso === form.countryIso) ?? INDIA;
+  const isIndia = country.iso === 'IN';
+  const phoneDigits = form.phone.replace(/\D/g, '');
+  const phoneOk = isIndia ? phoneDigits.length === 10 : phoneDigits.length >= 6 && phoneDigits.length <= 14;
+  const fullPhone = isIndia ? phoneDigits : `+${country.dial}${phoneDigits}`;
+  const shownPhone = `+${country.dial} ${phoneDigits}`;
+  const phoneError = isIndia ? 'Please enter your 10-digit WhatsApp number.' : 'Please enter your WhatsApp number, without the country code.';
+
   const [, startTransition] = useTransition();
   const [localPhone, setLocalPhone] = useState(form.phone);
 
@@ -778,9 +862,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   // Check for autocomplete suggestions when phone changes (debounced to avoid blocking main thread)
   useEffect(() => {
     const timer = setTimeout(() => {
-      const digits = normalizeIndianMobile(form.phone);
-      if (digits.length === 10 && !dismissedSuggestion) {
-        const match = savedProfiles.find((p) => normalizeIndianMobile(p.phone) === digits && p.name);
+      if (phoneOk && !dismissedSuggestion) {
+        const match = savedProfiles.find(
+          (p) => (p.countryIso ?? 'IN') === form.countryIso && p.phone.replace(/\D/g, '') === phoneDigits && p.name
+        );
         if (match && match.name !== form.name) {
           startTransition(() => {
             setSuggestedProfile(match);
@@ -888,8 +973,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const validateCoreForm = (): boolean => {
     const next: Errors = {};
     if (!form.name.trim()) next.name = 'Please enter your name.';
-    const digits = normalizeIndianMobile(form.phone);
-    if (digits.length !== 10) next.phone = 'Please enter your 10-digit WhatsApp number.';
+    if (!phoneOk) next.phone = phoneError;
     if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       next.email = 'Please check your email address, for example name@example.com.';
     }
@@ -981,7 +1065,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     setCodeSent(false);
     setOtpModalOpen(true);
 
-    const res = await requestWhatsAppOtp(form.phone);
+    const res = await requestWhatsAppOtp(fullPhone);
     if (res.success) {
       setCodeSent(true);
       setOtpCooldown(60);
@@ -996,8 +1080,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
   /* ── Verify the number early: fills in name and email the boutique already has ── */
   const handleInitiateAutofill = async () => {
-    if (normalizeIndianMobile(form.phone).length !== 10) {
-      setErrors((prev) => ({ ...prev, phone: 'Please enter your 10-digit WhatsApp number.' }));
+    if (!phoneOk) {
+      setErrors((prev) => ({ ...prev, phone: phoneError }));
       return;
     }
     await requestCode('autofill');
@@ -1039,7 +1123,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     setOtpError(null);
 
     // 1. Verify code
-    const verifyRes = await verifyWhatsAppOtp(form.phone, otpCode);
+    const verifyRes = await verifyWhatsAppOtp(fullPhone, otpCode);
     if (!verifyRes.success || !verifyRes.token) {
       setOtpStatus('error');
       setOtpError(formatBoutiqueErrorMessage(verifyRes.message, 'otp_verify'));
@@ -1358,7 +1442,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           • Delivery: <span className="font-medium text-ink">{form.handover === 'courier' ? `Courier to ${deliveryAddress()}` : 'Collect at the boutique'}</span>
                         </p>
                       )}
-                      <p>• WhatsApp: <span className="font-medium text-ink">+91 {normalizeIndianMobile(form.phone)}</span></p>
+                      <p>• WhatsApp: <span className="font-medium text-ink">{shownPhone}</span></p>
                       {form.email && <p>• Email: <span className="font-medium text-ink">{form.email}</span></p>}
                     </div>
                   </div>
@@ -1433,19 +1517,23 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                             WhatsApp number *
                           </span>
                           <div className="relative mt-1.5 flex">
-                            <span className="flex h-[46px] shrink-0 items-center rounded-l-xl border border-r-0 border-ink/15 bg-paper/60 px-3.5 text-[13.5px] text-ink">
-                              +91
-                            </span>
+                            <CountryPicker iso={form.countryIso} onPick={(iso) => update('countryIso', iso)} />
                             <div className="relative flex-1">
                               <input
                                 type="tel"
                                 value={localPhone}
                                 onChange={(e) => {
-                                  // Digits only, at most the 10 of an Indian mobile; a pasted +91 or leading 0 is dropped.
+                                  // Digits only. India: at most 10, a pasted +91 or leading 0 dropped. Elsewhere: up
+                                  // to 14 digits, a pasted country code or trunk 0 dropped.
                                   let val = e.target.value.replace(/\D/g, '');
-                                  if (val.length > 10 && val.startsWith('91')) val = val.slice(2);
-                                  if (val.length > 10 && val.startsWith('0')) val = val.slice(1);
-                                  val = val.slice(0, 10);
+                                  if (isIndia) {
+                                    if (val.length > 10 && val.startsWith('91')) val = val.slice(2);
+                                    if (val.length > 10 && val.startsWith('0')) val = val.slice(1);
+                                    val = val.slice(0, 10);
+                                  } else {
+                                    if (e.target.value.trim().startsWith('+') && val.startsWith(country.dial)) val = val.slice(country.dial.length);
+                                    val = val.replace(/^0+/, '').slice(0, 14);
+                                  }
                                   setLocalPhone(val);
                                   startTransition(() => {
                                     update('phone', val);
@@ -1454,10 +1542,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 inputMode="numeric"
                                 autoComplete="tel-national"
                                 className="w-full h-[46px] rounded-r-xl border border-ink/15 bg-white/50 px-3.5 py-0 text-[13.5px] text-ink placeholder:text-stone/40 focus:border-oxblood/50 focus:outline-none focus:ring-2 focus:ring-oxblood/15 transition-all pr-[92px]"
-                                placeholder="98765 43210"
+                                placeholder={isIndia ? '98765 43210' : 'Number without country code'}
                                 aria-invalid={!!errors.phone}
                               />
-                              {normalizeIndianMobile(form.phone).length === 10 && !portalToken && (
+                              {phoneOk && !portalToken && (
                                 <button
                                   type="button"
                                   onClick={handleInitiateAutofill}
@@ -1479,7 +1567,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           ) : (
                             !portalToken && (
                               <span className="mt-1 block text-[11.5px] text-stone">
-                                Indian numbers only. Been here before? Tap Verify and we will fill in your details.
+                                Been here before? Tap Verify and we will fill in your details.
                               </span>
                             )
                           )}
@@ -2197,7 +2285,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         : 'We could not send a code to'}
                     </p>
                     <p className="mt-1 font-display text-[16px] font-semibold text-ink tracking-wider">
-                      +91 {normalizeIndianMobile(form.phone)}
+                      {shownPhone}
                     </p>
                   </div>
 

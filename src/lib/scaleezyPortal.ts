@@ -45,6 +45,19 @@ export const normalizeIndianMobile = (phone: string): string => {
   return digits.length > 10 ? digits.slice(-10) : digits;
 };
 
+/**
+ * The number as the CRM is sent it: "+<country code><number>" for a number outside India (8-15 digits),
+ * the 10 digits for an Indian one. Empty when it cannot be a phone number.
+ */
+export const portalMobile = (phone: string): string => {
+  if (phone.trim().startsWith('+') && !phone.trim().startsWith('+91')) {
+    const digits = phone.replace(/\D/g, '');
+    return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : '';
+  }
+  const indian = normalizeIndianMobile(phone);
+  return indian.length === 10 ? indian : '';
+};
+
 export const DEFAULT_PORTAL_PRODUCTS: PortalProduct[] = [
   { key: 'bridal_blouse', name: 'Bridal Blouse' },
   { key: 'lehenga', name: 'Designer Lehenga' },
@@ -234,11 +247,11 @@ export type OtpRequestResult = {
 };
 
 export async function requestWhatsAppOtp(mobileNumber: string): Promise<OtpRequestResult> {
-  const normalized = normalizeIndianMobile(mobileNumber);
-  if (normalized.length !== 10) {
+  const normalized = portalMobile(mobileNumber);
+  if (!normalized) {
     return {
       success: false,
-      message: 'Please provide a valid 10-digit mobile number for WhatsApp verification.'
+      message: 'Please check your WhatsApp number.'
     };
   }
 
@@ -303,7 +316,7 @@ export async function verifyWhatsAppOtp(
   mobileNumber: string,
   code: string
 ): Promise<OtpVerifyResult> {
-  const normalized = normalizeIndianMobile(mobileNumber);
+  const normalized = portalMobile(mobileNumber);
   const cleanCode = code.trim();
 
   if (!cleanCode || cleanCode.length !== 6) {
