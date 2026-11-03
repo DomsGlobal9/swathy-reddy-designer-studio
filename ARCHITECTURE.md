@@ -137,6 +137,11 @@ measurement list (`BLOUSE_SIZES`, boxes shared between groups) and a sleeve type
 a field for are sent as real sizes; the rest, and all choices, go as text in `custom_requirements`.
 The fields to add in the CRM are listed in `swathy-reddy-brand/CRM-fields-to-add.md`.
 
+Every size box with a known body line has a ruler icon that opens a **how-to-measure drawing**
+(`src/components/MeasureGuide.tsx`): one outline figure with the tape marked in maroon, front or back
+view, and one sentence. It covers the CRM's 84 field names (many share a drawing; a plain "length" is
+read from the waist on bottoms). Notes in the form are gold (`Notice`), problems maroon.
+
 Sending (Scaleezy Customer Portal API v1.1):
 
 1. `POST /intake/customer/verify/request/` — the CRM sends a WhatsApp code from the boutique's number.
@@ -237,6 +242,7 @@ Work by Doms Global LLP, 12–29 October 2026, in order of area. Commit ids are 
 | Phone layout of the collection showcase fixed (photo no longer covers the caption or spills off-screen; faces kept in frame). | Broken on smaller phones. |
 | Friendly 404 page. | Mistyped links showed the home page. |
 | Phone fixes (29 Oct): solid top bar kept below the iPhone clock strip (`viewport-fit=cover` + safe-area padding, also on the booking drawer and coming-soon page); Signature edit arrows on the right with the photos closer; Our story words before the photo; no 01–05 row in Follow the thread (desktop rail keeps it) and the sketch held inside narrow screens; menu Men / Kids open their coming-soon pages. | On iPhones the bar sat under the clock and Safari faded it; the rest came from the owner's phone screenshots. |
+| 3 Nov: how-to-measure drawings on every size box; notes and warnings highlighted (gold / maroon) instead of plain grey; size boxes in a row line up when a label wraps. | The owner wanted guidance at each size box and visible warnings. |
 | Client feedback (31 Oct): Woman section links to the collection (the shop); contact cards' buttons line up (four in a row only from 1400px); WhatsApp box takes digits only; fabrics from the shop + type your own; saree finishing instead of sizes; the boutique's blouse sizes and sleeve type. | The boutique's review of the live site. |
 | Booking form review (30 Oct): fixed a live bug where, after going past step 1 or after booking, closing the form left an invisible layer over the site so nothing could be tapped (the step tabs' sliding underline kept it from leaving); "salon" and internal words (CRM, lead, intake) gone; one honest +91 number field instead of a country list that was ignored; Sundays closed in the calendar, which now opens in place instead of behind the buttons; nothing pre-picked (garment, fabric, work); garments in Women / Men / Western tabs; sizes grouped and folded; wrong sizes caught before sending; the code window says when a code could not be sent and offers Try again; Resend works for the step it is on; email failures no longer read as WhatsApp failures; menu "About" renamed "Women". | The owner asked for an end-to-end check of the form. |
 | Phone spacing (29 Oct): every gap between home sections is 64px on phones (was 104–272px), page about 700px shorter; desktop untouched. Collection showcase photo in its 3:4 frame on phones (shows the whole garment) with long names shrunk to fit; Personal styling has a new still photo (`personal-styling-lavender-saree-fitting.jpg`). | The owner found the phone page too long, the collection photo cut off below the knees, and "Tissue weave" running off the screen. |

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   XIcon,
@@ -14,7 +14,9 @@ import {
   ArrowRightIcon,
   ArrowLeftIcon,
   MessageSquareIcon,
-  RefreshCwIcon
+  RefreshCwIcon,
+  InfoIcon,
+  RulerIcon
 } from 'lucide-react';
 import { setScrollLocked } from '../hooks/useSmoothScroll';
 import { easeOut } from '../utils/format';
@@ -44,6 +46,7 @@ import type {
 import { shrinkPhotos } from '../lib/shrinkPhotos';
 import { DesignPhotos } from './DesignPhotos';
 import { getShop } from '../lib/shop';
+import { MeasureGuide, guideFor } from './MeasureGuide';
 
 type BookingDialogProps = {
   open: boolean;
@@ -269,6 +272,22 @@ const embroideryOptions = [
   'Cutwork & Scallop Borders',
   'Clean Minimal Border'
 ];
+
+/** A note that stands out from the black-and-white form: gold for guidance, maroon for a problem. */
+function Notice({ tone = 'info', className = '', children }: { tone?: 'info' | 'warn'; className?: string; children: React.ReactNode }) {
+  const Icon = tone === 'warn' ? AlertCircleIcon : InfoIcon;
+  return (
+    <div
+      role={tone === 'warn' ? 'alert' : 'note'}
+      className={`flex items-start gap-2.5 rounded-r-sm border-l-[3px] px-3.5 py-3 text-[12.5px] leading-relaxed ${
+        tone === 'warn' ? 'border-oxblood bg-oxblood/[0.07] text-oxblood' : 'border-zari bg-zari/[0.13] text-ink'
+      } ${className}`}
+    >
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone === 'warn' ? 'text-oxblood' : 'text-zari'}`} strokeWidth={1.8} aria-hidden="true" />
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  );
+}
 
 /* ── Custom Luxury Dropdown (Replaces ugly native <select>) ────────────────────────── */
 
@@ -576,6 +595,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   // The fabrics the boutique sells in its online shop (ScaleEzy), so the list follows what it stocks.
   const [shopFabrics, setShopFabrics] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [guideOpen, setGuideOpen] = useState<{ label: string; garment: string; ids: (string | undefined)[] } | null>(null);
   // A retry after a partial failure must not resend what the CRM already has.
   const customerSaved = useRef(false);
   const sentGarments = useRef(new Set<string>());
@@ -1064,6 +1084,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     setActiveGarment(null);
     setOtpNote(null);
     setOpenGroups({});
+    setGuideOpen(null);
     setGarmentTab('women');
     customerSaved.current = false;
     sentGarments.current.clear();
@@ -1229,18 +1250,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                   />
 
                   {/* Atelier Consultation Notice (Polite & Softened) */}
-                  {submitError && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mb-5 flex items-start gap-3 border border-oxblood/20 bg-oxblood/[0.04] p-3.5 text-[13px] text-oxblood rounded-xs shadow-2xs"
-                    >
-                      <AlertCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-oxblood" strokeWidth={1.5} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[13px] leading-relaxed text-oxblood">{submitError}</p>
-                      </div>
-                    </motion.div>
-                  )}
+                  {submitError && <Notice tone="warn" className="mb-5">{submitError}</Notice>}
 
                   {/* ────────────────────────────────────────────────────────────── */}
                   {/* TAB 1: CONSULTATION & CONTACT                                  */}
@@ -1531,9 +1541,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
                       {/* One card per picked garment: its fabric, craft and design notes */}
                       {form.garments.length === 0 ? (
-                        <p className="rounded-sm bg-paper/40 px-4 py-3 text-[13px] text-stone">
-                          Not sure yet? That is fine. Leave this empty and we will plan the outfit with you at the appointment.
-                        </p>
+                        <Notice>Not sure yet? That is fine. Leave this empty and we will plan the outfit with you at the appointment.</Notice>
                       ) : (
                         <div className="space-y-3">
                           {form.garments.map((g) => (
@@ -1668,10 +1676,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                       )}
 
                       {form.garments.length === 0 && (
-                        <p className="rounded-sm bg-paper/40 px-4 py-3 text-[13px] text-stone">
+                        <Notice>
                           You have not picked a garment, so there are no sizes to fill. You can send your request as it is,
                           or go back and pick what you would like made.
-                        </p>
+                        </Notice>
                       )}
 
                       {currentGarment && (GARMENT_CHOICES[currentGarment.key] ?? []).length > 0 && (
@@ -1705,7 +1713,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 })}
                               </div>
                               {c.reference && currentGarment.choices[c.id] === c.reference.when && (
-                                <p className="mt-2 text-[12px] text-oxblood">{c.reference.note}</p>
+                                <Notice className="mt-2.5">{c.reference.note}</Notice>
                               )}
                             </div>
                           ))}
@@ -1719,6 +1727,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                             <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-stone">
                               {garmentName(currentGarment.key)} sizes ({form.unit === 'in' ? 'inches' : 'cm'})
                             </span>
+                            <p className="flex items-center gap-1.5 text-[12px] text-stone">
+                              <RulerIcon className="h-3.5 w-3.5 text-zari" strokeWidth={1.8} aria-hidden="true" />
+                              Tap the ruler next to a size to see how to measure it.
+                            </p>
                             {groups.map((grp, gi) => {
                               const id = `${currentGarment.key}:${grp.name}`;
                               const filled = grp.fields.filter((f) => (currentGarment.measurements[f.id] ?? '').trim()).length;
@@ -1747,8 +1759,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                         const limits = limitsFor(currentGarment.key, measure);
                                         const bad = badMeasurement(raw, limits, form.unit);
                                         return (
-                                          <label key={measure.id} className="block">
-                                            <span className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-stone">{measure.label}</span>
+                                          <div key={measure.id} className="relative">
+                                          {/* Labels get room for two lines so boxes side by side line up even when one name wraps. */}
+                                          <label className="block">
+                                            <span className={`block min-h-[2.6em] text-[10.5px] font-medium uppercase leading-[1.3] tracking-[0.12em] text-stone ${guideFor(currentGarment.key, measure.id, measure.crm) ? 'pr-7' : ''}`}>{measure.label}</span>
                                             <div className="relative mt-1">
                                               <input
                                                 type="text"
@@ -1767,9 +1781,24 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                               />
                                               <span className="pointer-events-none absolute right-0 top-1.5 text-[11px] text-stone/60">{form.unit}</span>
                                             </div>
-                                            {bad && <span className="mt-1 block text-[11px] text-oxblood">Not a size we expect</span>}
+                                            {bad && (
+                                              <span className="mt-1 flex items-center gap-1 text-[11px] font-medium text-oxblood">
+                                                <AlertCircleIcon className="h-3 w-3" aria-hidden="true" /> Not a size we expect
+                                              </span>
+                                            )}
                                             {!bad && limits.help_text && <span className="mt-1 block text-[11px] text-stone">{limits.help_text}</span>}
                                           </label>
+                                          {guideFor(currentGarment.key, measure.id, measure.crm) && (
+                                            <button
+                                              type="button"
+                                              onClick={() => setGuideOpen({ label: measure.label, garment: currentGarment.key, ids: [measure.id, measure.crm] })}
+                                              aria-label={`How to measure ${measure.label}`}
+                                              className="absolute -right-1 -top-1.5 flex h-7 w-7 items-center justify-center rounded-full text-zari transition-colors hover:bg-zari/15 hover:text-oxblood"
+                                            >
+                                              <RulerIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+                                            </button>
+                                          )}
+                                          </div>
                                         );
                                       })}
                                     </div>
@@ -1878,6 +1907,10 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
             )}
           </motion.div>
 
+          {guideOpen && guideFor(guideOpen.garment, ...guideOpen.ids) && (
+            <MeasureGuide label={guideOpen.label} guide={guideFor(guideOpen.garment, ...guideOpen.ids)!} onClose={() => setGuideOpen(null)} />
+          )}
+
           {/* ────────────────────────────────────────────────────────────────── */}
           {/* WHATSAPP OTP VERIFICATION MODAL OVERLAY                            */}
           {/* ────────────────────────────────────────────────────────────────── */}
@@ -1930,20 +1963,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                     </p>
                   </div>
 
-                  {otpNote && (
-                    <div className="mt-3.5 rounded-xs border border-zari/30 bg-zari/10 p-2.5 text-[12px] text-stone">
-                      <p className="font-medium text-ink">{otpNote}</p>
-                    </div>
-                  )}
+                  {otpNote && <Notice className="mt-3.5">{otpNote}</Notice>}
 
-                  {otpError && (
-                    <div className="mt-3.5 flex items-start gap-2.5 rounded-xs border border-oxblood/20 bg-oxblood/[0.04] p-3 text-[12px] text-oxblood">
-                      <AlertCircleIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-oxblood" strokeWidth={1.5} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[12px] leading-relaxed text-oxblood">{otpError}</p>
-                      </div>
-                    </div>
-                  )}
+                  {otpError && <Notice tone="warn" className="mt-3.5">{otpError}</Notice>}
 
                   {!(otpPurpose === 'submit' && portalToken) && (codeSent || otpStatus === 'requesting') && (
                   <div>
