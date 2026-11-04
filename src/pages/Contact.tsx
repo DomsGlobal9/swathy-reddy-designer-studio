@@ -188,7 +188,7 @@ export function Contact() {
  */
 function Channel({ icon, label, note, actions, children }: { icon: ReactNode; label: string; note: string; actions: ReactNode; children: ReactNode }) {
   return (
-    <FadeUp className="flex h-full flex-col rounded-3xl bg-paper/55 p-7 transition-shadow duration-300 hover:shadow-[0_24px_48px_-28px_rgba(29,24,21,0.35)] md:p-8">
+    <FadeUp className="flex h-full flex-col rounded-3xl bg-paper/55 p-6 sm:p-7 md:p-8 transition-shadow duration-300 hover:shadow-[0_24px_48px_-28px_rgba(29,24,21,0.35)]">
       <span className="flex items-center gap-3 text-[14px] font-medium text-ink">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-oxblood/10 text-oxblood [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:stroke-[1.6]">
           {icon}
