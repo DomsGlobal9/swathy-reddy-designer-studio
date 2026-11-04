@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRightIcon, CalendarIcon, CheckIcon, CopyIcon, MailIcon, MapPinIcon, PhoneIcon } from 'lucide-react';
 import { useSmoothScroll } from '../hooks/useSmoothScroll';
 import { SiteHeader } from '../components/SiteHeader';
@@ -37,13 +37,6 @@ export function Contact() {
   }, []);
 
   const openDays = hours.filter(Boolean).length;
-  const emailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact.email)}&su=${encodeURIComponent('Inquiry | Swathy Reddy Designer Studio')}`;
-  const handleEmailClick = (e: React.MouseEvent) => {
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      e.preventDefault();
-      window.location.href = `mailto:${contact.email}?subject=${encodeURIComponent('Inquiry | Swathy Reddy Designer Studio')}`;
-    }
-  };
 
   return (
     <div className="min-h-screen w-full bg-ivory font-sans text-ink">
@@ -107,9 +100,9 @@ export function Contact() {
                 icon={<MailIcon />}
                 label="Write to us"
                 note="For orders, alterations, and everything in between."
-                actions={<><Pill href={emailComposeUrl} onClick={handleEmailClick} external>Send an email</Pill><CopyButton text={contact.email} /></>}>
+                actions={<><EmailButton email={contact.email} /><CopyButton text={contact.email} /></>}>
 
-                <Value><a href={emailComposeUrl} onClick={handleEmailClick} target="_blank" rel="noreferrer" className="inline-block whitespace-nowrap text-[15px] sm:text-[17px] md:text-[18px] lg:text-[1.15rem] font-medium text-ink transition-colors hover:text-oxblood hover:underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-oxblood rounded-sm" title={`Send email to ${contact.email}`}>{contact.email}</a></Value>
+                <Value><EmailAddressLink email={contact.email} /></Value>
               </Channel>
 
               {contact.phone && (
@@ -237,6 +230,133 @@ function CopyButton({ text }: { text: string }) {
       {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
       <span aria-live="polite">{copied ? 'Copied' : 'Copy'}</span>
     </button>
+  );
+}
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPod|Android/i.test(ua)) return true;
+  if (/iPad/i.test(ua)) return true;
+  if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
+  return false;
+}
+
+function EmailButton({ email }: { email: string }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const subject = encodeURIComponent('Inquiry | Swathy Reddy Designer Studio');
+  const mailtoUrl = `mailto:${email}?subject=${subject}`;
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${subject}`;
+  const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(email)}&subject=${subject}`;
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    // On iOS & Android phones/tablets: directly trigger native mailto
+    if (isMobileDevice()) {
+      window.location.href = mailtoUrl;
+      return;
+    }
+    // On desktop (Mac & Windows): toggle options menu
+    e.preventDefault();
+    setOpen((prev) => !prev);
+  };
+
+  return (
+    <div ref={menuRef} className="relative inline-block">
+      <Pill href={mailtoUrl} onClick={handleClick}>
+        Send an email
+      </Pill>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.96 }}
+            transition={{ duration: 0.16, ease: easeOut }}
+            className="absolute left-0 bottom-full mb-2 z-50 w-64 rounded-2xl border border-ink/10 bg-ivory/95 p-1.5 shadow-[0_20px_40px_-15px_rgba(29,24,21,0.3)] backdrop-blur-md"
+            role="menu"
+            aria-label="Email options"
+          >
+            <div className="px-3 py-2 border-b border-ink/8 text-[11px] font-medium uppercase tracking-[0.12em] text-stone">
+              Send email via
+            </div>
+            <a
+              href={gmailUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-oxblood/[0.08] hover:text-oxblood"
+              role="menuitem"
+            >
+              <span>Gmail <span className="text-[11px] text-stone font-normal">(Web)</span></span>
+              <ArrowUpRightIcon className="h-3.5 w-3.5 opacity-60" />
+            </a>
+            <a
+              href={mailtoUrl}
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-oxblood/[0.08] hover:text-oxblood"
+              role="menuitem"
+            >
+              <span>Default Mail App <span className="text-[11px] text-stone font-normal">(Apple Mail / Outlook)</span></span>
+              <ArrowUpRightIcon className="h-3.5 w-3.5 opacity-60" />
+            </a>
+            <a
+              href={outlookUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-oxblood/[0.08] hover:text-oxblood"
+              role="menuitem"
+            >
+              <span>Outlook.com <span className="text-[11px] text-stone font-normal">(Web)</span></span>
+              <ArrowUpRightIcon className="h-3.5 w-3.5 opacity-60" />
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function EmailAddressLink({ email }: { email: string }) {
+  const subject = encodeURIComponent('Inquiry | Swathy Reddy Designer Studio');
+  const mailtoUrl = `mailto:${email}?subject=${subject}`;
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${subject}`;
+
+  return (
+    <a
+      href={mailtoUrl}
+      onClick={(e) => {
+        if (!isMobileDevice()) {
+          // On desktop, opening Gmail Web compose directly works 100%
+          e.preventDefault();
+          window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+        }
+      }}
+      className="inline-block whitespace-nowrap text-[15px] sm:text-[17px] md:text-[18px] lg:text-[1.15rem] font-medium text-ink transition-colors hover:text-oxblood hover:underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-oxblood rounded-sm"
+      title={`Send email to ${email}`}
+    >
+      {email}
+    </a>
   );
 }
 
