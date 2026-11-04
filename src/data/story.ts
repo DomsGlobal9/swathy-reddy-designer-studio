@@ -6,6 +6,7 @@ export const navigation: NavLink[] = [
 { label: 'Men', target: '/men' },
 { label: 'Kids', target: '/kids' },
 { label: 'Lookbook', target: 'lookbook' },
+{ label: 'Blog', target: '/blog' },
 { label: 'Contact', target: '/contact' }];
 
 
@@ -32,7 +33,7 @@ export const threadStages: ThreadStage[] = [
 },
 {
   title: 'Her style',
-  description: 'And then it leaves the atelier, and becomes part of your story.',
+  description: 'And then it leaves the boutique, and becomes part of your story.',
   sketch: images.sketchHer
 }];
 

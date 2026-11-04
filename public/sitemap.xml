@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Every public page and the main photos on it. When a page is added to src/App.tsx, add it here
-     and in scripts/seo-pages.mjs. When a page's content or photos change, update its lastmod. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.labelswathyreddy.com/</loc>
-    <lastmod>2026-10-29</lastmod>
+    <lastmod>2026-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image><image:loc>https://www.labelswathyreddy.com/festive_family_hero.jpg</image:loc></image:image>
@@ -12,39 +10,175 @@
     <image:image><image:loc>https://www.labelswathyreddy.com/man_portrait.jpg</image:loc></image:image>
     <image:image><image:loc>https://www.labelswathyreddy.com/kids_portrait.jpg</image:loc></image:image>
     <image:image><image:loc>https://www.labelswathyreddy.com/founder_atelier.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/swathy-reddy-boutique-interior.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/kanjivaram-silk.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/banarasi-zari.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/zardozi-aari-embroidery.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/wedding-bridal-saree.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/festive-diwali-silk-sarees.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/everyday-handloom-saree.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/dusty-rose-organza-saree.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/black-gold-silk-saree.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/gold-zari-pallu.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/teal-copper-saree.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/personal-styling-lavender-saree-fitting.jpg</image:loc></image:image>
-    <image:image><image:loc>https://www.labelswathyreddy.com/og-image.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/roja-pattu-anarkali.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.labelswathyreddy.com/lookbook-look-04.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://www.labelswathyreddy.com/contact</loc>
-    <lastmod>2026-10-29</lastmod>
+    <lastmod>2026-11-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image><image:loc>https://www.labelswathyreddy.com/swathy-reddy-boutique-interior.jpg</image:loc></image:image>
   </url>
   <url>
+    <loc>https://www.labelswathyreddy.com/blog</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/founder_atelier.jpg</image:loc></image:image>
+  </url>
+  <url>
     <loc>https://www.labelswathyreddy.com/men</loc>
-    <lastmod>2026-10-29</lastmod>
+    <lastmod>2026-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://www.labelswathyreddy.com/men_coming_soon.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://www.labelswathyreddy.com/kids</loc>
-    <lastmod>2026-10-29</lastmod>
+    <lastmod>2026-11-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://www.labelswathyreddy.com/kids_coming_soon.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/how-to-choose-indian-fashion-designer-online</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/swathy-reddy-boutique-interior.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/order-custom-indian-outfits-online-worldwide</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/personal-styling-lavender-saree-fitting.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/indian-wedding-guest-outfit-ideas</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/wedding-bridal-saree.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/contemporary-ethnic-wear-guide</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/roja-pattu-anarkali.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/indo-western-fashion-styling-guide</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/lookbook-look-04.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/fashion-designer-hyderabad-boutique-experience</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/founder_atelier.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/how-to-send-measurements-to-fashion-designer</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/personal-styling-lavender-saree-fitting.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/made-to-order-vs-ready-to-wear-designer-clothing</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/dusty-rose-organza-saree.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/how-long-does-made-to-order-outfit-take</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/zardozi-aari-embroidery.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/indian-designer-wear-for-nri-customers</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/festive_family_hero.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/international-shipping-designer-clothing-guide</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/banarasi-zari.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/how-to-style-festive-wear</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/festive-diwali-silk-sarees.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/contemporary-western-wear-designer-dresses</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/teal-copper-saree.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/designer-co-ord-sets-styling-guide</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/woman-ivory-chanderi-saree.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/indian-wedding-outfits-for-men-designer-menswear</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/man_portrait.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/designer-kidswear-indian-occasion-wear</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/kids_portrait.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/matching-family-outfits-indian-weddings-festivals</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/festive_family_hero.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/fabric-guide-designer-clothing</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/kanjivaram-silk.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/how-a-designer-outfit-is-created</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/sketch-craft.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.labelswathyreddy.com/blog/why-invest-in-designer-label-premium-indian-fashion</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://www.labelswathyreddy.com/black-gold-silk-saree.jpg</image:loc></image:image>
   </url>
 </urlset>

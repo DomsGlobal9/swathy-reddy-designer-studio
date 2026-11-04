@@ -8,4 +8,4 @@ import type { Fabric } from '../types/catalog';
 export const fabrics: Fabric[] = [
 { name: 'Kanjivaram silk', origin: 'Woven in Kanchipuram', image: images.fabricSilk },
 { name: 'Banarasi zari', origin: 'Woven in Varanasi', image: images.fabricZari },
-{ name: 'Zardozi & aari', origin: 'Embroidered in our Hyderabad atelier', image: images.fabricEmbroidery }];
+{ name: 'Zardozi & aari', origin: 'Embroidered in our Hyderabad boutique', image: images.fabricEmbroidery }];

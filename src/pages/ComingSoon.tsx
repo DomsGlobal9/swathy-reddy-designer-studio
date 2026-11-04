@@ -16,7 +16,7 @@ const COLLECTIONS = {
     image: '/men_coming_soon.jpg',
     alt: 'Swathy Reddy Heritage Collection: a man in a black kurta set in a carved heritage interior',
     position: 'object-center',
-    line: 'Ethnic wear for every story. Our first menswear, handcrafted kurta sets cut and finished in the atelier, arrives soon.',
+    line: 'Ethnic wear for every story. Our first menswear, handcrafted kurta sets cut and finished in the boutique, arrives soon.',
     whatsapp: "Hello! Please let me know when the men's collection launches."
   },
   kids: {
@@ -24,7 +24,7 @@ const COLLECTIONS = {
     image: '/kids_coming_soon.jpg',
     alt: 'Swathy Reddy Heritage Collection: a boy in a green kurta with a printed jacket and a girl in a floral lehenga',
     position: 'object-center',
-    line: 'Little kurta sets and floral lehengas for every first celebration, handcrafted in the atelier, arrive soon.',
+    line: 'Little kurta sets and floral lehengas for every first celebration, handcrafted in the boutique, arrive soon.',
     whatsapp: "Hello! Please let me know when the kids' collection launches."
   }
 } as const;

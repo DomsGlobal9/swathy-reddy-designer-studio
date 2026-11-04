@@ -94,7 +94,7 @@ export function Contact() {
             <div className={`mt-14 grid gap-5 sm:grid-cols-2 ${contact.phone ? 'min-[1400px]:grid-cols-4' : 'min-[1400px]:grid-cols-3'}`}>
               <Channel
                 icon={<MapPinIcon />}
-                label="Visit the atelier"
+                label="Visit the boutique"
                 note="Walk in during opening hours, or book a private fitting."
                 actions={<Pill href={mapsUrl} external>Get directions</Pill>}>
                 <Value>
@@ -128,7 +128,7 @@ export function Contact() {
                 note="Bridal, festive and made-to-measure, with time set aside only for you."
                 actions={<Pill onClick={openBooking}>Book a consultation</Pill>}>
                 <Value>
-                  In the atelier
+                  In the boutique
                   <br />
                   or on video
                 </Value>
