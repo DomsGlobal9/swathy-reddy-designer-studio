@@ -10,6 +10,15 @@ import { MotifArt } from './ui/MotifArt';
 const SILK = "url('/footer-burgundy-silk.jpg')";
 
 export function SiteFooter() {
+  const emailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact.email)}&su=${encodeURIComponent('Inquiry | Swathy Reddy Designer Studio')}`;
+  const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isMobile) {
+      e.preventDefault();
+      window.location.href = `mailto:${contact.email}?subject=${encodeURIComponent('Inquiry | Swathy Reddy Designer Studio')}`;
+    }
+  };
+
   return (
     <footer className="relative overflow-hidden bg-[#25120E] text-ivory">
       {/* Decoration only: the burgundy silk picture. Wide screens show it whole. Phones and tablets stack the
@@ -51,7 +60,15 @@ export function SiteFooter() {
 
           <Column title="Talk to us" divider>
             <a href={`tel:+${phoneDigits}`} className="block text-[15px] text-ivory/85 transition-colors hover:text-ivory">{contact.phone}</a>
-            <a href={`mailto:${contact.email}`} className="mt-1 block break-all text-[15px] text-ivory/85 transition-colors hover:text-ivory">{contact.email}</a>
+            <a
+              href={emailComposeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleEmailClick}
+              className="mt-1 block break-all text-[15px] text-ivory/85 transition-colors hover:text-ivory"
+            >
+              {contact.email}
+            </a>
             <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-5">
               <a
                 href={`https://wa.me/${phoneDigits}?text=${encodeURIComponent('Hello Swathy Reddy Designer Studio')}`}

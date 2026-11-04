@@ -53,8 +53,7 @@ export function SignatureEdit({ wishlist, onToggleSave }: SignatureEditProps) {
       <div className="relative mx-auto max-w-[1440px] px-5 md:px-10">
         <FadeUp className="flex flex-col justify-between gap-5 md:flex-row md:items-end md:gap-8">
           <div>
-            <ChapterMark label="The edit" />
-            <h2 className="mt-6 font-display text-[2.8rem] leading-[1] tracking-[-0.02em] md:text-7xl">
+            <h2 className="font-display text-[2.8rem] leading-[1] tracking-[-0.02em] md:text-7xl">
               The signature <em>edit</em>
             </h2>
           </div>

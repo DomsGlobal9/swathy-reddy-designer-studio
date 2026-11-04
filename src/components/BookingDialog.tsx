@@ -22,7 +22,9 @@ import {
   SearchIcon,
   VideoIcon,
   PackageIcon,
-  TruckIcon
+  TruckIcon,
+  MapPinIcon,
+  ArrowUpRightIcon
 } from 'lucide-react';
 import { setScrollLocked } from '../hooks/useSmoothScroll';
 import { easeOut } from '../utils/format';
@@ -847,6 +849,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const otpInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const courierSectionRef = useRef<HTMLDivElement>(null);
+  const firstAddrInputRef = useRef<HTMLInputElement>(null);
 
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -2224,7 +2228,16 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                           />
                           <ChoiceCard
                             selected={form.handover === 'courier'}
-                            onClick={() => update('handover', form.handover === 'courier' ? '' : 'courier')}
+                            onClick={() => {
+                              const next = form.handover === 'courier' ? '' : 'courier';
+                              update('handover', next);
+                              if (next === 'courier') {
+                                setTimeout(() => {
+                                  courierSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                  firstAddrInputRef.current?.focus({ preventScroll: true });
+                                }, 120);
+                              }
+                            }}
                             icon={<TruckIcon />}
                             title="Courier it to me"
                             sub="Anywhere in India"
@@ -2232,85 +2245,156 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         </div>
 
                         {form.handover === 'courier' && (
-                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <label className="block sm:col-span-2">
-                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">House / flat and street *</span>
-                              <input
-                                value={form.addrLine}
-                                onChange={(e) => update('addrLine', e.target.value)}
-                                autoComplete="address-line1"
-                                className={fieldCls}
-                                placeholder="Flat 302, Lakeview Apartments, Road No. 12"
-                                aria-invalid={!!errors.addrLine}
-                              />
-                              {errors.addrLine && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrLine}</span>}
-                            </label>
-                            <label className="block sm:col-span-2">
-                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">Area / landmark</span>
-                              <input
-                                value={form.addrArea}
-                                onChange={(e) => update('addrArea', e.target.value)}
-                                autoComplete="address-line2"
-                                className={fieldCls}
-                                placeholder="Near KBR Park, Jubilee Hills"
-                              />
-                            </label>
-                            <label className="block">
-                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">City *</span>
-                              <input
-                                value={form.addrCity}
-                                onChange={(e) => update('addrCity', e.target.value)}
-                                autoComplete="address-level2"
-                                className={fieldCls}
-                                placeholder="Hyderabad"
-                                aria-invalid={!!errors.addrCity}
-                              />
-                              {errors.addrCity && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrCity}</span>}
-                            </label>
-                            <label className="block">
-                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">Pincode *</span>
-                              <input
-                                value={form.addrPin}
-                                onChange={(e) => update('addrPin', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                inputMode="numeric"
-                                autoComplete="postal-code"
-                                className={fieldCls}
-                                placeholder="500033"
-                                aria-invalid={!!errors.addrPin}
-                              />
-                              {errors.addrPin && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrPin}</span>}
-                            </label>
-                            <label className="block sm:col-span-2">
-                              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">State</span>
-                              <input
-                                value={form.addrState}
-                                onChange={(e) => update('addrState', e.target.value)}
-                                autoComplete="address-level1"
-                                className={fieldCls}
-                                placeholder="Telangana"
-                              />
-                            </label>
-                          </div>
+                          <motion.div
+                            ref={courierSectionRef}
+                            initial={{ opacity: 0, y: 14 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="rounded-2xl border-2 border-oxblood/40 bg-gradient-to-b from-[#FBF7F0] to-[#F5ECE0]/60 p-4 sm:p-5 shadow-sm space-y-4"
+                          >
+                            <div className="flex items-center gap-2.5 border-b border-ink/10 pb-3">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-oxblood text-ivory shadow-sm">
+                                <TruckIcon className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <h4 className="font-display text-[15px] font-semibold text-ink sm:text-[16px]">
+                                  Your Delivery Address
+                                </h4>
+                                <p className="text-[12px] text-stone">
+                                  Where should we courier your finished outfit? Delivered anywhere in India.
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              <label className="block sm:col-span-2">
+                                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">House / flat and street *</span>
+                                <input
+                                  ref={firstAddrInputRef}
+                                  value={form.addrLine}
+                                  onChange={(e) => update('addrLine', e.target.value)}
+                                  autoComplete="address-line1"
+                                  className={fieldCls}
+                                  placeholder="Flat 302, Lakeview Apartments, Road No. 12"
+                                  aria-invalid={!!errors.addrLine}
+                                />
+                                {errors.addrLine && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrLine}</span>}
+                              </label>
+                              <label className="block sm:col-span-2">
+                                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">Area / landmark</span>
+                                <input
+                                  value={form.addrArea}
+                                  onChange={(e) => update('addrArea', e.target.value)}
+                                  autoComplete="address-line2"
+                                  className={fieldCls}
+                                  placeholder="Near KBR Park, Jubilee Hills"
+                                />
+                              </label>
+                              <label className="block">
+                                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">City *</span>
+                                <input
+                                  value={form.addrCity}
+                                  onChange={(e) => update('addrCity', e.target.value)}
+                                  autoComplete="address-level2"
+                                  className={fieldCls}
+                                  placeholder="Hyderabad"
+                                  aria-invalid={!!errors.addrCity}
+                                />
+                                {errors.addrCity && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrCity}</span>}
+                              </label>
+                              <label className="block">
+                                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">Pincode *</span>
+                                <input
+                                  value={form.addrPin}
+                                  onChange={(e) => update('addrPin', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                  inputMode="numeric"
+                                  autoComplete="postal-code"
+                                  className={fieldCls}
+                                  placeholder="500033"
+                                  aria-invalid={!!errors.addrPin}
+                                />
+                                {errors.addrPin && <span className="mt-1 block text-[12px] text-oxblood">{errors.addrPin}</span>}
+                              </label>
+                              <label className="block sm:col-span-2">
+                                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-stone">State</span>
+                                <input
+                                  value={form.addrState}
+                                  onChange={(e) => update('addrState', e.target.value)}
+                                  autoComplete="address-level1"
+                                  className={fieldCls}
+                                  placeholder="Telangana"
+                                />
+                              </label>
+                            </div>
+                          </motion.div>
                         )}
 
                         {(form.mode === 'video' || form.handover === 'courier' || form.garments.some((g) => g.fabric === OWN_FABRIC)) && (
-                          <Notice>
-                            <p className="font-medium">Sending us your fabric or a garment?</p>
-                            <p className="mt-1 text-stone">Post it to: {boutiqueAddress}</p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigator.clipboard?.writeText(boutiqueAddress).then(() => {
-                                  setCopied(true);
-                                  window.setTimeout(() => setCopied(false), 2000);
-                                }).catch(() => {});
-                              }}
-                              className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-oxblood underline underline-offset-2 hover:text-ink"
-                            >
-                              <CopyIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                              {copied ? 'Copied' : 'Copy address'}
-                            </button>
-                          </Notice>
+                          <div className="mt-5 rounded-2xl border-2 border-[#C9A45C] bg-[#FAF5EC] p-4 sm:p-5 shadow-sm">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#C9A45C]/30 pb-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-oxblood text-ivory">
+                                  <MapPinIcon className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-oxblood">
+                                    Our Studio Address
+                                  </span>
+                                  <span className="text-[12px] text-stone">
+                                    Send your fabric or sample blouse to:
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard?.writeText(boutiqueAddress).then(() => {
+                                    setCopied(true);
+                                    window.setTimeout(() => setCopied(false), 2000);
+                                  }).catch(() => {});
+                                }}
+                                className="inline-flex self-start sm:self-auto shrink-0 items-center gap-1.5 rounded-full border border-oxblood/40 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-oxblood shadow-sm transition-all hover:bg-oxblood hover:text-ivory active:scale-95"
+                              >
+                                {copied ? (
+                                  <>
+                                    <CheckIcon className="h-3.5 w-3.5 text-emerald-600" />
+                                    <span className="text-emerald-700 font-bold">Address Copied!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <CopyIcon className="h-3.5 w-3.5" />
+                                    Copy Studio Address
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            <div className="mt-3.5 rounded-xl border border-[#C9A45C]/40 bg-white/90 p-4 shadow-inner">
+                              <div className="font-display text-[18px] font-bold text-ink sm:text-[20px]">
+                                {contact.name}
+                              </div>
+                              <div className="mt-1.5 text-[14px] leading-relaxed text-ink/90 sm:text-[15px]">
+                                <div className="font-medium">{contact.street}</div>
+                                <div>{contact.city}</div>
+                                <div className="mt-2 flex flex-wrap items-center gap-2 font-medium text-oxblood">
+                                  <span>Phone / WhatsApp:</span>
+                                  <span className="font-mono text-[14px] font-bold tracking-wide text-ink">{contact.phone}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[12px] text-stone">
+                              <p>Please clearly mention your name &amp; phone number on the parcel.</p>
+                              <a
+                                href={contact.mapsLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-semibold text-oxblood underline underline-offset-2 hover:text-ink"
+                              >
+                                View on Google Maps <ArrowUpRightIcon className="h-3.5 w-3.5" />
+                              </a>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </motion.div>
