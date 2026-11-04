@@ -25,10 +25,10 @@ export function Lookbook() {
         <div className="relative mt-8 flex flex-col md:mt-0">
           {lookbook.map((look, i) =>
           <figure key={look.id} className={look.placement}>
-              <RevealImage src={look.image} alt={look.alt} className={`relative z-20 ${look.aspect}`} parallax={5} />
-              <figcaption className="mt-4 flex gap-4 text-[13px] text-stone">
-                <span className="font-display italic text-oxblood">Look 0{i + 1}</span>
-                <span>{look.caption}</span>
+              <RevealImage src={look.image} video={look.video} alt={look.alt} className={`relative z-20 ${look.aspect}`} parallax={5} />
+              <figcaption className="mt-4 flex items-baseline gap-3 text-[13px] text-stone whitespace-nowrap">
+                <span className="font-display italic text-oxblood whitespace-nowrap shrink-0">Look 0{i + 1}</span>
+                <span className="whitespace-nowrap">{look.caption}</span>
               </figcaption>
             </figure>
           )}

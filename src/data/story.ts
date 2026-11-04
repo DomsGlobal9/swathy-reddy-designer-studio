@@ -62,32 +62,34 @@ export const lookbook: LookbookItem[] = [
 {
   id: 'look-01',
   image: images.lookbook1,
-  alt: 'Woman in a dusty rose organza saree walking through a sunlit colonnade',
-  caption: 'Dusty rose organza, walking the colonnade.',
+  alt: 'Roja gaaru in a custom-made royal purple pattu Anarkali with antique gold zari work by Label Swathy Reddy',
+  caption: 'Custom pattu Anarkali for Roja gaaru.',
   placement: 'w-[82%] ml-auto md:ml-[44%] md:w-[30%]',
-  aspect: 'aspect-[2/3]'
+  aspect: 'aspect-[3/4]'
 },
 {
   id: 'look-02',
   image: images.lookbook2,
-  alt: 'Woman in a black and gold silk saree seated by a window',
-  caption: 'Black and gold silk, by the window.',
-  placement: 'w-[72%] mt-10 md:ml-[6%] md:w-[30%] md:-mt-[18%]',
-  aspect: 'aspect-[4/5]'
+  video: images.lookbook2Video,
+  alt: 'Handcrafted bridal couture in motion with delicate hand embroidery and shimmer by Label Swathy Reddy',
+  caption: 'Handcrafted bridal couture in motion.',
+  placement: 'w-[78%] mt-10 md:ml-[6%] md:w-[32%] md:-mt-[18%]',
+  aspect: 'aspect-[9/16]'
 },
 {
   id: 'look-03',
-  image: images.lookbook4,
-  alt: 'Woman in a teal and copper saree on a rooftop at dusk',
-  caption: 'Teal and copper, a rooftop at dusk.',
-  placement: 'w-[78%] ml-auto mt-10 md:ml-[64%] md:w-[28%] md:-mt-[8%]',
-  aspect: 'aspect-[2/3]'
+  image: images.lookbook3,
+  video: images.lookbook3Video,
+  alt: 'Magenta bridal lehenga gown with zardozi embroidery and delicate draping by Label Swathy Reddy',
+  caption: 'Magenta zardozi couture in the spotlight.',
+  placement: 'w-[78%] ml-auto mt-10 md:ml-[64%] md:w-[30%] md:-mt-[8%]',
+  aspect: 'aspect-[9/16]'
 },
 {
   id: 'look-04',
-  image: images.lookbook3,
-  alt: 'Hands settling a gold zari pallu over the shoulder',
-  caption: 'The pallu, settled on the shoulder.',
-  placement: 'w-[64%] mt-10 md:ml-[22%] md:w-[24%] md:-mt-[22%]',
-  aspect: 'aspect-[3/4]'
+  image: images.lookbook4,
+  alt: 'Black and silver mirrorwork couture lehenga with embellished neckline and antique silver jewelry by Label Swathy Reddy',
+  caption: 'Midnight noir mirrorwork couture.',
+  placement: 'w-[74%] mt-10 md:ml-[22%] md:w-[28%] md:-mt-[20%]',
+  aspect: 'aspect-[9/16]'
 }];

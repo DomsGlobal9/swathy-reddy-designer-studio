@@ -43,6 +43,7 @@ export type Occasion = {
 export type LookbookItem = {
   id: string;
   image: string;
+  video?: string;
   alt: string;
   caption: string;
   placement: string;
