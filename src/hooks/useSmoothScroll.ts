@@ -40,7 +40,8 @@ export function scrollToId(id: string) {
     return;
   }
   if (instance) {
-    // 0 offset ensures the section aligns perfectly with the top of the screen, utilizing its own built-in padding
+    // Resize ensures all section heights and sticky boundaries are completely up to date
+    instance.resize();
     instance.scrollTo(el, { offset: 0 });
   } else {
     // Fallback for browsers/states without Lenis
@@ -50,8 +51,8 @@ export function scrollToId(id: string) {
 
 export function setScrollLocked(locked: boolean) {
   if (instance) {
-    if (locked) instance.stop();else
-    instance.start();
+    if (locked) instance.stop();
+    else instance.start();
   } else {
     document.documentElement.style.overflow = locked ? 'hidden' : '';
   }

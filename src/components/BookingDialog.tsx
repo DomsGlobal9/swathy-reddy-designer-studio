@@ -399,26 +399,26 @@ function ChoiceCard({
       role="radio"
       aria-checked={selected}
       onClick={onClick}
-      className={`relative flex w-full items-start gap-3 rounded-xl border p-3.5 text-left transition-all duration-200 ${
+      className={`relative flex w-full min-w-0 items-start gap-2.5 rounded-xl border p-3 text-left transition-all duration-200 sm:gap-3 sm:p-3.5 ${
         selected
           ? 'border-oxblood bg-oxblood/[0.05] shadow-[0_8px_20px_-12px_rgba(107,28,34,0.55)]'
           : 'border-ink/12 bg-white/45 hover:border-oxblood/35 hover:bg-white/80 hover:shadow-[0_8px_18px_-14px_rgba(29,24,21,0.4)]'
       }`}
     >
       {icon && (
-        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors [&_svg]:h-4 [&_svg]:w-4 ${
+        <span className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full transition-colors [&_svg]:h-4 [&_svg]:w-4 ${
           selected ? 'bg-oxblood text-ivory' : 'bg-paper text-oxblood'
         }`}>
           {icon}
         </span>
       )}
-      <span className="min-w-0 flex-1 pr-5">
-        <span className="block text-[13px] font-medium leading-tight text-ink">{title}</span>
-        {sub && <span className="mt-1 block text-[11px] leading-snug text-stone">{sub}</span>}
+      <span className="min-w-0 flex-1 pr-4 sm:pr-5">
+        <span className="block text-[12.5px] sm:text-[13px] font-medium leading-tight text-ink break-words">{title}</span>
+        {sub && <span className="mt-1 block text-[10.5px] sm:text-[11px] leading-snug text-stone break-words">{sub}</span>}
       </span>
       <span
         aria-hidden="true"
-        className={`absolute right-3 top-3 flex h-4 w-4 items-center justify-center rounded-full border transition-colors ${
+        className={`absolute right-2.5 top-2.5 sm:right-3 sm:top-3 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
           selected ? 'border-oxblood bg-oxblood text-ivory' : 'border-ink/25 bg-white'
         }`}
       >
@@ -803,20 +803,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [activeTab, setActiveTab] = useState<'consultation' | 'dress' | 'measurements'>('consultation');
   // True when the form holds a kept draft: shows "We kept what you typed earlier".
   const [restored, setRestored] = useState(false);
-  // The part of the screen the keyboard leaves visible (iPhone does not shrink the page for it).
-  const [visible, setVisible] = useState<{ top: number; height: number } | null>(null);
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!open || !vv) return;
-    const fit = () => setVisible({ top: vv.offsetTop, height: vv.height });
-    fit();
-    vv.addEventListener('resize', fit);
-    vv.addEventListener('scroll', fit);
-    return () => {
-      vv.removeEventListener('resize', fit);
-      vv.removeEventListener('scroll', fit);
-    };
-  }, [open]);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [blurredMeasures, setBlurredMeasures] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Errors>({});
   
   // Local Storage Autocomplete state
@@ -1450,14 +1438,13 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   };
 
   const fieldCls =
-    'mt-1.5 w-full rounded-xl border border-ink/10 bg-white/55 transition-all duration-200 hover:border-ink/20 focus:border-oxblood/45 focus:bg-white/85 focus:ring-2 focus:ring-oxblood/10 px-3.5 py-2.5 text-[14px] text-ink outline-none placeholder:text-stone/45';
+    'mt-1.5 w-full rounded-xl border border-ink/10 bg-white/55 transition-all duration-200 hover:border-ink/20 focus:border-oxblood/45 focus:bg-white/85 focus:ring-2 focus:ring-oxblood/10 px-3.5 py-2.5 text-[16px] sm:text-[14px] text-ink outline-none placeholder:text-stone/45';
 
   return (
     <AnimatePresence onExitComplete={afterClose}>
       {open && (
         <div
-          className="fixed inset-x-0 top-0 z-50 h-[100dvh]"
-          style={visible ? { top: visible.top, height: visible.height } : undefined}
+          className="fixed inset-0 z-50 overflow-hidden"
         >
           {/* Backdrop */}
           <motion.div
@@ -1541,17 +1528,29 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
               ref={scrollContainerRef}
               onFocusCapture={(e) => {
                 const el = e.target;
-                if (el instanceof HTMLInputElement && el.type !== 'file' || el instanceof HTMLTextAreaElement) {
+                if ((el instanceof HTMLInputElement && el.type !== 'file') || el instanceof HTMLTextAreaElement) {
+                  setIsInputFocused(true);
                   window.setTimeout(() => {
-                    const box = scrollContainerRef.current?.getBoundingClientRect();
+                    const container = scrollContainerRef.current;
+                    if (!container) return;
+                    const box = container.getBoundingClientRect();
                     const r = el.getBoundingClientRect();
-                    if (document.activeElement === el && box && (r.bottom > box.bottom || r.top < box.top)) {
-                      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    if (box && (r.bottom > box.bottom - 40 || r.top < box.top + 40)) {
+                      container.scrollBy({
+                        top: r.top - box.top - 80,
+                        behavior: 'smooth'
+                      });
                     }
-                  }, 320);
+                  }, 250);
                 }
               }}
-              className="flex-1 overflow-y-auto overscroll-contain px-6 py-6 md:px-9"
+              onBlurCapture={(e) => {
+                const next = e.relatedTarget;
+                if (!next || !((next instanceof HTMLInputElement && next.type !== 'file') || next instanceof HTMLTextAreaElement)) {
+                  setIsInputFocused(false);
+                }
+              }}
+              className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 md:px-9 pb-36 sm:pb-8"
             >
               {/* SUCCESS VIEW */}
               {submissionSuccessType ? (
@@ -1692,7 +1691,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 }}
                                 inputMode="numeric"
                                 autoComplete="tel-national"
-                                className="w-full h-[46px] rounded-r-xl border border-ink/15 bg-white/50 px-3.5 py-0 text-[13.5px] text-ink placeholder:text-stone/40 focus:border-oxblood/50 focus:outline-none focus:ring-2 focus:ring-oxblood/15 transition-all pr-[92px]"
+                                className="w-full h-[46px] rounded-r-xl border border-ink/15 bg-white/50 px-3.5 py-0 text-[16px] sm:text-[13.5px] text-ink placeholder:text-stone/40 focus:border-oxblood/50 focus:outline-none focus:ring-2 focus:ring-oxblood/15 transition-all pr-[84px]"
                                 placeholder={isIndia ? '98765 43210' : 'Number without country code'}
                                 aria-invalid={!!errors.phone}
                               />
@@ -2119,55 +2118,66 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                     <ChevronDownIcon className={`h-4 w-4 text-stone transition-transform ${isOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
                                   </button>
                                   {isOpen && (
-                                    <div className="grid grid-cols-2 gap-x-5 gap-y-4 border-t border-ink/10 px-3.5 pb-4 pt-3 sm:grid-cols-3">
-                                      {grp.fields.map((measure) => {
-                                        const raw = currentGarment.measurements[measure.id] || '';
-                                        const limits = limitsFor(currentGarment.key, measure);
-                                        const bad = badMeasurement(raw, limits, form.unit);
-                                        return (
-                                          <div key={measure.id} className="relative">
-                                          {/* Labels get room for two lines so boxes side by side line up even when one name wraps. */}
-                                          <label className="block">
-                                            <span className={`block min-h-[2.6em] text-[10.5px] font-medium uppercase leading-[1.3] tracking-[0.12em] text-stone ${guideFor(currentGarment.key, measure.id, measure.crm) ? 'pr-7' : ''}`}>{measure.label}</span>
-                                            <div className="relative mt-1">
-                                              <input
-                                                type="text"
-                                                inputMode="decimal"
-                                                value={raw}
-                                                aria-invalid={bad}
-                                                onChange={(e) => {
-                                                  updateGarment(currentGarment.key, {
-                                                    measurements: { ...currentGarment.measurements, [measure.id]: e.target.value }
-                                                  });
-                                                  if (submitError) setSubmitError(null);
-                                                }}
-                                                className={`w-full rounded-lg border bg-white/60 px-2.5 py-2 pr-8 text-[14px] font-medium text-ink outline-none transition-all duration-200 placeholder:text-stone/40 ${
-                                                  bad ? 'border-oxblood/60 ring-2 ring-oxblood/10' : 'border-ink/10 hover:border-ink/20 focus:border-oxblood/45 focus:ring-2 focus:ring-oxblood/10'
-                                                }`}
-                                              />
-                                              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-stone/60">{form.unit}</span>
-                                            </div>
-                                            {bad && (
-                                              <span className="mt-1 flex items-center gap-1 text-[11px] font-medium text-oxblood">
-                                                <AlertCircleIcon className="h-3 w-3" aria-hidden="true" /> Not a size we expect
-                                              </span>
-                                            )}
-                                            {!bad && limits.help_text && <span className="mt-1 block text-[11px] text-stone">{limits.help_text}</span>}
-                                          </label>
-                                          {guideFor(currentGarment.key, measure.id, measure.crm) && (
-                                            <button
-                                              type="button"
-                                              onClick={() => setGuideOpen({ label: measure.label, garment: currentGarment.key, ids: [measure.id, measure.crm] })}
-                                              aria-label={`How to measure ${measure.label}`}
-                                              className="absolute -right-1 -top-1.5 flex h-7 w-7 items-center justify-center rounded-full text-zari transition-colors hover:bg-zari/15 hover:text-oxblood"
-                                            >
-                                              <RulerIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
-                                            </button>
-                                          )}
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 sm:gap-x-5 sm:gap-y-4 border-t border-ink/10 px-3.5 pb-4 pt-3 sm:grid-cols-3">
+                                       {grp.fields.map((measure) => {
+                                         const raw = currentGarment.measurements[measure.id] || '';
+                                         const limits = limitsFor(currentGarment.key, measure);
+                                         const fieldKey = `${currentGarment.key}:${measure.id}`;
+                                         const isBlurred = Boolean(blurredMeasures[fieldKey]);
+                                         const bad = isBlurred && badMeasurement(raw, limits, form.unit);
+                                         return (
+                                           <div key={measure.id} className="relative flex flex-col justify-between">
+                                             <label className="block">
+                                               <div className="flex items-center justify-between gap-1 mb-1">
+                                                 <span className="text-[10px] sm:text-[10.5px] font-medium uppercase tracking-[0.1em] text-stone truncate" title={measure.label}>
+                                                   {measure.label}
+                                                 </span>
+                                                 {guideFor(currentGarment.key, measure.id, measure.crm) && (
+                                                   <button
+                                                     type="button"
+                                                     onClick={() => setGuideOpen({ label: measure.label, garment: currentGarment.key, ids: [measure.id, measure.crm] })}
+                                                     aria-label={`How to measure ${measure.label}`}
+                                                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-zari hover:bg-zari/15 hover:text-oxblood transition-colors -mr-0.5"
+                                                   >
+                                                     <RulerIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+                                                   </button>
+                                                 )}
+                                               </div>
+                                               <div className="relative">
+                                                 <input
+                                                   type="text"
+                                                   inputMode="decimal"
+                                                   value={raw}
+                                                   aria-invalid={bad}
+                                                   onFocus={() => {
+                                                     setBlurredMeasures((prev) => ({ ...prev, [fieldKey]: false }));
+                                                   }}
+                                                   onBlur={() => {
+                                                     setBlurredMeasures((prev) => ({ ...prev, [fieldKey]: true }));
+                                                   }}
+                                                   onChange={(e) => {
+                                                     updateGarment(currentGarment.key, {
+                                                       measurements: { ...currentGarment.measurements, [measure.id]: e.target.value }
+                                                     });
+                                                     if (submitError) setSubmitError(null);
+                                                   }}
+                                                   className={`w-full rounded-lg border bg-white/60 px-2.5 py-2 pr-8 text-[16px] sm:text-[14px] font-medium text-ink outline-none transition-all duration-200 placeholder:text-stone/40 ${
+                                                     bad ? 'border-oxblood/60 ring-2 ring-oxblood/10' : 'border-ink/10 hover:border-ink/20 focus:border-oxblood/45 focus:ring-2 focus:ring-oxblood/10'
+                                                   }`}
+                                                 />
+                                                 <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-stone/60">{form.unit}</span>
+                                               </div>
+                                               {bad && (
+                                                 <span className="mt-1 flex items-center gap-1 text-[11px] font-medium text-oxblood">
+                                                   <AlertCircleIcon className="h-3 w-3 shrink-0" aria-hidden="true" /> Not a size we expect
+                                                 </span>
+                                               )}
+                                               {!bad && limits.help_text && <span className="mt-1 block text-[11px] text-stone">{limits.help_text}</span>}
+                                             </label>
+                                           </div>
+                                         );
+                                       })}
+                                     </div>
                                   )}
                                 </div>
                               );
@@ -2311,7 +2321,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
             {/* FIXED FOOTER (Serene, uncluttered & intuitive) */}
             {!submissionSuccessType && (
-              <div className="shrink-0 border-t border-line/80 bg-ivory px-6 py-4 md:px-9">
+              <div className={`shrink-0 border-t border-line/80 bg-ivory px-5 py-3 sm:px-6 sm:py-4 md:px-9 transition-all duration-200 ${
+                isInputFocused ? 'hidden sm:block' : 'block'
+              }`}>
                 {activeTab === 'consultation' ? (
                   <div>
                     {/* Phones: Book appointment full width on top, the optional extras link under it. */}

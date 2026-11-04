@@ -32,6 +32,9 @@ body {
 section[id], article[id] {
   scroll-margin-top: 5rem;
 }
+#lookbook {
+  scroll-margin-top: 0 !important;
+}
 html.lenis,
 html.lenis body {
   height: auto;

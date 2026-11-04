@@ -5,7 +5,7 @@ import { DriftingMotif } from '../ui/DriftingMotif';
 
 export function Lookbook() {
   return (
-    <section id="lookbook" className="relative bg-ivory px-5 pb-8 pt-16 md:px-10 md:py-24">
+    <section id="lookbook" style={{ scrollMarginTop: 0 }} className="relative z-20 bg-ivory px-5 pb-8 pt-16 md:px-10 md:py-24">
       <span data-thread-anchor aria-hidden="true" className="absolute left-[34%] top-10 h-px w-px" />
       <div className="relative mx-auto max-w-[1320px]">
         <DriftingMotif motif="peacock" className="left-[2%] top-[22%] hidden w-[300px] md:block" opacity={0.16} drift={180} spin={12} />
