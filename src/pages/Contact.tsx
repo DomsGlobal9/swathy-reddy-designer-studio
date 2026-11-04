@@ -101,8 +101,8 @@ export function Contact() {
                 label="Write to us"
                 note="For orders, alterations, and everything in between."
                 actions={<><Pill href={`mailto:${contact.email}`}>Send an email</Pill><CopyButton text={contact.email} /></>}>
-                {/* A zero-width space lets a long address break before the @, never mid-word. */}
-                <Value>{contact.email.replace('@', '​@')}</Value>
+
+                <Value><a href={`mailto:${contact.email}`} className="inline-block whitespace-nowrap text-[15px] sm:text-[17px] md:text-[18px] lg:text-[1.15rem] font-medium text-ink transition-colors hover:text-oxblood hover:underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-oxblood rounded-sm" title={`Send email to ${contact.email}`}>{contact.email}</a></Value>
               </Channel>
 
               {contact.phone && (
@@ -111,7 +111,7 @@ export function Contact() {
                   label="Call or WhatsApp"
                   note="We answer during opening hours."
                   actions={<><Pill href={`tel:+${phoneDigits}`}>Call</Pill><Pill href={`https://wa.me/${phoneDigits}`} external quiet>WhatsApp</Pill></>}>
-                  <Value>{contact.phone}</Value>
+                  <Value><a href={`tel:+${phoneDigits}`} className="hover:text-oxblood transition-colors">{contact.phone}</a></Value>
                 </Channel>
               )}
 

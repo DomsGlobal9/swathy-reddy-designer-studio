@@ -1,5 +1,4 @@
 import { images } from '../../data/images';
-import { ChapterMark } from '../ui/ChapterMark';
 import { DriftingMotif } from '../ui/DriftingMotif';
 import { FadeUp } from '../ui/FadeUp';
 import { RevealImage } from '../ui/RevealImage';
@@ -27,10 +26,7 @@ export function MenSection() {
 
         <div className="md:col-span-5 md:col-start-8">
           <FadeUp>
-            <ChapterMark label="The man" />
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <h2 className="mt-8 font-display text-[2.9rem] leading-[1] tracking-[-0.02em] md:text-[4.6rem]">
+            <h2 className="font-display text-[2.9rem] leading-[1] tracking-[-0.02em] md:text-[4.6rem]">
               For the man
               <br />
               who honors

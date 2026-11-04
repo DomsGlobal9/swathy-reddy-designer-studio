@@ -182,7 +182,8 @@ const BLOUSE_SIZES: SizeGroup[] = [
     { id: 'shoulder', label: 'Shoulder', crm: 'shoulder' },
     { id: 'upper_chest', label: 'Upper chest (upper bust)', crm: 'upper_chest' },
     { id: 'chest', label: 'Chest / bust', crm: 'chest' },
-    { id: 'waist', label: 'Waist', crm: 'waist' }
+    { id: 'waist', label: 'Waist', crm: 'waist' },
+    { id: 'armhole', label: 'Armhole', crm: 'armhole' }
   ] },
   { name: 'Body measurements', fields: [
     { id: 'front_length', label: 'Front blouse length', crm: 'front_length' },
@@ -193,11 +194,10 @@ const BLOUSE_SIZES: SizeGroup[] = [
     { id: 'upper_chest', label: 'Upper chest', crm: 'upper_chest' },
     { id: 'chest', label: 'Chest / bust', crm: 'chest' },
     { id: 'waist', label: 'Waist', crm: 'waist' },
+    { id: 'armhole', label: 'Armhole', crm: 'armhole' },
     { id: 'shoulder_to_bust', label: 'Shoulder to bust', crm: 'shoulder_to_bust' }
   ] },
   { name: 'Sleeves', fields: [
-    { id: 'bicep_length', label: 'Bicep length', crm: 'bicep_length' },
-    { id: 'bicep_round', label: 'Bicep round', crm: 'bicep_round' },
     { id: 'short_sleeve_length', label: 'Short sleeve length' },
     { id: 'short_sleeve_round', label: 'Short sleeve round' },
     { id: 'elbow_length', label: 'Elbow sleeve length', crm: 'elbow_length' },
@@ -205,7 +205,9 @@ const BLOUSE_SIZES: SizeGroup[] = [
     { id: 'three_quarter_length', label: '3/4 sleeve length' },
     { id: 'three_quarter_round', label: '3/4 sleeve round' },
     { id: 'full_sleeve_length', label: 'Full sleeve length' },
-    { id: 'full_sleeves_round', label: 'Full sleeve round (wrist)', crm: 'full_sleeves_round' }
+    { id: 'full_sleeves_round', label: 'Full sleeve round (wrist)', crm: 'full_sleeves_round' },
+    { id: 'bicep_round', label: 'Bicep round', crm: 'bicep_round' },
+    { id: 'bicep_length', label: 'Bicep length', crm: 'bicep_length' }
   ] },
   { name: 'Neck', fields: [
     { id: 'front_neck_depth', label: 'Front neck depth', crm: 'front_neck_depth' },
@@ -216,8 +218,25 @@ const BLOUSE_SIZES: SizeGroup[] = [
   ] }
 ];
 
+const LEHENGA_SIZES: SizeGroup[] = [
+  { name: 'Skirt measurements', fields: [
+    { id: 'waist', label: 'Waist (where skirt is tied)', crm: 'waist' },
+    { id: 'hip', label: 'Hip (fullest part)', crm: 'hip' },
+    { id: 'lehenga_length', label: 'Lehenga length (waist to floor)', crm: 'lehenga_length' },
+    { id: 'heel_height', label: 'Heel / footwear height', crm: 'heel_height' }
+  ] }
+];
+
 /** Garments whose size boxes the form sets itself; an empty list asks none (a saree is finished, not fitted). */
-const OWN_SIZES: Record<string, SizeGroup[]> = { blouse: BLOUSE_SIZES, lehenga_blouse: BLOUSE_SIZES, saree: [] };
+const OWN_SIZES: Record<string, SizeGroup[]> = {
+  blouse: BLOUSE_SIZES,
+  lehenga_blouse: BLOUSE_SIZES,
+  bridal_blouse: BLOUSE_SIZES,
+  saree_blouse: BLOUSE_SIZES,
+  lehenga: LEHENGA_SIZES,
+  saree: [],
+  dupatta: []
+};
 
 /** Limits for a box the CRM has no field for: the CRM's own range for its sizes. */
 const ANY_SIZE: PortalMeasurementDef = { key: '', label: '', unit: 'inches', group: null, min: 0, max: 120, step: 0.25, help_text: '' };
@@ -233,15 +252,39 @@ const SLEEVE_TYPE: ChoiceDef = {
   id: 'sleeve',
   label: 'Sleeve type',
   options: [
+    { value: 'Sleeveless', hint: 'No sleeves' },
     { value: 'Short sleeve', hint: 'Reaches the mid-upper arm' },
-    { value: 'Long sleeve', hint: 'All the way to the wrist' },
+    { value: 'Elbow sleeve', hint: 'Reaches down to the elbow' },
+    { value: '3/4 sleeve', hint: 'Reaches mid-forearm' },
+    { value: 'Full sleeve', hint: 'All the way to the wrist' },
     { value: 'Cap sleeve', hint: 'Covers just the top of the shoulder' },
     { value: 'Puff sleeve', hint: 'Gathered at the shoulder, puffs out' },
     { value: 'Bell sleeve', hint: 'Fitted at the top, flares out' },
-    { value: 'Raglan sleeve', hint: 'One piece up to the collar' },
-    { value: 'Sleeveless' }
+    { value: 'Raglan sleeve', hint: 'Diagonal seam up to the collar' }
   ]
 };
+
+const SLEEVE_FIELDS_FOR_STYLE: Record<string, string[]> = {
+  'Sleeveless': [],
+  'Cap sleeve': ['short_sleeve_length', 'short_sleeve_round'],
+  'Short sleeve': ['short_sleeve_length', 'short_sleeve_round', 'bicep_round', 'bicep_length'],
+  'Puff sleeve': ['short_sleeve_length', 'short_sleeve_round', 'bicep_round'],
+  'Elbow sleeve': ['elbow_length', 'elbow_round', 'bicep_round'],
+  '3/4 sleeve': ['three_quarter_length', 'three_quarter_round', 'elbow_round', 'bicep_round'],
+  'Full sleeve': ['full_sleeve_length', 'full_sleeves_round', 'elbow_round', 'bicep_round'],
+  'Long sleeve': ['full_sleeve_length', 'full_sleeves_round', 'elbow_round', 'bicep_round'],
+  'Bell sleeve': ['full_sleeve_length', 'full_sleeves_round', 'elbow_round', 'bicep_round'],
+  'Raglan sleeve': ['full_sleeve_length', 'full_sleeves_round', 'bicep_round']
+};
+
+const ALL_SLEEVE_FIELD_IDS = new Set([
+  'bicep_length', 'bicep_round', 'short_sleeve_length', 'short_sleeve_round',
+  'elbow_length', 'elbow_round', 'three_quarter_length', 'three_quarter_round',
+  'full_sleeve_length', 'full_sleeves_round', 'sleeve_length', 'arm_length',
+  'upper_arm', 'elbow', 'wrist', 'cuff', 'sleeve_opening',
+  'upper_arm_circumference', 'elbow_circumference', 'cuff_width', 'cuff_height'
+]);
+
 /** Finishing and style picks per garment (owner, 31 Oct), sent to the CRM as written notes. */
 const GARMENT_CHOICES: Record<string, ChoiceDef[]> = {
   saree: [
@@ -256,7 +299,13 @@ const GARMENT_CHOICES: Record<string, ChoiceDef[]> = {
     { id: 'border', label: 'Border', options: [{ value: 'Yes' }, { value: 'No' }] }
   ],
   blouse: [SLEEVE_TYPE],
-  lehenga_blouse: [SLEEVE_TYPE]
+  lehenga_blouse: [SLEEVE_TYPE],
+  bridal_blouse: [SLEEVE_TYPE],
+  saree_blouse: [SLEEVE_TYPE],
+  kurti: [SLEEVE_TYPE],
+  anarkali: [SLEEVE_TYPE],
+  gown: [SLEEVE_TYPE],
+  suit: [SLEEVE_TYPE]
 };
 
 const initialForm: FormState = {
@@ -1027,22 +1076,68 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     return true;
   };
 
-  /** The size boxes shown for a garment: the boutique's own list where it has one, else the CRM's, in the CRM's groups. */
-  const sizeGroupsFor = (key: string): SizeGroup[] => {
-    if (key in OWN_SIZES) return OWN_SIZES[key];
-    const groups: SizeGroup[] = [];
-    for (const d of measureDefs[key] ?? []) {
-      const name = d.group || 'Main sizes';
-      const field = { id: d.key, label: d.label, crm: d.key };
-      const found = groups.find((x) => x.name === name);
-      if (found) found.fields.push(field); else groups.push({ name, fields: [field] });
+  /** The size boxes shown for a garment: filtered dynamically by style choices (like sleeve type). */
+  const sizeGroupsFor = (garment: Garment | string): SizeGroup[] => {
+    const key = typeof garment === 'string' ? garment : garment.key;
+    const sleeve = typeof garment === 'string' ? undefined : garment.choices?.sleeve;
+
+    let baseGroups: SizeGroup[];
+    if (key in OWN_SIZES) {
+      baseGroups = OWN_SIZES[key];
+    } else {
+      const groups: SizeGroup[] = [];
+      for (const d of measureDefs[key] ?? []) {
+        const name = d.group || 'Main sizes';
+        const field = { id: d.key, label: d.label, crm: d.key };
+        const found = groups.find((x) => x.name === name);
+        if (found) found.fields.push(field); else groups.push({ name, fields: [field] });
+      }
+      baseGroups = groups;
     }
-    return groups;
+
+    if (!sleeve) {
+      return baseGroups;
+    }
+
+    if (sleeve === 'Sleeveless') {
+      return baseGroups
+        .filter((g) => g.name !== 'Sleeves')
+        .map((g) => ({
+          ...g,
+          fields: g.fields.filter((f) => !ALL_SLEEVE_FIELD_IDS.has(f.id) && !ALL_SLEEVE_FIELD_IDS.has(f.crm || ''))
+        }))
+        .filter((g) => g.fields.length > 0);
+    }
+
+    const allowed = SLEEVE_FIELDS_FOR_STYLE[sleeve];
+    if (allowed) {
+      const allowedSet = new Set(allowed);
+      return baseGroups
+        .map((g) => {
+          if (g.name === 'Sleeves') {
+            return {
+              ...g,
+              fields: g.fields.filter((f) => allowedSet.has(f.id) || (f.crm && allowedSet.has(f.crm)))
+            };
+          }
+          return {
+            ...g,
+            fields: g.fields.filter((f) => {
+              const isSleeve = ALL_SLEEVE_FIELD_IDS.has(f.id) || (f.crm && ALL_SLEEVE_FIELD_IDS.has(f.crm));
+              return !isSleeve || allowedSet.has(f.id) || (f.crm && allowedSet.has(f.crm));
+            })
+          };
+        })
+        .filter((g) => g.fields.length > 0);
+    }
+
+    return baseGroups;
   };
+
   /** Each box once: a box listed in two groups is the same box. */
-  const sizeFieldsFor = (key: string): SizeField[] => {
+  const sizeFieldsFor = (garment: Garment | string): SizeField[] => {
     const seen = new Set<string>();
-    return sizeGroupsFor(key).flatMap((g) => g.fields).filter((f) => !seen.has(f.id) && !!seen.add(f.id));
+    return sizeGroupsFor(garment).flatMap((g) => g.fields).filter((f) => !seen.has(f.id) && !!seen.add(f.id));
   };
   const limitsFor = (key: string, f: SizeField) => measureDefs[key]?.find((d) => d.key === f.crm) ?? ANY_SIZE;
 
@@ -1051,7 +1146,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     const measurements: Record<string, number> = {};
     const otherSizes: string[] = [];
     let filled = 0;
-    for (const f of sizeFieldsFor(g.key)) {
+    for (const f of sizeFieldsFor(g)) {
       const raw = (g.measurements[f.id] ?? '').trim();
       const n = parseFloat(raw);
       if (!raw || !Number.isFinite(n)) continue;
@@ -1065,7 +1160,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
 
   /** The first garment with a size that does not make sense, so the send can point the customer to it. */
   const garmentWithBadSize = () =>
-    form.garments.find((g) => sizeFieldsFor(g.key).some((f) => badMeasurement(g.measurements[f.id] ?? '', limitsFor(g.key, f), form.unit)));
+    form.garments.find((g) => sizeFieldsFor(g).some((f) => badMeasurement(g.measurements[f.id] ?? '', limitsFor(g.key, f), form.unit)));
 
   const checkSizes = (): boolean => {
     const bad = garmentWithBadSize();
@@ -1985,8 +2080,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         </div>
                       )}
 
-                      {currentGarment && sizeGroupsFor(currentGarment.key).length > 0 && (() => {
-                        const groups = sizeGroupsFor(currentGarment.key);
+                      {currentGarment && currentGarment.choices.sleeve === 'Sleeveless' && (
+                        <div className="rounded-2xl border border-oxblood/15 bg-oxblood/[0.04] p-4 text-[13px] text-ink">
+                          <span className="font-medium text-oxblood">Sleeveless styling selected:</span> sleeve lengths and arm circumference measurements are not required. Only body and neckline measurements are needed below.
+                        </div>
+                      )}
+
+                      {currentGarment && sizeGroupsFor(currentGarment).length > 0 && (() => {
+                        const groups = sizeGroupsFor(currentGarment);
                         return (
                           <div className="space-y-3">
                             <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-stone">

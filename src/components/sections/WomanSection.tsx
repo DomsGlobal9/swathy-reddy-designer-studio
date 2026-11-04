@@ -1,5 +1,4 @@
 import { images } from '../../data/images';
-import { ChapterMark } from '../ui/ChapterMark';
 import { DriftingMotif } from '../ui/DriftingMotif';
 import { FadeUp } from '../ui/FadeUp';
 import { RevealImage } from '../ui/RevealImage';
@@ -15,10 +14,7 @@ export function WomanSection() {
       <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-y-10 md:grid-cols-12 md:gap-y-16">
         <div className="md:col-span-6">
           <FadeUp>
-            <ChapterMark label="The woman" />
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <h2 className="mt-8 font-display text-[2.9rem] leading-[1] tracking-[-0.02em] md:text-[4.6rem]">
+            <h2 className="font-display text-[2.9rem] leading-[1] tracking-[-0.02em] md:text-[4.6rem]">
               For the woman
               <br />
               who wears
@@ -52,6 +48,6 @@ export function WomanSection() {
           <span data-thread-anchor aria-hidden="true" className="absolute -right-6 bottom-[22%] h-px w-px md:-right-14" />
         </figure>
       </div>
-    </section>);
-
+    </section>
+  );
 }
