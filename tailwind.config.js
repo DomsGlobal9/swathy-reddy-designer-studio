@@ -14,7 +14,7 @@ export default {content: [
         zari: '#A07C3B',
       },
       fontFamily: {
-        display: ['"Bodoni Moda"', 'Georgia', 'serif'],
+        display: ['"Playfair Display"', '"Bodoni Moda"', 'Georgia', 'serif'],
         sans: ['Jost', 'system-ui', 'sans-serif'],
       },
       keyframes: {

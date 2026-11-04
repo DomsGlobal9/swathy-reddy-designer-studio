@@ -37,6 +37,13 @@ export function Contact() {
   }, []);
 
   const openDays = hours.filter(Boolean).length;
+  const emailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact.email)}&su=${encodeURIComponent('Inquiry | Swathy Reddy Designer Studio')}`;
+  const handleEmailClick = (e: React.MouseEvent) => {
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      e.preventDefault();
+      window.location.href = `mailto:${contact.email}?subject=${encodeURIComponent('Inquiry | Swathy Reddy Designer Studio')}`;
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-ivory font-sans text-ink">
@@ -100,9 +107,9 @@ export function Contact() {
                 icon={<MailIcon />}
                 label="Write to us"
                 note="For orders, alterations, and everything in between."
-                actions={<><Pill href={`mailto:${contact.email}`}>Send an email</Pill><CopyButton text={contact.email} /></>}>
+                actions={<><Pill href={emailComposeUrl} onClick={handleEmailClick} external>Send an email</Pill><CopyButton text={contact.email} /></>}>
 
-                <Value><a href={`mailto:${contact.email}`} className="inline-block whitespace-nowrap text-[15px] sm:text-[17px] md:text-[18px] lg:text-[1.15rem] font-medium text-ink transition-colors hover:text-oxblood hover:underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-oxblood rounded-sm" title={`Send email to ${contact.email}`}>{contact.email}</a></Value>
+                <Value><a href={emailComposeUrl} onClick={handleEmailClick} target="_blank" rel="noreferrer" className="inline-block whitespace-nowrap text-[15px] sm:text-[17px] md:text-[18px] lg:text-[1.15rem] font-medium text-ink transition-colors hover:text-oxblood hover:underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-oxblood rounded-sm" title={`Send email to ${contact.email}`}>{contact.email}</a></Value>
               </Channel>
 
               {contact.phone && (
@@ -207,7 +214,7 @@ function Pill({ children, href, onClick, external, quiet, className = '' }: {
     quiet ? 'bg-ivory text-ink shadow-[inset_0_0_0_1px_rgba(29,24,21,0.18)] hover:bg-white' : 'bg-ink text-ivory hover:bg-oxblood'} ${className}`;
   const body = <>{children}<ArrowUpRightIcon className="h-4 w-4" aria-hidden="true" /></>;
   return href
-    ? <a href={href} className={cls} {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}>{body}</a>
+    ? <a href={href} onClick={onClick} className={cls} {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}>{body}</a>
     : <button type="button" onClick={onClick} className={cls}>{body}</button>;
 }
 
