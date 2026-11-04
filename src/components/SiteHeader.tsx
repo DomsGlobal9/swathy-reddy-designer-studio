@@ -22,9 +22,17 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
       const currentScrollY = Math.max(0, window.scrollY);
       const delta = currentScrollY - lastScrollY.current;
 
-      setScrolled(currentScrollY > 40);
+      setScrolled(currentScrollY > 30);
 
-      // Always keep header visible when near the top of the page
+      // On mobile screens, keep header rock-solid and pinned at the top so it never
+      // jitters, bounces, or clashes with the mobile browser URL bar and status bar.
+      if (window.innerWidth < 1024) {
+        setVisible(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
+      // Desktop: Always keep header visible when near the top of the page
       if (currentScrollY <= 80) {
         setVisible(true);
       } else if (delta > 8) {
@@ -67,29 +75,39 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
     // The page runs up under an iPhone's clock and battery, and Safari fades whatever sits there.
     // The safe-area padding keeps the logo and menu below that strip; the bar's solid colour fills it.
     <header
-      style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top), 0px)',
+        paddingLeft: 'max(env(safe-area-inset-left), 0px)',
+        paddingRight: 'max(env(safe-area-inset-right), 0px)'
+      }}
       className={`fixed inset-x-0 top-0 z-40 border-b transition-all duration-300 ease-out ${
         visible || menuOpen ? 'translate-y-0' : '-translate-y-full'
       } ${
         scrolled || menuOpen
-          ? 'border-line bg-ivory shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)]'
-          : 'border-transparent bg-transparent'
+          ? 'border-line bg-ivory/95 backdrop-blur-md shadow-[0_4px_20px_-8px_rgba(29,24,21,0.08)]'
+          : 'border-line/40 bg-ivory/95 backdrop-blur-md shadow-[0_4px_20px_-8px_rgba(29,24,21,0.06)] lg:border-transparent lg:bg-transparent lg:shadow-none'
       }`}>
       
-      {/* Subtle dark gradient overlay when at the top to ensure white text is ALWAYS readable regardless of hero image */}
-      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${scrolled || menuOpen ? 'opacity-0' : 'opacity-100 bg-gradient-to-b from-ink/60 to-transparent'}`} />
+      {/* Subtle dark gradient overlay when at the top to ensure white text is ALWAYS readable on desktop */}
+      <div className={`pointer-events-none absolute inset-0 hidden transition-opacity duration-300 lg:block ${scrolled || menuOpen ? 'opacity-0' : 'opacity-100 bg-gradient-to-b from-ink/60 to-transparent'}`} />
 
-      <div className="relative mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 md:h-[72px] md:px-10">
+      <div className="relative mx-auto flex h-14 sm:h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6 md:h-[72px] md:px-10">
         <button
           type="button"
           onClick={() => go('top')}
-          className="group flex items-center gap-3 transition-opacity hover:opacity-90">
+          className="group flex items-center gap-2.5 sm:gap-3 transition-opacity hover:opacity-90">
           <img
             src="/sr-logo-mark.png"
             alt="SR"
-            className={`h-8 w-auto object-contain transition-all duration-200 group-hover:scale-105 md:h-10 ${!(scrolled || menuOpen) ? 'brightness-0 invert drop-shadow-md' : ''}`}
+            className={`h-7 sm:h-8 w-auto object-contain transition-all duration-200 group-hover:scale-105 md:h-10 ${
+              !(scrolled || menuOpen) ? 'max-lg:brightness-100 lg:brightness-0 lg:invert lg:drop-shadow-md' : ''
+            }`}
           />
-          <span className={`whitespace-nowrap font-display text-xl font-medium uppercase tracking-[0.18em] transition-colors md:text-[26px] translate-y-[2px] md:translate-y-[3px] ${scrolled || menuOpen ? 'text-ink group-hover:text-oxblood' : 'text-ivory drop-shadow-md group-hover:text-[#F9DE84]'}`}>
+          <span className={`whitespace-nowrap font-display text-[17px] sm:text-xl font-medium uppercase tracking-[0.14em] sm:tracking-[0.18em] transition-colors md:text-[26px] translate-y-[1px] md:translate-y-[3px] ${
+            scrolled || menuOpen
+              ? 'text-ink group-hover:text-oxblood'
+              : 'text-ink lg:text-ivory lg:drop-shadow-md group-hover:text-oxblood lg:group-hover:text-[#F9DE84]'
+          }`}>
             Swathy Reddy
           </span>
         </button>
@@ -122,7 +140,7 @@ export function SiteHeader({ onBook }: SiteHeaderProps = {}) {
           </button>
           <button
             type="button"
-            className={`lg:hidden transition-colors p-1 ${scrolled || menuOpen ? 'text-ink' : 'text-ivory drop-shadow-md'}`}
+            className={`lg:hidden transition-colors p-1.5 ${scrolled || menuOpen ? 'text-ink' : 'text-ink lg:text-ivory lg:drop-shadow-md'}`}
             aria-label="Toggle menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(!menuOpen)}>
