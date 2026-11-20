@@ -1763,7 +1763,8 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                   setIsInputFocused(false);
                 }
               }}
-              className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 md:px-9 pb-36 sm:pb-8"
+              // Phones: room at the bottom for the floating button bar (two rows on the first step).
+              className={`flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 md:px-9 sm:pb-8 ${activeTab === 'consultation' && !submissionSuccessType ? 'pb-48' : 'pb-36'}`}
             >
               {/* SUCCESS VIEW */}
               {submissionSuccessType ? (
@@ -2736,10 +2737,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
               )}
             </div>
 
-            {/* FIXED FOOTER (Serene, uncluttered & intuitive) */}
+            {/*
+              FIXED FOOTER. On phones it floats over the bottom of the form (which keeps room for it), and
+              slides away while the customer types. Taking it out of the layout instead made the whole form
+              jump 100-150px taller on every tap, which read as the boxes stretching.
+            */}
             {!submissionSuccessType && (
-              <div className={`shrink-0 border-t border-line/80 bg-ivory px-5 py-3 sm:px-6 sm:py-4 md:px-9 transition-all duration-200 ${
-                isInputFocused ? 'hidden sm:block' : 'block'
+              <div data-booking-bar className={`z-20 border-t border-line/80 bg-ivory px-5 py-3 transition-[transform,opacity] duration-200 ease-out max-sm:absolute max-sm:inset-x-0 max-sm:bottom-0 sm:shrink-0 sm:px-6 sm:py-4 md:px-9 ${
+                isInputFocused ? 'max-sm:pointer-events-none max-sm:translate-y-full max-sm:opacity-0' : 'translate-y-0 opacity-100'
               }`}>
                 {activeTab === 'consultation' ? (
                   <div>
