@@ -21,7 +21,18 @@ const line = (x1: number, y1: number, x2: number, y2: number): Shape => ({ kind:
 // Shared positions on the figure, so related guides agree.
 const SHOULDER = { x: 62, y: 53 };
 const NECK_SIDE = { x: 88, y: 50 };
-const armLength = (x: number, y: number, how: string): Guide => ({ view: 'Front', shapes: [line(SHOULDER.x, SHOULDER.y, x, y)], how });
+/** The middle of the left arm (on screen) at height y, between its outer and inner outline. */
+const ARM_MID: [number, number][] = [[70, 63.5], [96, 57], [124, 52.5], [166, 45.5], [180, 43]];
+const armMid = (y: number) => {
+  for (let i = 1; i < ARM_MID.length; i++) {
+    const [y0, x0] = ARM_MID[i - 1];
+    const [y1, x1] = ARM_MID[i];
+    if (y <= y1) return x0 + ((x1 - x0) * (y - y0)) / (y1 - y0);
+  }
+  return ARM_MID[ARM_MID.length - 1][1];
+};
+// Sleeve lengths run from the shoulder point down the middle of the arm.
+const armLength = (y: number, how: string): Guide => ({ view: 'Front', shapes: [line(SHOULDER.x, SHOULDER.y, armMid(y), y)], how });
 const fromNeck = (y: number, how: string, view: 'Front' | 'Back' = 'Front'): Guide => ({ view, shapes: [line(NECK_SIDE.x, NECK_SIDE.y, NECK_SIDE.x, y)], how });
 // Beside the figure, clear of the right hand (which reaches x 163).
 const beside = (y1: number, y2: number, how: string): Guide => ({ view: 'Front', shapes: [line(176, y1, 176, y2)], how });
@@ -50,14 +61,20 @@ const BODY: Record<string, Guide> = {
   back_shoulder: { view: 'Back', shapes: [line(62, 55, 138, 55)], how: 'Across the back, from one shoulder point to the other.' },
   across_chest: { view: 'Front', shapes: [line(71, 80, 129, 80)], how: 'Across the front of the chest, armpit to armpit.' },
   across_back: { view: 'Back', shapes: [line(71, 80, 129, 80)], how: 'Across the back, from one arm crease to the other.' },
-  short_sleeve_length: armLength(54, 88, 'From the shoulder point down the arm to where a short sleeve should end.'),
-  bicep_length: armLength(52, 98, 'From the shoulder point down to the fullest part of the upper arm.'),
-  elbow_length: armLength(46, 124, 'From the shoulder point down to the elbow.'),
-  three_quarter_length: armLength(43, 146, 'From the shoulder point down to where a 3/4 sleeve should end.'),
-  full_sleeve_length: armLength(40, 167, 'From the shoulder point down the arm to the wrist, arm straight.'),
+  short_sleeve_length: armLength(88, 'From the shoulder point down the arm to where a short sleeve should end.'),
+  bicep_length: armLength(98, 'From the shoulder point down to the fullest part of the upper arm.'),
+  elbow_length: armLength(124, 'From the shoulder point down to the elbow.'),
+  three_quarter_length: armLength(146, 'From the shoulder point down to where a 3/4 sleeve should end.'),
+  full_sleeve_length: armLength(166, 'From the shoulder point down the arm to the wrist, arm straight.'),
+  cuff_height: { view: 'Front', shapes: [line(armMid(156), 156, armMid(166), 166)], how: 'How tall the cuff should be, from the end of the sleeve up the arm.' },
   blouse_length: fromNeck(112, 'From the highest point of the shoulder, by the neck, straight down to where the blouse should end.'),
   back_length: fromNeck(112, 'At the back, from the shoulder by the neck down to where the blouse should end.', 'Back'),
   shoulder_to_bust: { view: 'Front', shapes: [line(NECK_SIDE.x, NECK_SIDE.y, 86, 90)], how: 'From the shoulder by the neck down to the tip of the bust.' },
+  bust_point: { view: 'Front', shapes: [line(86, 90, 114, 90)], how: 'Straight across, from the tip of one bust to the tip of the other. Needed for princess and katori cuts.' },
+  garment_back_length: fromNeck(196, 'At the back, from the shoulder by the neck straight down to where the garment should end.', 'Back'),
+  side_length: { view: 'Front', shapes: [line(131, 80, 134, 196)], how: 'Down the side of the body, from under the arm to where the garment should end.' },
+  slit_length: { view: 'Front', shapes: [line(137, 160, 137, 196)], how: 'Up the side from the hem to where the side slit should start.' },
+  heel_height: { view: 'Front', shapes: [line(127, 281, 127, 291)], how: 'The height of the heels you will wear with it. Stand the shoe on a table and measure the heel at the back.' },
   shoulder_to_waist: fromNeck(126, 'From the shoulder by the neck straight down to the waist.'),
   shoulder_to_hip: fromNeck(156, 'From the shoulder by the neck straight down to the hip.'),
   garment_length: fromNeck(196, 'From the shoulder by the neck straight down to where the garment should end.'),
@@ -84,7 +101,9 @@ const SAME_AS: Record<string, string> = {
   chest: 'bust', upper_thigh: 'thigh', ankle_round: 'ankle', bottom_opening: 'ankle', neck_circumference: 'neck',
   collar_neck: 'neck', hip_round: 'hip', pant_waist: 'waist', lehenga_waist: 'waist', bicep_round: 'bicep',
   upper_arm: 'bicep', upper_arm_circumference: 'bicep', elbow_round: 'elbow', elbow_circumference: 'elbow',
-  full_sleeves_round: 'wrist', sleeve_opening: 'wrist', cuff: 'wrist', arm_length: 'full_sleeve_length',
+  full_sleeves_round: 'wrist', sleeve_opening: 'wrist', cuff: 'wrist', cuff_width: 'wrist', arm_length: 'full_sleeve_length',
+  short_hand_round: 'short_sleeve_round', bust_point_distance: 'bust_point', under_bust: 'underbust',
+  knee_round: 'knee', waist_knee: 'waist_to_knee',
   sleeve_length: 'full_sleeve_length', front_length: 'blouse_length', bodice_length: 'blouse_length',
   full_length: 'garment_length', length: 'garment_length', shirt_length: 'garment_length', top_length: 'garment_length',
   jacket_length: 'garment_length', finished_length: 'garment_length', floor_length: 'waist_to_floor',
@@ -103,10 +122,26 @@ const LENGTH_FROM_WAIST: Record<string, string> = {
 };
 const PLAIN_LENGTHS = new Set(['full_length', 'length', 'finished_length']);
 
+/*
+ * Names that mean a different length on a long top than on a blouse: "front length" on a shirt or an
+ * anarkali runs to the hem, not to under the bust, and a gown's "floor length" starts at the shoulder.
+ */
+const LONG_TOP = { front_length: 'garment_length', back_length: 'garment_back_length' };
+const BY_GARMENT: Record<string, Record<string, string>> = {
+  gown: { floor_length: 'shoulder_to_floor' },
+  anarkali: LONG_TOP,
+  shirt: LONG_TOP,
+  kurti: LONG_TOP,
+  kurta: LONG_TOP,
+  suit: LONG_TOP
+};
+
 /** The guide for a size box on a garment, looked up by the form's field id first, then the CRM's field name. */
 export function guideFor(garment: string, ...keys: (string | undefined)[]): Guide | null {
   for (const k of keys) {
     if (!k) continue;
+    const own = BY_GARMENT[garment]?.[k];
+    if (own) return BODY[own];
     if (PLAIN_LENGTHS.has(k) && LENGTH_FROM_WAIST[garment]) return BODY[LENGTH_FROM_WAIST[garment]];
     const g = BODY[k] ?? BODY[SAME_AS[k] ?? ''];
     if (g) return g;

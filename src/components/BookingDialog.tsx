@@ -24,7 +24,8 @@ import {
   PackageIcon,
   TruckIcon,
   MapPinIcon,
-  ArrowUpRightIcon
+  ArrowUpRightIcon,
+  PlusIcon
 } from 'lucide-react';
 import { setScrollLocked } from '../hooks/useSmoothScroll';
 import { easeOut } from '../utils/format';
@@ -107,6 +108,8 @@ type Garment = {
   choices: Record<string, string>;
   /** The customer chose "Other" and is typing the fabric. */
   fabricOther: boolean;
+  /** The same for the embroidery and work. */
+  craftOther: boolean;
   measurements: Record<string, string>;
   photos: Record<string, File[]>;
 };
@@ -118,6 +121,7 @@ const newGarment = (key: string): Garment => ({
   requests: '',
   choices: {},
   fabricOther: false,
+  craftOther: false,
   measurements: {},
   photos: {}
 });
@@ -146,7 +150,7 @@ const groupOf = (key: string) => GARMENT_GROUPS.find((g) => g.keys.includes(key)
 
 const NO_PREFERENCE = 'No preference';
 const OWN_FABRIC = 'I will bring my own fabric';
-const OTHER_FABRIC = 'Other (type it)';
+const OTHER_TYPED = 'Other (type it)';
 
 /*
  * The fabrics the boutique works with, after whatever its online shop stocks (which comes first and
@@ -225,9 +229,22 @@ const LEHENGA_SIZES: SizeGroup[] = [
     { id: 'waist', label: 'Waist (where skirt is tied)', crm: 'waist' },
     { id: 'hip', label: 'Hip (fullest part)', crm: 'hip' },
     { id: 'lehenga_length', label: 'Lehenga length (waist to floor)', crm: 'lehenga_length' },
-    { id: 'heel_height', label: 'Heel / footwear height', crm: 'heel_height' }
+    { id: 'heel_height', label: 'Heel / footwear height', crm: 'heel_height' },
+    { id: 'waist_to_hip', label: 'Waist to hip', crm: 'waist_to_hip' },
+    { id: 'height', label: 'Your height', crm: 'height' }
   ] }
 ];
+
+/*
+ * Sizes a style needs on top of the usual ones. Princess, katori and corset blouses are shaped over the
+ * bust, so the tailor needs the bust points and the underbust; a fish-cut lehenga hugs down to the knee.
+ */
+const STYLE_SIZES: Record<string, { group: string; fields: SizeField[] }> = {
+  'Princess cut': { group: 'Body measurements', fields: [{ id: 'bust_point_distance', label: 'Bust point to bust point' }, { id: 'underbust', label: 'Under bust', crm: 'underbust' }] },
+  'Katori cut': { group: 'Body measurements', fields: [{ id: 'bust_point_distance', label: 'Bust point to bust point' }, { id: 'underbust', label: 'Under bust', crm: 'underbust' }] },
+  'Corset': { group: 'Body measurements', fields: [{ id: 'bust_point_distance', label: 'Bust point to bust point' }, { id: 'underbust', label: 'Under bust', crm: 'underbust' }] },
+  'Mermaid / fish-cut': { group: 'Skirt measurements', fields: [{ id: 'knee_round', label: 'Knee round' }, { id: 'waist_knee', label: 'Waist to knee' }] }
+};
 
 /** Garments whose size boxes the form sets itself; an empty list asks none (a saree is finished, not fitted). */
 const OWN_SIZES: Record<string, SizeGroup[]> = {
@@ -249,6 +266,64 @@ type ChoiceDef = {
   options: { value: string; hint?: string }[];
   /** A note shown when this answer is picked, e.g. asking for a reference photo. */
   reference?: { when: string; note: string };
+  /** Adds an "Other" card; picking it shows a box with this example, and the typed words are sent. */
+  other?: string;
+  /** Shows this many options first, with a button for the rest (long lists). */
+  show?: number;
+};
+
+/** Where a typed "Other" answer is kept in a garment's choices. */
+const typedKey = (id: string) => `${id}Typed`;
+
+/*
+ * Blouse types as boutiques and shops name them. The cut decides the pattern (and some extra sizes);
+ * neck and back styles that are not in the list go in "Other" or the design ideas.
+ */
+const BLOUSE_TYPE: ChoiceDef = {
+  id: 'blouseType',
+  label: 'Blouse type',
+  show: 6,
+  other: 'For example: Angrakha wrap, sweetheart neck',
+  options: [
+    { value: 'Regular (with darts)', hint: 'The classic everyday fit' },
+    { value: 'Princess cut', hint: 'Seams from shoulder over the bust, very close fit' },
+    { value: 'Katori cut', hint: 'Cup-shaped bust panels, traditional fit' },
+    { value: 'Boat neck', hint: 'Wide, straight neckline shoulder to shoulder' },
+    { value: 'High neck / collar', hint: 'Closed neck with a collar' },
+    { value: 'Backless / tie-up', hint: 'Open back held with tie strings' },
+    { value: 'Halter neck', hint: 'Fastens behind the neck, shoulders bare' },
+    { value: 'Off-shoulder', hint: 'Sits below the shoulders' },
+    { value: 'Corset', hint: 'Structured and fitted, often with boning' },
+    { value: 'Jacket style', hint: 'Opens at the front like a short jacket' },
+    { value: 'Peplum', hint: 'Flares out below the waist' },
+    { value: 'Crop top', hint: 'Longer and straighter, for lehengas and drapes' }
+  ]
+};
+
+/** The inner finish (owner's price list, 19 Nov): plain, fusing, padded, or padded with fusing. */
+const BLOUSE_FINISH: ChoiceDef = {
+  id: 'finish',
+  label: 'Lining & padding',
+  options: [
+    { value: 'Plain', hint: 'Soft, no stiffening' },
+    { value: 'Fusing', hint: 'A stiff inner layer so it holds its shape' },
+    { value: 'Padded', hint: 'Soft cups sewn in' },
+    { value: 'Padded with fusing', hint: 'Cups and the stiff inner layer' }
+  ]
+};
+
+const LEHENGA_STYLE: ChoiceDef = {
+  id: 'lehengaStyle',
+  label: 'Skirt shape',
+  other: 'For example: lehenga with a long jacket',
+  options: [
+    { value: 'A-line', hint: 'Fitted at the waist, gently wider to the hem' },
+    { value: 'Kalidar / flared', hint: 'Many panels (kalis), big flare' },
+    { value: 'Circular', hint: 'A full circle, the most swirl' },
+    { value: 'Mermaid / fish-cut', hint: 'Fitted to the knee, flares below' },
+    { value: 'Layered / ruffled', hint: 'Tiers or frills down the skirt' },
+    { value: 'Straight / pencil', hint: 'Slim, little flare' }
+  ]
 };
 const SLEEVE_TYPE: ChoiceDef = {
   id: 'sleeve',
@@ -300,10 +375,14 @@ const GARMENT_CHOICES: Record<string, ChoiceDef[]> = {
     },
     { id: 'border', label: 'Border', options: [{ value: 'Yes' }, { value: 'No' }] }
   ],
-  blouse: [SLEEVE_TYPE],
-  lehenga_blouse: [SLEEVE_TYPE],
-  bridal_blouse: [SLEEVE_TYPE],
-  saree_blouse: [SLEEVE_TYPE],
+  blouse: [BLOUSE_TYPE, SLEEVE_TYPE, BLOUSE_FINISH],
+  lehenga_blouse: [BLOUSE_TYPE, SLEEVE_TYPE, BLOUSE_FINISH],
+  bridal_blouse: [BLOUSE_TYPE, SLEEVE_TYPE, BLOUSE_FINISH],
+  saree_blouse: [BLOUSE_TYPE, SLEEVE_TYPE, BLOUSE_FINISH],
+  lehenga: [
+    LEHENGA_STYLE,
+    { id: 'cancan', label: 'Can-can (net layer for volume)', options: [{ value: 'Yes' }, { value: 'No' }] }
+  ],
   kurti: [SLEEVE_TYPE],
   anarkali: [SLEEVE_TYPE],
   gown: [SLEEVE_TYPE],
@@ -364,11 +443,16 @@ const embroideryOptions = [
   'Regular (simple finish, no heavy work)',
   'Maggam / Aari Hand Embroidery',
   'Zardozi & Antique Gold Zari Thread',
+  'Stone & Kundan Work',
+  'Cutdana & Bead Work',
   'Pearl & Hand-cut Beads',
   'Subtle Resham Thread Work',
+  'Gota Patti',
+  'Chikankari',
   'Cutwork & Scallop Borders',
   'Mirror Work',
   'Sequin Work',
+  'Hand Painting / Kalamkari',
   'Clean Minimal Border'
 ];
 
@@ -466,6 +550,7 @@ function CountryPicker({ iso, onPick }: { iso: string; onPick: (iso: string) => 
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const current = COUNTRY_CODES.find((c) => c.iso === iso) ?? INDIA;
   useEffect(() => {
     if (!open) return;
@@ -504,7 +589,7 @@ function CountryPicker({ iso, onPick }: { iso: string; onPick: (iso: string) => 
               className="w-full rounded-xl border border-ink/10 bg-white/70 py-2 pl-8 pr-3 text-[13px] outline-none focus:border-oxblood/40 focus:ring-2 focus:ring-oxblood/10"
             />
           </div>
-          <div role="listbox" aria-label="Country" className="mt-1.5 max-h-60 overflow-y-auto">
+          <div ref={listRef} role="listbox" aria-label="Country" className="mt-1.5 max-h-60 overflow-y-auto">
             {list.length === 0 && <p className="px-3 py-2 text-[12.5px] text-stone">No country found.</p>}
             {list.map((c) => (
               <button
@@ -521,10 +606,63 @@ function CountryPicker({ iso, onPick }: { iso: string; onPick: (iso: string) => 
                 <span className="shrink-0 text-stone">+{c.dial}</span>
               </button>
             ))}
+            <MoreBelow boxRef={listRef} watch={list.length} />
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+/*
+ * Scroll bars are hidden on the whole site, so a list that runs past its box gives no sign of the rest.
+ * This sits at the bottom of such a list while more is hidden below, and a tap scrolls it down.
+ * `watch` re-checks when the list changes (a search narrowing it, for instance).
+ */
+function MoreBelow({ boxRef, watch }: { boxRef: React.RefObject<HTMLDivElement | null>; watch?: unknown }) {
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const check = () => setMore(el.scrollHeight - el.scrollTop - el.clientHeight > 8);
+    check();
+    el.addEventListener('scroll', check, { passive: true });
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', check);
+      ro.disconnect();
+    };
+  }, [boxRef, watch]);
+  return (
+    <AnimatePresence>
+      {more && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          aria-hidden="true"
+          className="pointer-events-none sticky bottom-0 z-10 flex justify-center bg-gradient-to-t from-ivory via-ivory/95 to-ivory/0 pb-1.5 pt-7"
+        >
+          <button
+            type="button"
+            tabIndex={-1}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              const el = boxRef.current;
+              if (el) el.scrollBy({ top: el.clientHeight * 0.75, behavior: 'smooth' });
+            }}
+            className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-oxblood px-3.5 py-1.5 text-[11.5px] font-medium text-ivory shadow-[0_8px_18px_-8px_rgba(107,28,34,0.8)] transition-transform active:scale-95"
+          >
+            More below
+            <motion.span animate={{ y: [0, 2.5, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }} className="inline-flex">
+              <ChevronDownIcon className="h-3.5 w-3.5" strokeWidth={2} />
+            </motion.span>
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -547,6 +685,7 @@ function LuxurySelect({
   const shown = allowNone ? [NO_PREFERENCE, ...options] : options;
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onOutsideClick = (e: MouseEvent) => {
@@ -556,6 +695,8 @@ function LuxurySelect({
     };
     if (open) {
       document.addEventListener('mousedown', onOutsideClick);
+      // A list opened low in the form would sit behind the button bar; bring all of it into view.
+      window.setTimeout(() => listRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 160);
     }
     return () => document.removeEventListener('mousedown', onOutsideClick);
   }, [open]);
@@ -587,7 +728,8 @@ function LuxurySelect({
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             role="listbox"
-            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-ink/10 bg-ivory p-1.5 shadow-[0_16px_40px_-6px_rgba(29,24,21,0.2)] py-1"
+            ref={listRef}
+            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 scroll-mb-32 sm:scroll-mb-6 overflow-y-auto rounded-2xl border border-ink/10 bg-ivory p-1.5 shadow-[0_16px_40px_-6px_rgba(29,24,21,0.2)] py-1"
           >
             {shown.map((option) => {
               const selected = option === value || (option === NO_PREFERENCE && !value);
@@ -612,6 +754,7 @@ function LuxurySelect({
                 </button>
               );
             })}
+            <MoreBelow boxRef={listRef} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -842,6 +985,12 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
   const [shopFabrics, setShopFabrics] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [guideOpen, setGuideOpen] = useState<{ label: string; garment: string; ids: (string | undefined)[] } | null>(null);
+  // The garment whose first ruler is being pointed at (for three seconds), and the ruler itself.
+  const [rulerHint, setRulerHint] = useState<string | null>(null);
+  const hintTargetRef = useRef<HTMLButtonElement | null>(null);
+  const hintShown = useRef(new Set<string>());
+  // Long style lists (blouse types) that the customer has opened up in full.
+  const [allOptions, setAllOptions] = useState<Record<string, boolean>>({});
   // A retry after a partial failure must not resend what the CRM already has.
   const customerSaved = useRef(false);
   const sentGarments = useRef(new Set<string>());
@@ -1008,6 +1157,14 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
         ? prev.garments.filter((g) => g.key !== key)
         : [...prev.garments, newGarment(key)]
     }));
+  /** The other pieces of a lehenga set (blouse, dupatta) the shop offers and the customer has not picked. */
+  const lehengaSetMissing = () => {
+    const picked = new Set(form.garments.map((g) => g.key));
+    const hasBlouse = picked.has('lehenga_blouse') || picked.has('blouse');
+    return ['lehenga_blouse', 'dupatta'].filter(
+      (k) => availableGarments.some((p) => p.key === k) && !(k === 'lehenga_blouse' ? hasBlouse : picked.has(k))
+    );
+  };
   const updateGarment = (key: string, patch: Partial<Garment>) =>
     setForm((prev) => ({ ...prev, garments: prev.garments.map((g) => (g.key === key ? { ...g, ...patch } : g)) }));
   const currentGarment = form.garments.find((g) => g.key === activeGarment) ?? form.garments[0];
@@ -1039,6 +1196,41 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     };
   }, [open, onClose, otpModalOpen]);
 
+  /*
+   * When the customer reaches the size boxes (the first ruler scrolls into sight, clear of the button
+   * bar), a note points at the ruler for three seconds: once per garment each time the sizes step opens.
+   * Style choices can push the boxes below the screen, so it waits for them rather than for the step.
+   */
+  useEffect(() => {
+    if (!open || activeTab !== 'measurements') {
+      hintShown.current.clear();
+      setRulerHint(null);
+      return;
+    }
+    const el = hintTargetRef.current;
+    const key = currentGarment?.key;
+    if (!el || !key || hintShown.current.has(key)) return;
+    let hide = 0;
+    const seen = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        seen.disconnect();
+        hintShown.current.add(key);
+        setRulerHint(key);
+        hide = window.setTimeout(() => setRulerHint(null), 3000);
+      },
+      { root: scrollContainerRef.current, rootMargin: '0px 0px -140px 0px', threshold: 1 }
+    );
+    seen.observe(el);
+    return () => {
+      seen.disconnect();
+      if (hide) {
+        window.clearTimeout(hide);
+        setRulerHint(null);
+      }
+    };
+  }, [open, activeTab, currentGarment?.key, openGroups, measureDefs]);
+
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (key in errors) setErrors((prev) => ({ ...prev, [key]: undefined }));
@@ -1068,8 +1260,23 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
     return true;
   };
 
-  /** The size boxes shown for a garment: filtered dynamically by style choices (like sleeve type). */
+  /** The size boxes shown for a garment: by sleeve type, plus what its blouse or lehenga style needs. */
   const sizeGroupsFor = (garment: Garment | string): SizeGroup[] => {
+    // A copy: the garment lists are shared constants and must not grow.
+    const groups = [...sleeveSizeGroups(garment)];
+    if (typeof garment === 'string') return groups;
+    for (const style of [garment.choices.blouseType, garment.choices.lehengaStyle]) {
+      const add = style ? STYLE_SIZES[style] : undefined;
+      if (!add) continue;
+      const i = groups.findIndex((g) => g.name === add.group);
+      if (i < 0) continue;
+      const have = new Set(groups[i].fields.map((f) => f.id));
+      groups[i] = { ...groups[i], fields: [...groups[i].fields, ...add.fields.filter((f) => !have.has(f.id))] };
+    }
+    return groups;
+  };
+
+  const sleeveSizeGroups = (garment: Garment | string): SizeGroup[] => {
     const key = typeof garment === 'string' ? garment : garment.key;
     const sleeve = typeof garment === 'string' ? undefined : garment.choices?.sleeve;
 
@@ -1146,7 +1353,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
       if (f.crm) measurements[f.crm] = Math.round((form.unit === 'cm' ? n / 2.54 : n) * 100) / 100;
       else otherSizes.push(`${f.label} ${raw} ${form.unit}`);
     }
-    const choices = (GARMENT_CHOICES[g.key] ?? []).filter((c) => g.choices[c.id]).map((c) => `${c.label}: ${g.choices[c.id]}`);
+    const choices = (GARMENT_CHOICES[g.key] ?? [])
+      .filter((c) => g.choices[c.id])
+      .map((c) => `${c.label}: ${g.choices[c.id] === OTHER_TYPED ? g.choices[typedKey(c.id)]?.trim() || 'Other' : g.choices[c.id]}`);
     return { measurements: Object.keys(measurements).length ? measurements : undefined, otherSizes, choices, filled };
   };
 
@@ -1343,7 +1552,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
         const fd = new FormData();
         fd.append('garment_type', g.key);
         fd.append('occasion', form.occasion);
-        if (g.craft) fd.append('embellishments', g.craft);
+        if (g.craft.trim()) fd.append('embellishments', g.craft.trim());
         if (g.fabric.trim()) fd.append('pattern_style', g.fabric.trim());
         fd.append('notes', notes);
         if (custom) fd.append('custom_requirements', custom);
@@ -1356,7 +1565,7 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
         payload = {
           garment_type: g?.key,
           occasion: form.occasion,
-          embellishments: g?.craft || undefined,
+          embellishments: g?.craft.trim() || undefined,
           pattern_style: g?.fabric.trim() || undefined,
           custom_requirements: custom || undefined,
           notes,
@@ -1930,13 +2139,13 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                 <div>
                                   <LuxurySelect
                                     label="Fabric"
-                                    value={g.fabricOther ? OTHER_FABRIC : g.fabric}
+                                    value={g.fabricOther ? OTHER_TYPED : g.fabric}
                                     onChange={(val) =>
-                                      val === OTHER_FABRIC
+                                      val === OTHER_TYPED
                                         ? updateGarment(g.key, { fabricOther: true, fabric: '' })
                                         : updateGarment(g.key, { fabricOther: false, fabric: val })
                                     }
-                                    options={[...fabricList(shopFabrics), OWN_FABRIC, OTHER_FABRIC]}
+                                    options={[...fabricList(shopFabrics), OWN_FABRIC, OTHER_TYPED]}
                                     allowNone
                                   />
                                   {g.fabricOther && (
@@ -1951,13 +2160,30 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                     />
                                   )}
                                 </div>
-                                <LuxurySelect
-                                  label="Embroidery & work"
-                                  value={g.craft}
-                                  onChange={(val) => updateGarment(g.key, { craft: val })}
-                                  options={embroideryOptions}
-                                  allowNone
-                                />
+                                <div>
+                                  <LuxurySelect
+                                    label="Embroidery & work"
+                                    value={g.craftOther ? OTHER_TYPED : g.craft}
+                                    onChange={(val) =>
+                                      val === OTHER_TYPED
+                                        ? updateGarment(g.key, { craftOther: true, craft: '' })
+                                        : updateGarment(g.key, { craftOther: false, craft: val })
+                                    }
+                                    options={[...embroideryOptions, OTHER_TYPED]}
+                                    allowNone
+                                  />
+                                  {g.craftOther && (
+                                    <input
+                                      type="text"
+                                      autoFocus
+                                      value={g.craft}
+                                      onChange={(e) => updateGarment(g.key, { craft: e.target.value })}
+                                      className={fieldCls}
+                                      placeholder="Type the work, for example Kasuti embroidery"
+                                      aria-label={`${garmentName(g.key)} embroidery and work`}
+                                    />
+                                  )}
+                                </div>
                               </div>
                               <label className="mt-4 block">
                                 <span className="text-[11px] uppercase tracking-[0.2em] text-stone font-medium">
@@ -1971,6 +2197,24 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                   placeholder={g.key === 'saree' ? 'For example: contrast border, a motif on the pallu' : 'For example: boat neck, deep V back, elbow sleeves'}
                                 />
                               </label>
+                              {g.key === 'lehenga' && lehengaSetMissing().length > 0 && (
+                                <Notice className="mt-4">
+                                  <p>A lehenga is a set: the skirt, a blouse (choli) and usually a dupatta. This card is the skirt. Add the other pieces so we get their sizes and fabric too.</p>
+                                  <div className="mt-2.5 flex flex-wrap gap-2">
+                                    {lehengaSetMissing().map((k) => (
+                                      <button
+                                        key={k}
+                                        type="button"
+                                        onClick={() => toggleGarment(k)}
+                                        className="inline-flex items-center gap-1.5 rounded-full border border-oxblood/30 bg-white/70 px-3.5 py-1.5 text-[12.5px] font-medium text-oxblood transition-colors hover:border-oxblood hover:bg-oxblood hover:text-ivory"
+                                      >
+                                        <PlusIcon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                                        {garmentName(k)}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </Notice>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -2038,6 +2282,34 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                         </Notice>
                       )}
 
+                      {currentGarment?.key === 'lehenga' && (() => {
+                        // The skirt's sizes only; the blouse (choli) is its own piece with its own sizes.
+                        const blouse = form.garments.find((g) => g.key === 'lehenga_blouse' || g.key === 'blouse');
+                        const canAdd = availableGarments.some((p) => p.key === 'lehenga_blouse');
+                        if (!blouse && !canAdd) return null;
+                        return (
+                          <Notice>
+                            <p>
+                              {blouse
+                                ? `These are the lehenga skirt sizes. The blouse (choli) sizes are under ${garmentName(blouse.key)}.`
+                                : 'These are the lehenga skirt sizes. Is the blouse (choli) being made too? Add it to give its sizes.'}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!blouse) toggleGarment('lehenga_blouse');
+                                setActiveGarment(blouse?.key ?? 'lehenga_blouse');
+                                scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-oxblood/30 bg-white/70 px-3.5 py-1.5 text-[12.5px] font-medium text-oxblood transition-colors hover:border-oxblood hover:bg-oxblood hover:text-ivory"
+                            >
+                              {blouse ? <ArrowRightIcon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" /> : <PlusIcon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />}
+                              {blouse ? `Go to ${garmentName(blouse.key)} sizes` : `Add ${garmentName('lehenga_blouse')}`}
+                            </button>
+                          </Notice>
+                        );
+                      })()}
+
                       {currentGarment && (GARMENT_CHOICES[currentGarment.key] ?? []).length > 0 && (
                         <div className="space-y-4">
                           <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-stone">
@@ -2066,16 +2338,50 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                     ))}
                                   </div>
                                 )}
-                                {described.map((c) => (
-                                  <div key={c.id}>
-                                    <p className="mb-2 text-[12.5px] font-medium text-ink">{c.label}</p>
-                                    <div role="radiogroup" aria-label={c.label} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                                      {c.options.map((o) => (
-                                        <ChoiceCard key={o.value} selected={currentGarment.choices[c.id] === o.value} onClick={() => pick(c, o.value)} title={o.value} sub={o.hint} />
-                                      ))}
+                                {described.map((c) => {
+                                  const chosen = currentGarment.choices[c.id] ?? '';
+                                  const listKey = `${currentGarment.key}:${c.id}`;
+                                  // A long list shows its first few, but never hides the one that is picked.
+                                  const full = !c.show || allOptions[listKey] || c.options.findIndex((o) => o.value === chosen) >= c.show;
+                                  const visible = full ? c.options : c.options.slice(0, c.show);
+                                  const hidden = c.options.length - visible.length;
+                                  return (
+                                    <div key={c.id}>
+                                      <p className="mb-2 text-[12.5px] font-medium text-ink">{c.label}</p>
+                                      <div role="radiogroup" aria-label={c.label} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                        {visible.map((o) => (
+                                          <ChoiceCard key={o.value} selected={chosen === o.value} onClick={() => pick(c, o.value)} title={o.value} sub={o.hint} />
+                                        ))}
+                                        {c.other && full && (
+                                          <ChoiceCard selected={chosen === OTHER_TYPED} onClick={() => pick(c, OTHER_TYPED)} title="Other" sub="Type your own" />
+                                        )}
+                                      </div>
+                                      {hidden > 0 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setAllOptions((o) => ({ ...o, [listKey]: true }))}
+                                          className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-oxblood/30 bg-white/70 px-3.5 py-1.5 text-[12.5px] font-medium text-oxblood transition-colors hover:border-oxblood hover:bg-oxblood hover:text-ivory"
+                                        >
+                                          <ChevronDownIcon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                                          {hidden} more {c.label.toLowerCase()}s{c.other ? ', or type your own' : ''}
+                                        </button>
+                                      )}
+                                      {chosen === OTHER_TYPED && (
+                                        <input
+                                          type="text"
+                                          autoFocus
+                                          value={currentGarment.choices[typedKey(c.id)] ?? ''}
+                                          onChange={(e) =>
+                                            updateGarment(currentGarment.key, { choices: { ...currentGarment.choices, [typedKey(c.id)]: e.target.value } })
+                                          }
+                                          className={fieldCls}
+                                          placeholder={c.other}
+                                          aria-label={`${c.label}, your own`}
+                                        />
+                                      )}
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                                 {notes.map((c) => <Notice key={c.id}>{c.reference!.note}</Notice>)}
                               </>
                             );
@@ -2124,6 +2430,9 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                   {isOpen && (
                                     <div className="grid grid-cols-2 gap-3 sm:gap-x-5 sm:gap-y-4 border-t border-ink/10 px-3.5 pb-4 pt-3 sm:grid-cols-3">
                                        {grp.fields.map((measure) => {
+                                         // The first box with a drawing, in the first group, carries the three-second pointer.
+                                         const isHintRuler = gi === 0 && measure.id === grp.fields.find((f) => guideFor(currentGarment.key, f.id, f.crm))?.id;
+                                         const hintHere = isHintRuler && rulerHint === currentGarment.key;
                                          const raw = currentGarment.measurements[measure.id] || '';
                                          const limits = limitsFor(currentGarment.key, measure);
                                          const fieldKey = `${currentGarment.key}:${measure.id}`;
@@ -2131,6 +2440,26 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                          const bad = isBlurred && badMeasurement(raw, limits, form.unit);
                                          return (
                                            <div key={measure.id} className="relative flex flex-col justify-between">
+                                             <AnimatePresence>
+                                               {hintHere && (
+                                                 <motion.div
+                                                   initial={{ opacity: 0, y: -4 }}
+                                                   animate={{ opacity: 1, y: 0 }}
+                                                   exit={{ opacity: 0, y: -4 }}
+                                                   transition={{ duration: 0.22, ease: 'easeOut' }}
+                                                   onClick={() => setRulerHint(null)}
+                                                   role="status"
+                                                   className="absolute inset-x-0 top-[22px] z-20 cursor-pointer"
+                                                 >
+                                                   {/* The arrow sits under this box's ruler; the note itself may run wider than the box. */}
+                                                   <span aria-hidden="true" className="absolute right-[5px] top-0 h-2.5 w-2.5 rotate-45 bg-ink" />
+                                                   <span className="absolute left-0 top-[4px] flex w-[min(250px,calc(100vw-96px))] items-start gap-2 rounded-xl bg-ink px-3 py-2.5 text-[12px] leading-snug text-ivory shadow-[0_14px_30px_-10px_rgba(29,24,21,0.6)]">
+                                                     <RulerIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zari" strokeWidth={1.8} aria-hidden="true" />
+                                                     Not sure how to measure? Tap the ruler next to any size to see a drawing.
+                                                   </span>
+                                                 </motion.div>
+                                               )}
+                                             </AnimatePresence>
                                              <label className="block">
                                                <div className="flex items-center justify-between gap-1 mb-1">
                                                  <span className="text-[10px] sm:text-[10.5px] font-medium uppercase tracking-[0.1em] text-stone truncate" title={measure.label}>
@@ -2139,11 +2468,15 @@ export function BookingDialog({ open, onClose }: BookingDialogProps) {
                                                  {guideFor(currentGarment.key, measure.id, measure.crm) && (
                                                    <button
                                                      type="button"
+                                                     ref={isHintRuler ? hintTargetRef : undefined}
                                                      onClick={() => setGuideOpen({ label: measure.label, garment: currentGarment.key, ids: [measure.id, measure.crm] })}
                                                      aria-label={`How to measure ${measure.label}`}
-                                                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-zari hover:bg-zari/15 hover:text-oxblood transition-colors -mr-0.5"
+                                                     className={`relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors -mr-0.5 ${
+                                                       hintHere ? 'bg-zari/20 text-oxblood' : 'text-zari hover:bg-zari/15 hover:text-oxblood'
+                                                     }`}
                                                    >
-                                                     <RulerIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+                                                     {hintHere && <span aria-hidden="true" className="absolute inset-0 animate-ping rounded-full bg-zari/40" />}
+                                                     <RulerIcon className="relative h-3.5 w-3.5" strokeWidth={1.8} />
                                                    </button>
                                                  )}
                                                </div>
